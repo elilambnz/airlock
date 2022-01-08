@@ -3,58 +3,72 @@ import {
   createNewStructure,
   depositToMyStructure,
   getMyStructureInfo,
-  getMyStructures,
+  listMyStructures,
   withdrawFromMyStructure,
 } from '../../api/routes/my'
 import {
   depositToStructure,
   getStructureInfo,
 } from '../../api/routes/structures'
-import { getStructuresTypes } from '../../api/routes/types'
+import { listStructureTypes } from '../../api/routes/types'
 import '../../App.css'
+import {
+  ListOwnStructuresResponse,
+  ListStructureTypesResponse,
+  OwnStructureResponse,
+  OwnStructureWithdrawResponse,
+  OwnStrucutreDepositResponse,
+  StructureResponse,
+  StrucutreDepositResponse,
+} from '../../types/Structure'
 
 function Structures() {
-  const [allMyStructures, setAllMyStructures] = useState(null)
+  const [allMyStructures, setAllMyStructures] =
+    useState<ListOwnStructuresResponse>()
   const [myStructureInfoForm, setMyStructureInfoForm] = useState({
     structureId: '',
   })
-  const [myStructureInfo, setMyStructureInfo] = useState(null)
+  const [myStructureInfo, setMyStructureInfo] = useState<OwnStructureResponse>()
   const [structureCreateForm, setStructureCreateForm] = useState({
     location: '',
     type: '',
   })
-  const [structureCreate, setStructureCreate] = useState(null)
+  const [structureCreate, setStructureCreate] = useState<OwnStructureResponse>()
   const [myStructureDepositForm, setMyStructureDepositForm] = useState({
     structureId: '',
     shipId: '',
     good: '',
     quantity: 0,
   })
-  const [myStructureDeposit, setMyStructureDeposit] = useState(null)
+  const [myStructureDeposit, setMyStructureDeposit] =
+    useState<OwnStrucutreDepositResponse>()
   const [myStructureWithdrawForm, setMyStructureWithdrawForm] = useState({
     structureId: '',
     shipId: '',
     good: '',
     quantity: 0,
   })
-  const [myStructureWithdraw, setMyStructureWithdraw] = useState(null)
+  const [myStructureWithdraw, setMyStructureWithdraw] =
+    useState<OwnStructureWithdrawResponse>()
   const [structureInfoForm, setStructureInfoForm] = useState({
     structureId: '',
   })
-  const [structureInfo, setStructureInfo] = useState(null)
+  const [structureInfo, setStructureInfo] = useState<StructureResponse>()
   const [structureDepositForm, setStructureDepositForm] = useState({
     structureId: '',
     shipId: '',
     good: '',
     quantity: 0,
   })
-  const [structureDeposit, setStructureDeposit] = useState(null)
-  const [structureTypes, setStructureTypes] = useState(null)
+  const [structureDeposit, setStructureDeposit] =
+    useState<StrucutreDepositResponse>()
+  const [structureTypes, setStructureTypes] =
+    useState<ListStructureTypesResponse>()
 
   useEffect(() => {
     const init = async () => {
-      setAllMyStructures(await getMyStructures())
-      setStructureTypes(await getStructuresTypes())
+      setAllMyStructures(await listMyStructures())
+      setStructureTypes(await listStructureTypes())
     }
     init()
   }, [])

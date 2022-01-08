@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
   getMyAccount,
-  getMyShips,
+  listMyShips,
   getShipInfo,
   jettisonShipCargo,
   scrapShip,
@@ -9,35 +9,45 @@ import {
 } from '../../api/routes/my'
 import '../../App.css'
 
+import { User } from '../../types/Account'
+import {
+  ListShipsResponse,
+  ScrapShipResponse,
+  ShipJettisonCargoResponse,
+  ShipResponse,
+  TransferShipCargoResponse,
+} from '../../types/Ship'
+
 function Account() {
-  const [user, setUser] = useState(null)
-  const [myShips, setMyShips] = useState(null)
+  const [user, setUser] = useState<User>()
+  const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [shipInfoForm, setShipInfoForm] = useState({
     shipId: '',
   })
-  const [shipInfo, setShipInfo] = useState(null)
+  const [shipInfo, setShipInfo] = useState<ShipResponse>()
   const [shipJettisonForm, setShipJettisonForm] = useState({
     shipId: '',
     good: '',
     quantity: 0,
   })
-  const [shipJettison, setShipJettison] = useState(null)
+  const [shipJettison, setShipJettison] = useState<ShipJettisonCargoResponse>()
   const [shipScrapForm, setShipScrapForm] = useState({
     shipId: '',
   })
-  const [shipScrap, setShipScrap] = useState(null)
+  const [shipScrap, setShipScrap] = useState<ScrapShipResponse>()
   const [shipTransferForm, setShipTransferForm] = useState({
     fromShipId: '',
     toShipId: '',
     good: '',
     quantity: 0,
   })
-  const [shipTransfer, setShipTransfer] = useState(null)
+  const [shipTransfer, setShipTransfer] = useState<TransferShipCargoResponse>()
 
   useEffect(() => {
     const init = async () => {
-      setUser(await getMyAccount())
-      setMyShips(await getMyShips())
+      const account = await getMyAccount()
+      setUser(account?.user)
+      setMyShips(await listMyShips())
     }
     init()
   }, [])

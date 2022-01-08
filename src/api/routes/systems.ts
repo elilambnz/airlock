@@ -1,10 +1,17 @@
+import { ListShipsResponse } from '../../types/Ship'
+import {
+  ListSystemFlightPlansResponse,
+  ListSystemLocationsResponse,
+  SystemDockedShipsResponse,
+  SystemsResponse,
+} from '../../types/System'
 import axios from '../axios'
 
 const BASE_ROUTE = 'systems'
 
 const getShipListings = async (systemSymbol: string) => {
   try {
-    const response = await axios.get(
+    const response: { data: ListShipsResponse } = await axios.get(
       `${BASE_ROUTE}/${systemSymbol}/ship-listings`
     )
     return response.data
@@ -15,7 +22,9 @@ const getShipListings = async (systemSymbol: string) => {
 
 const getSystemInfo = async (systemSymbol: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/${systemSymbol}`)
+    const response: { data: SystemsResponse } = await axios.get(
+      `${BASE_ROUTE}/${systemSymbol}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -24,7 +33,9 @@ const getSystemInfo = async (systemSymbol: string) => {
 
 const getSystemLocations = async (systemSymbol: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/${systemSymbol}/locations`)
+    const response: { data: ListSystemLocationsResponse } = await axios.get(
+      `${BASE_ROUTE}/${systemSymbol}/locations`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -33,7 +44,7 @@ const getSystemLocations = async (systemSymbol: string) => {
 
 const getSystemFlightPlans = async (systemSymbol: string) => {
   try {
-    const response = await axios.get(
+    const response: { data: ListSystemFlightPlansResponse } = await axios.get(
       `${BASE_ROUTE}/${systemSymbol}/flight-plans`
     )
     return response.data
@@ -44,7 +55,9 @@ const getSystemFlightPlans = async (systemSymbol: string) => {
 
 const getSystemDockedShips = async (systemSymbol: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/${systemSymbol}/ships`)
+    const response: { data: SystemDockedShipsResponse } = await axios.get(
+      `${BASE_ROUTE}/${systemSymbol}/ships`
+    )
     return response.data
   } catch (error) {
     console.error(error)

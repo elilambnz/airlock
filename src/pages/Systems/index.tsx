@@ -7,13 +7,22 @@ import {
   getSystemLocations,
 } from '../../api/routes/systems'
 import '../../App.css'
+import { FlightPlanResponse } from '../../types/FlightPlan'
+import {
+  ListSystemFlightPlansResponse,
+  ListSystemLocationsResponse,
+  SystemDockedShipsResponse,
+  SystemsResponse,
+} from '../../types/System'
 
 const START_CURRENT_SYSTEM = 'OE'
 
 function Systems() {
-  const [currentSystem, setCurrentSystem] = useState(null)
-  const [availableLocations, setAvailableLocations] = useState(null)
-  const [allFlightPlans, setAllFlightPlans] = useState(null)
+  const [currentSystem, setCurrentSystem] = useState<SystemsResponse>()
+  const [availableLocations, setAvailableLocations] =
+    useState<ListSystemLocationsResponse>()
+  const [allFlightPlans, setAllFlightPlans] =
+    useState<ListSystemFlightPlansResponse>()
   const [createFlightPlanForm, setCreateFlightPlanForm] = useState<{
     shipId: string
     destination: string
@@ -26,8 +35,10 @@ function Systems() {
   }>({
     flightPlanId: '',
   })
-  const [currentFlightPlan, setCurrentFlightPlan] = useState(null)
-  const [allDockedShips, setAllDockedShips] = useState(null)
+  const [currentFlightPlan, setCurrentFlightPlan] =
+    useState<FlightPlanResponse>()
+  const [allDockedShips, setAllDockedShips] =
+    useState<SystemDockedShipsResponse>()
 
   const updateCurrentSystem = async (systemSymbol: string) => {
     setCurrentSystem(await getSystemInfo(systemSymbol))

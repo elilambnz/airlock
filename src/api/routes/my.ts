@@ -1,19 +1,47 @@
 import axios from '../axios'
 
+import { AccountResponse } from '../../types/Account'
+import {
+  ListShipsResponse,
+  ShipResponse,
+  ShipJettisonCargoResponse,
+  ScrapShipResponse,
+  TransferShipCargoResponse,
+  BuyShipResponse,
+} from '../../types/Ship'
+import {
+  CreateLoanResponse,
+  ListLoansResponse,
+  PayOffLoanResponse,
+} from '../../types/Loan'
+import {
+  CreateStructureResponse,
+  ListOwnStructuresResponse,
+  OwnStructureResponse,
+  OwnStructureWithdrawResponse,
+  OwnStrucutreDepositResponse,
+} from '../../types/Structure'
+import { FlightPlanResponse } from '../../types/FlightPlan'
+import { OrderResponse } from '../../types/Order'
+
 const BASE_ROUTE = 'my'
 
 const getMyAccount = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/account`)
+    const response: { data: AccountResponse } = await axios.get(
+      `${BASE_ROUTE}/account`
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getMyShips = async () => {
+const listMyShips = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/ships`)
+    const response: { data: ListShipsResponse } = await axios.get(
+      `${BASE_ROUTE}/ships`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -22,7 +50,9 @@ const getMyShips = async () => {
 
 const getShipInfo = async (id: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/ships/${id}`)
+    const response: { data: ShipResponse } = await axios.get(
+      `${BASE_ROUTE}/ships/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -35,10 +65,13 @@ const jettisonShipCargo = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/ships/${id}/jettison`, {
-      good,
-      quantity,
-    })
+    const response: { data: ShipJettisonCargoResponse } = await axios.post(
+      `${BASE_ROUTE}/ships/${id}/jettison`,
+      {
+        good,
+        quantity,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -47,7 +80,9 @@ const jettisonShipCargo = async (
 
 const scrapShip = async (id: string) => {
   try {
-    const response = await axios.delete(`${BASE_ROUTE}/ships/${id}`)
+    const response: { data: ScrapShipResponse } = await axios.delete(
+      `${BASE_ROUTE}/ships/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -61,11 +96,14 @@ const transferShipCargo = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/ships/${id}/transfer`, {
-      toShipId,
-      good,
-      quantity,
-    })
+    const response: { data: TransferShipCargoResponse } = await axios.post(
+      `${BASE_ROUTE}/ships/${id}/transfer`,
+      {
+        toShipId,
+        good,
+        quantity,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -74,19 +112,24 @@ const transferShipCargo = async (
 
 const buyShip = async (location: string, type: string) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/ships`, {
-      location,
-      type,
-    })
+    const response: { data: BuyShipResponse } = await axios.post(
+      `${BASE_ROUTE}/ships`,
+      {
+        location,
+        type,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getMyLoans = async () => {
+const listMyLoans = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/loans`)
+    const response: { data: ListLoansResponse } = await axios.get(
+      `${BASE_ROUTE}/loans`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -95,7 +138,9 @@ const getMyLoans = async () => {
 
 const payOffLoan = async (id: string) => {
   try {
-    const response = await axios.put(`${BASE_ROUTE}/loans/${id}`)
+    const response: { data: PayOffLoanResponse } = await axios.put(
+      `${BASE_ROUTE}/loans/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -104,18 +149,23 @@ const payOffLoan = async (id: string) => {
 
 const takeOutLoan = async (type: string) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/loans`, {
-      type,
-    })
+    const response: { data: CreateLoanResponse } = await axios.post(
+      `${BASE_ROUTE}/loans`,
+      {
+        type,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getMyStructures = async () => {
+const listMyStructures = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/structures`)
+    const response: { data: ListOwnStructuresResponse } = await axios.get(
+      `${BASE_ROUTE}/structures`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -124,7 +174,9 @@ const getMyStructures = async () => {
 
 const getMyStructureInfo = async (id: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/structures/${id}`)
+    const response: { data: OwnStructureResponse } = await axios.get(
+      `${BASE_ROUTE}/structures/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -133,10 +185,13 @@ const getMyStructureInfo = async (id: string) => {
 
 const createNewStructure = async (location: string, type: string) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/structures`, {
-      location,
-      type,
-    })
+    const response: { data: CreateStructureResponse } = await axios.post(
+      `${BASE_ROUTE}/structures`,
+      {
+        location,
+        type,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -150,7 +205,7 @@ const depositToMyStructure = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(
+    const response: { data: OwnStrucutreDepositResponse } = await axios.post(
       `${BASE_ROUTE}/structures/${structureId}/deposit`,
       {
         shipId,
@@ -171,7 +226,7 @@ const withdrawFromMyStructure = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(
+    const response: { data: OwnStructureWithdrawResponse } = await axios.post(
       `${BASE_ROUTE}/structures/${structureId}/transfer`,
       {
         shipId,
@@ -187,7 +242,9 @@ const withdrawFromMyStructure = async (
 
 const createNewFlightPlan = async (shipId: string, destination: string) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/flight-plans`)
+    const response: { data: FlightPlanResponse } = await axios.post(
+      `${BASE_ROUTE}/flight-plans`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -196,7 +253,9 @@ const createNewFlightPlan = async (shipId: string, destination: string) => {
 
 const getFlightPlanInfo = async (id: string) => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/flight-plans/${id}`)
+    const response: { data: FlightPlanResponse } = await axios.get(
+      `${BASE_ROUTE}/flight-plans/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -209,11 +268,14 @@ const createPurchaseOrder = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/purchase-orders`, {
-      shipId,
-      good,
-      quantity,
-    })
+    const response: { data: OrderResponse } = await axios.post(
+      `${BASE_ROUTE}/purchase-orders`,
+      {
+        shipId,
+        good,
+        quantity,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -226,11 +288,14 @@ const createSellOrder = async (
   quantity: number
 ) => {
   try {
-    const response = await axios.post(`${BASE_ROUTE}/sell-orders`, {
-      shipId,
-      good,
-      quantity,
-    })
+    const response: { data: OrderResponse } = await axios.post(
+      `${BASE_ROUTE}/sell-orders`,
+      {
+        shipId,
+        good,
+        quantity,
+      }
+    )
     return response.data
   } catch (error) {
     console.error(error)
@@ -239,16 +304,16 @@ const createSellOrder = async (
 
 export {
   getMyAccount,
-  getMyShips,
+  listMyShips,
   getShipInfo,
   jettisonShipCargo,
   scrapShip,
   transferShipCargo,
   buyShip,
-  getMyLoans,
+  listMyLoans,
   payOffLoan,
   takeOutLoan,
-  getMyStructures,
+  listMyStructures,
   getMyStructureInfo,
   createNewStructure,
   depositToMyStructure,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { createSellOrder } from '../../api/routes/my'
+import { OrderResponse } from '../../types/Order'
 import '../../App.css'
 
 function Trade() {
@@ -12,7 +13,7 @@ function Trade() {
     good: '',
     quantity: 0,
   })
-  const [tradeResult, setTradeResult] = useState(null)
+  const [tradeResult, setTradeResult] = useState<OrderResponse>()
 
   const handleSubmitTradeGoodForm = async (e: any) => {
     e.preventDefault()

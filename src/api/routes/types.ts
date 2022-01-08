@@ -1,41 +1,53 @@
+import { ListLoanTypesResponse } from '../../types/Loan'
+import { ListGoodTypesResponse } from '../../types/Order'
+import { ListShipTypesResponse } from '../../types/Ship'
+import { ListStructureTypesResponse } from '../../types/Structure'
 import axios from '../axios'
 
 const BASE_ROUTE = 'types'
 
-const getGoodsTypes = async () => {
+const listGoodTypes = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/goods`)
+    const response: { data: ListGoodTypesResponse } = await axios.get(
+      `${BASE_ROUTE}/goods`
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getShipsTypes = async () => {
+const listShipTypes = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/ships`)
+    const response: { data: ListShipTypesResponse } = await axios.get(
+      `${BASE_ROUTE}/ships`
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getLoansTypes = async () => {
+const listLoanTypes = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/loans`)
+    const response: { data: ListLoanTypesResponse } = await axios.get(
+      `${BASE_ROUTE}/loans`
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-const getStructuresTypes = async () => {
+const listStructureTypes = async () => {
   try {
-    const response = await axios.get(`${BASE_ROUTE}/structures`)
+    const response: { data: ListStructureTypesResponse } = await axios.get(
+      `${BASE_ROUTE}/structures`
+    )
     return response.data
   } catch (error) {
     console.error(error)
   }
 }
 
-export { getGoodsTypes, getShipsTypes, getLoansTypes, getStructuresTypes }
+export { listGoodTypes, listShipTypes, listLoanTypes, listStructureTypes }

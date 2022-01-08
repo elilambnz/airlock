@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { getLocationMarketplace } from '../../api/routes/locations'
 import { buyShip, createPurchaseOrder } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
-import { getGoodsTypes, getShipsTypes } from '../../api/routes/types'
+import { listGoodTypes, listShipTypes } from '../../api/routes/types'
 import '../../App.css'
+import { LocationMarketplaceResponse } from '../../types/Location'
+import { ListGoodTypesResponse } from '../../types/Order'
+import { ListShipsResponse, ListShipTypesResponse } from '../../types/Ship'
 
 const START_CURRENT_SYSTEM = 'OE'
 const START_CURRENT_LOCATION = 'OE-PM-TR'
 
 function Buy() {
-  const [ships, setShips] = useState(null)
-  const [marketplace, setMarketplace] = useState(null)
+  const [availableShips, setAvailableShips] = useState<ListShipsResponse>()
+  const [marketplace, setMarketplace] = useState<LocationMarketplaceResponse>()
   const [buyShipForm, setBuyShipForm] = useState<{
     location: string
     type: string
@@ -27,15 +30,15 @@ function Buy() {
     good: '',
     quantity: 0,
   })
-  const [goodTypes, setGoodTypes] = useState(null)
-  const [shipTypes, setShipTypes] = useState(null)
+  const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
+  const [shipTypes, setShipTypes] = useState<ListShipTypesResponse>()
 
   useEffect(() => {
     const init = async () => {
-      setShips(await getShipListings(START_CURRENT_SYSTEM))
+      setAvailableShips(await getShipListings(START_CURRENT_SYSTEM))
       setMarketplace(await getLocationMarketplace(START_CURRENT_LOCATION))
-      setGoodTypes(await getGoodsTypes())
-      setShipTypes(await getShipsTypes())
+      setGoodTypes(await listGoodTypes())
+      setShipTypes(await listShipTypes())
     }
     init()
   }, [])
@@ -105,7 +108,7 @@ function Buy() {
         </details>
         <h2>Available Ships</h2>
         <code>
-          <pre>{JSON.stringify(ships, undefined, 2)}</pre>
+          <pre>{JSON.stringify(availableShips, undefined, 2)}</pre>
         </code>
         <h3>Ship types</h3>
         <details>

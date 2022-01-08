@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { getMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
-import { getLoansTypes } from '../../api/routes/types'
+import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
+import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'
+import { ListLoansResponse, ListLoanTypesResponse } from '../../types/Loan'
 
 function Loans() {
-  const [loans, setLoans] = useState(null)
+  const [loans, setLoans] = useState<ListLoansResponse>()
   const [payLoanForm, setPayLoanForm] = useState({
     loanId: '',
   })
-  const [availableLoans, setAvailableLoans] = useState(null)
+  const [availableLoans, setAvailableLoans] = useState<ListLoanTypesResponse>()
   const [createLoanForm, setCreateLoanForm] = useState({
     type: '',
   })
 
   useEffect(() => {
     const init = async () => {
-      setLoans(await getMyLoans())
-      setAvailableLoans(await getLoansTypes())
+      setLoans(await listMyLoans())
+      setAvailableLoans(await listLoanTypes())
     }
     init()
   }, [])
