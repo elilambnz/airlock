@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { createNewFlightPlan, getFlightPlanInfo } from '../../api/routes/my'
+import {
+  getSystemDockedShips,
+  getSystemFlightPlans,
+  getSystemInfo,
+  getSystemLocations,
+} from '../../api/routes/systems'
 import '../../App.css'
-
-const axios = require('axios').default
 
 const START_CURRENT_SYSTEM = 'OE'
 
@@ -24,110 +29,32 @@ function Systems() {
   const [currentFlightPlan, setCurrentFlightPlan] = useState(null)
   const [allDockedShips, setAllDockedShips] = useState(null)
 
-  const updateCurrentSystem = (systemSymbol: string) => {
-    axios
-      .get(`https://api.spacetraders.io/systems/${systemSymbol}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setCurrentSystem(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/systems/${systemSymbol}/locations`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setAvailableLocations(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+  const updateCurrentSystem = async (systemSymbol: string) => {
+    setCurrentSystem(await getSystemInfo(systemSymbol))
+    setAvailableLocations(await getSystemLocations(systemSymbol))
   }
 
   useEffect(() => {
     updateCurrentSystem(START_CURRENT_SYSTEM)
 
-    axios
-      .get(
-        `https://api.spacetraders.io/systems/${START_CURRENT_SYSTEM}/flight-plans`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        setAllFlightPlans(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(
-        `https://api.spacetraders.io/systems/${START_CURRENT_SYSTEM}/ships`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        setAllDockedShips(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    const init = async () => {
+      setAllFlightPlans(await getSystemFlightPlans(START_CURRENT_SYSTEM))
+      setAllDockedShips(await getSystemDockedShips(START_CURRENT_SYSTEM))
+    }
+    init()
   }, [])
 
-  const handleSubmitCreateFlightPlanForm = (e: any) => {
+  const handleSubmitCreateFlightPlanForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/flight-plans`,
-        {
-          shipId: createFlightPlanForm.shipId,
-          destination: createFlightPlanForm.destination,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        console.log(res)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    await createNewFlightPlan(
+      createFlightPlanForm.shipId,
+      createFlightPlanForm.destination
+    )
   }
 
-  const handleSubmitFlightPlanForm = (e: any) => {
+  const handleSubmitFlightPlanForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(
-        `https://api.spacetraders.io/my/flight-plans/${flightPlanForm.flightPlanId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        setCurrentFlightPlan(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    setCurrentFlightPlan(await getFlightPlanInfo(flightPlanForm.flightPlanId))
   }
 
   return (

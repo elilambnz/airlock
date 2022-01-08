@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import {
+  getMyAccount,
+  getMyShips,
+  getShipInfo,
+  jettisonShipCargo,
+  scrapShip,
+  transferShipCargo,
+} from '../../api/routes/my'
 import '../../App.css'
-
-const axios = require('axios').default
 
 function Account() {
   const [user, setUser] = useState(null)
@@ -29,110 +35,44 @@ function Account() {
   const [shipTransfer, setShipTransfer] = useState(null)
 
   useEffect(() => {
-    axios
-      .get(`https://api.spacetraders.io/my/account`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setUser(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/my/ships`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setMyShips(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    const init = async () => {
+      setUser(await getMyAccount())
+      setMyShips(await getMyShips())
+    }
+    init()
   }, [])
 
-  const handleSubmitShipInfoForm = (e: any) => {
+  const handleSubmitShipInfoForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(`https://api.spacetraders.io/my/ships/${shipInfoForm.shipId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setShipInfo(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    setShipInfo(await getShipInfo(shipInfoForm.shipId))
   }
 
-  const handleSubmitShipJettisonForm = (e: any) => {
+  const handleSubmitShipJettisonForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/ships/${shipJettisonForm.shipId}/jettison`,
-        {
-          good: shipJettisonForm.good,
-          quantity: shipJettisonForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setShipJettison(
+      await jettisonShipCargo(
+        shipJettisonForm.shipId,
+        shipJettisonForm.good,
+        shipJettisonForm.quantity
       )
-      .then((res: any) => {
-        setShipJettison(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
-  const handleSubmitShipScrapForm = (e: any) => {
+  const handleSubmitShipScrapForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .delete(`https://api.spacetraders.io/my/ships/${shipScrapForm.shipId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setShipScrap(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    setShipScrap(await scrapShip(shipScrapForm.shipId))
   }
 
-  const handleSubmitShipTransferForm = (e: any) => {
+  const handleSubmitShipTransferForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/ships/${shipTransferForm.fromShipId}/transfer`,
-        {
-          toShipId: shipTransferForm.toShipId,
-          good: shipTransferForm.good,
-          quantity: shipTransferForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setShipTransfer(
+      await transferShipCargo(
+        shipTransferForm.fromShipId,
+        shipTransferForm.toShipId,
+        shipTransferForm.good,
+        shipTransferForm.quantity
       )
-      .then((res: any) => {
-        setShipTransfer(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
   return (

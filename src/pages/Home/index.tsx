@@ -1,38 +1,17 @@
 import React, { useState, useEffect } from 'react'
+import { getGameStatus, getLeaderboard } from '../../api/routes/game'
 import '../../App.css'
-
-import axios from 'axios'
 
 function Home() {
   const [gameStatus, setGameStatus] = useState(null)
   const [leaderboard, setLeaderboard] = useState(null)
 
   useEffect(() => {
-    axios
-      .get(`https://api.spacetraders.io/game/status`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setGameStatus(res.data?.status)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/game/leaderboard/net-worth`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setLeaderboard(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    const init = async () => {
+      setGameStatus(await getGameStatus())
+      setLeaderboard(await getLeaderboard())
+    }
+    init()
   }, [])
 
   return (

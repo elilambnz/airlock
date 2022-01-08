@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { getMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
+import { getLoansTypes } from '../../api/routes/types'
 import '../../App.css'
-
-const axios = require('axios').default
 
 function Loans() {
   const [loans, setLoans] = useState(null)
@@ -14,70 +14,21 @@ function Loans() {
   })
 
   useEffect(() => {
-    axios
-      .get(`https://api.spacetraders.io/my/loans`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-
-      .then((res: any) => {
-        setLoans(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/types/loans`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setAvailableLoans(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    const init = async () => {
+      setLoans(await getMyLoans())
+      setAvailableLoans(await getLoansTypes())
+    }
+    init()
   }, [])
 
-  const handleSubmitPayLoanForm = (e: any) => {
+  const handleSubmitPayLoanForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .put(`https://api.spacetraders.io/my/loans/${payLoanForm.loanId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        console.log(res)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    await payOffLoan(payLoanForm.loanId)
   }
 
-  const handleSubmitCreateLoanForm = (e: any) => {
+  const handleSubmitCreateLoanForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/loans`,
-        {
-          type: createLoanForm.type,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        console.log(res)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    await takeOutLoan(createLoanForm.type)
   }
 
   return (

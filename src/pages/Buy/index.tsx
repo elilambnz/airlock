@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { getLocationMarketplace } from '../../api/routes/locations'
+import { buyShip, createPurchaseOrder } from '../../api/routes/my'
+import { getShipListings } from '../../api/routes/systems'
+import { getGoodsTypes, getShipsTypes } from '../../api/routes/types'
 import '../../App.css'
 
-const axios = require('axios').default
+const START_CURRENT_SYSTEM = 'OE'
+const START_CURRENT_LOCATION = 'OE-PM-TR'
 
 function Buy() {
   const [ships, setShips] = useState(null)
@@ -26,100 +31,27 @@ function Buy() {
   const [shipTypes, setShipTypes] = useState(null)
 
   useEffect(() => {
-    axios
-      .get(`https://api.spacetraders.io/systems/OE/ship-listings`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setShips(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/locations/OE-PM-TR/marketplace`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setMarketplace(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/types/goods`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setGoodTypes(res.data)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/types/ships`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setShipTypes(res.data)
-      })
+    const init = async () => {
+      setShips(await getShipListings(START_CURRENT_SYSTEM))
+      setMarketplace(await getLocationMarketplace(START_CURRENT_LOCATION))
+      setGoodTypes(await getGoodsTypes())
+      setShipTypes(await getShipsTypes())
+    }
+    init()
   }, [])
 
-  const handleSubmitBuyShipForm = (e: any) => {
+  const handleSubmitBuyShipForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/ships`,
-        {
-          location: buyShipForm.location,
-          type: buyShipForm.type,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-
-      .then((res: any) => {
-        console.log(res)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    await buyShip(buyShipForm.location, buyShipForm.type)
   }
 
-  const handleSubmitBuyGoodForm = (e: any) => {
+  const handleSubmitBuyGoodForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/purchase-orders`,
-        {
-          shipId: buyGoodForm.shipId,
-          good: buyGoodForm.good,
-          quantity: buyGoodForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-
-      .then((res: any) => {
-        console.log(res)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    await createPurchaseOrder(
+      buyGoodForm.shipId,
+      buyGoodForm.good,
+      buyGoodForm.quantity
+    )
   }
 
   return (

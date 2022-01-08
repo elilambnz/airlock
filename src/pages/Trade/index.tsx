@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { createSellOrder } from '../../api/routes/my'
 import '../../App.css'
-
-const axios = require('axios').default
 
 function Trade() {
   const [tradeGoodForm, setTradeGoodForm] = useState<{
@@ -15,29 +14,15 @@ function Trade() {
   })
   const [tradeResult, setTradeResult] = useState(null)
 
-  const handleSubmitTradeGoodForm = (e: any) => {
+  const handleSubmitTradeGoodForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/sell-orders`,
-        {
-          shipId: tradeGoodForm.shipId,
-          good: tradeGoodForm.good,
-          quantity: tradeGoodForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setTradeResult(
+      await createSellOrder(
+        tradeGoodForm.shipId,
+        tradeGoodForm.good,
+        tradeGoodForm.quantity
       )
-
-      .then((res: any) => {
-        setTradeResult(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
   return (

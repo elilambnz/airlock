@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react'
+import {
+  createNewStructure,
+  depositToMyStructure,
+  getMyStructureInfo,
+  getMyStructures,
+  withdrawFromMyStructure,
+} from '../../api/routes/my'
+import {
+  depositToStructure,
+  getStructureInfo,
+} from '../../api/routes/structures'
+import { getStructuresTypes } from '../../api/routes/types'
 import '../../App.css'
-
-const axios = require('axios').default
 
 function Structures() {
   const [allMyStructures, setAllMyStructures] = useState(null)
@@ -42,161 +52,69 @@ function Structures() {
   const [structureTypes, setStructureTypes] = useState(null)
 
   useEffect(() => {
-    axios
-      .get(`https://api.spacetraders.io/my/structures`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setAllMyStructures(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
-
-    axios
-      .get(`https://api.spacetraders.io/types/structures`, {
-        headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-        },
-      })
-      .then((res: any) => {
-        setStructureTypes(res.data)
-      })
+    const init = async () => {
+      setAllMyStructures(await getMyStructures())
+      setStructureTypes(await getStructuresTypes())
+    }
+    init()
   }, [])
 
-  const handleSubmitMyStructureInfoForm = (e: any) => {
+  const handleSubmitMyStructureInfoForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(
-        `https://api.spacetraders.io/my/structures/${structureInfoForm.structureId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        setMyStructureInfo(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    setMyStructureInfo(
+      await getMyStructureInfo(myStructureInfoForm.structureId)
+    )
   }
 
-  const handleSubmitStructureCreateForm = (e: any) => {
+  const handleSubmitStructureCreateForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/structures`,
-        {
-          location: structureCreateForm.location,
-          type: structureCreateForm.type,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setStructureCreate(
+      await createNewStructure(
+        structureCreateForm.location,
+        structureCreateForm.type
       )
-      .then((res: any) => {
-        setStructureCreate(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
-  const handleSubmitMyStructureDepositForm = (e: any) => {
+  const handleSubmitMyStructureDepositForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(
-        `https://api.spacetraders.io/my/structures/${myStructureDepositForm.structureId}/deposit`,
-        {
-          shipId: myStructureDepositForm.shipId,
-          good: myStructureDepositForm.quantity,
-          quantity: myStructureDepositForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setMyStructureDeposit(
+      await depositToMyStructure(
+        myStructureDepositForm.structureId,
+        myStructureDepositForm.shipId,
+        myStructureDepositForm.good,
+        myStructureDepositForm.quantity
       )
-      .then((res: any) => {
-        setMyStructureDeposit(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
-  const handleSubmitMyStructureWithdrawForm = (e: any) => {
+  const handleSubmitMyStructureWithdrawForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .post(
-        `https://api.spacetraders.io/my/structures/${myStructureWithdrawForm.structureId}/transfer`,
-        {
-          shipId: myStructureWithdrawForm.shipId,
-          good: myStructureWithdrawForm.good,
-          quantity: myStructureWithdrawForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setMyStructureWithdraw(
+      await withdrawFromMyStructure(
+        myStructureWithdrawForm.structureId,
+        myStructureWithdrawForm.shipId,
+        myStructureWithdrawForm.good,
+        myStructureWithdrawForm.quantity
       )
-      .then((res: any) => {
-        setMyStructureWithdraw(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
-  const handleSubmitStructureInfoForm = (e: any) => {
+  const handleSubmitStructureInfoForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(
-        `https://api.spacetraders.io/structures/${structureInfoForm.structureId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
-      )
-      .then((res: any) => {
-        setStructureInfo(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    setStructureInfo(await getStructureInfo(structureInfoForm.structureId))
   }
 
-  const handleSubmitStructureDepositForm = (e: any) => {
+  const handleSubmitStructureDepositForm = async (e: any) => {
     e.preventDefault()
-    axios
-      .get(
-        `https://api.spacetraders.io/structures/${structureDepositForm.structureId}/deposit`,
-        {
-          shipId: structureDepositForm.shipId,
-          good: structureDepositForm.quantity,
-          quantity: structureDepositForm.quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.REACT_APP_TOKEN}`,
-          },
-        }
+    setStructureDeposit(
+      await depositToStructure(
+        structureDepositForm.structureId,
+        structureDepositForm.shipId,
+        structureDepositForm.good,
+        structureDepositForm.quantity
       )
-      .then((res: any) => {
-        setStructureDeposit(res.data)
-      })
-      .catch((err: any) => {
-        console.log(err)
-      })
+    )
   }
 
   return (
