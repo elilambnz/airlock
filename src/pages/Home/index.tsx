@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
 import '../../App.css'
+import LoadingRows from '../../components/Table/LoadingRows'
 import { StatusResponse, LeaderboardNetWorthResponse } from '../../types/Game'
 import { capitaliseFirstLetter } from '../../utils/helpers'
 
@@ -16,29 +17,16 @@ function Home() {
     init()
   }, [])
 
-  const renderLoadingRows = () => {
-    return Array(11)
-      .fill(0)
-      .map((_, i) => (
-        <tr key={i}>
-          <td className="px-6 py-4 whitespace-nowrap animate-pulse">
-            <div className="w-full bg-gray-300 h-5 rounded-md"></div>
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap animate-pulse">
-            <div className="w-full bg-gray-300 h-5 rounded-md"></div>
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap animate-pulse">
-            <div className="w-full bg-gray-300 h-5 rounded-md"></div>
-          </td>
-        </tr>
-      ))
-  }
-
   return (
     <>
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Airlock</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Airlock{' '}
+            <span className="ml-2 text-sm text-gray-600">
+              SpaceTraders Web Client
+            </span>
+          </h1>
         </div>
       </header>
       <main>
@@ -90,56 +78,58 @@ function Home() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {leaderboard
-                            ? [
-                                ...leaderboard.netWorth,
-                                ...[leaderboard.userNetWorth],
-                              ]
-                                .sort((a, b) => a.rank - b.rank)
-                                .map((netWorth, i) => (
-                                  <tr key={i}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div
-                                        className={
-                                          'text-sm text-gray-900' +
-                                          (netWorth.username ===
-                                          process.env.REACT_APP_USERNAME
-                                            ? ' font-bold'
-                                            : 'font-medium')
-                                        }
-                                      >
-                                        {netWorth.rank}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div
-                                        className={
-                                          'text-sm text-gray-900' +
-                                          (netWorth.username ===
-                                          process.env.REACT_APP_USERNAME
-                                            ? ' font-bold'
-                                            : 'font-medium')
-                                        }
-                                      >
-                                        {netWorth.username}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div
-                                        className={
-                                          'text-sm text-gray-900' +
-                                          (netWorth.username ===
-                                          process.env.REACT_APP_USERNAME
-                                            ? ' font-bold'
-                                            : 'font-medium')
-                                        }
-                                      >
-                                        {netWorth.netWorth}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))
-                            : renderLoadingRows()}
+                          {leaderboard ? (
+                            [
+                              ...leaderboard.netWorth,
+                              ...[leaderboard.userNetWorth],
+                            ]
+                              .sort((a, b) => a.rank - b.rank)
+                              .map((netWorth, i) => (
+                                <tr key={i}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div
+                                      className={
+                                        'text-sm text-gray-900' +
+                                        (netWorth.username ===
+                                        process.env.REACT_APP_USERNAME
+                                          ? ' font-bold'
+                                          : 'font-medium')
+                                      }
+                                    >
+                                      {netWorth.rank}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div
+                                      className={
+                                        'text-sm text-gray-900' +
+                                        (netWorth.username ===
+                                        process.env.REACT_APP_USERNAME
+                                          ? ' font-bold'
+                                          : 'font-medium')
+                                      }
+                                    >
+                                      {netWorth.username}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div
+                                      className={
+                                        'text-sm text-gray-900' +
+                                        (netWorth.username ===
+                                        process.env.REACT_APP_USERNAME
+                                          ? ' font-bold'
+                                          : 'font-medium')
+                                      }
+                                    >
+                                      {netWorth.netWorth}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                          ) : (
+                            <LoadingRows cols={3} rows={11} />
+                          )}
                         </tbody>
                       </table>
                     </div>

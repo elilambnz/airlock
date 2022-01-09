@@ -23,8 +23,7 @@ const Navbar = () => {
     { path: '/', name: 'Home' },
     { path: '/account', name: 'Account' },
     { path: '/loans', name: 'Loans' },
-    { path: '/buy', name: 'Buy' },
-    { path: '/trade', name: 'Trade' },
+    { path: '/marketplace', name: 'Marketplace' },
     { path: '/systems', name: 'Systems' },
     { path: '/structures', name: 'Structures' },
   ]
@@ -36,7 +35,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <Link to="/" className="flex-shrink-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-8 w-8"
@@ -51,6 +50,11 @@ const Navbar = () => {
                   d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
                 />
               </svg>
+            </Link>
+            <div className="flex md:hidden">
+              <span className="ml-2 text-white font-semibold text-xl tracking-tight">
+                Airlock
+              </span>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
@@ -141,14 +145,12 @@ const Navbar = () => {
                     >
                       API Token
                     </a>
-                    <div className="mx-2 mb-2">
+                    <div className="mx-3 mb-2">
                       <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
                         <pre>{process.env.REACT_APP_TOKEN}</pre>
                       </div>
                     </div>
-
                     <hr />
-
                     <a
                       href="#"
                       className="block px-4 py-2 text-sm text-gray-700"
@@ -255,20 +257,14 @@ const Navbar = () => {
               </div>
             </div>
             <div className="mt-3 px-2 space-y-1">
-              <a
-                href="#"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
-              >
-                Your Profile
+              <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-400">
+                API Token
               </a>
-
-              <a
-                href="#"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
-              >
-                Settings
-              </a>
-
+              <div className="mx-3">
+                <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
+                  <pre>{process.env.REACT_APP_TOKEN}</pre>
+                </div>
+              </div>
               <a
                 href="#"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"

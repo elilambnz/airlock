@@ -1,4 +1,4 @@
-import { ListShipsResponse } from '../../types/Ship'
+import { ListShipListingsResponse } from '../../types/Ship'
 import {
   ListSystemFlightPlansResponse,
   ListSystemLocationsResponse,
@@ -11,7 +11,7 @@ const BASE_ROUTE = 'systems'
 
 const getShipListings = async (systemSymbol: string) => {
   try {
-    const response: { data: ListShipsResponse } = await axios.get(
+    const response: { data: ListShipListingsResponse } = await axios.get(
       `${BASE_ROUTE}/${systemSymbol}/ship-listings`
     )
     return response.data

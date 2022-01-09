@@ -1,4 +1,5 @@
 import { Good } from './Order'
+import { PurchaseLocation } from './System'
 
 export type ListShipTypesResponse = {
   ships: Ship[]
@@ -12,11 +13,15 @@ export type ShipResponse = {
   ship: Ship
 }
 
+export type ListShipListingsResponse = {
+  shipListings: ShipListing[]
+}
+
 export type Ship = {
   cargo: ShipCargo[]
   class: string
   flightPlanId: string
-  id: string
+  id?: string
   location: string
   manufacturer: string
   maxCargo: number
@@ -33,6 +38,10 @@ export type ShipCargo = {
   good: Good
   quantity: number
   totalVolume: number
+}
+
+export type ShipListing = Ship & {
+  purchaseLocations: PurchaseLocation[]
 }
 
 export type BuyShipResponse = {

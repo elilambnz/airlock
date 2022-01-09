@@ -1,6 +1,6 @@
 import { FlightPlanExternal } from './FlightPlan'
 import { Location } from './Location'
-import { Ship, ShipExternal } from './Ship'
+import { ShipExternal, ShipListing } from './Ship'
 
 export type SystemsResponse = {
   systems: System
@@ -13,10 +13,6 @@ export type System = {
 
 export type ListSystemShipsResponse = {
   shipListings: ShipListing[]
-}
-
-export type ShipListing = Ship & {
-  purchaseLocations: PurchaseLocation
 }
 
 export type PurchaseLocation = {

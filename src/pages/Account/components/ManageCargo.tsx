@@ -23,9 +23,10 @@ const ManageCargo = (props: ManageCargoProps) => {
   >(null)
   const [cargoToJettison, setCargoToJettison] = useState<ShipCargo | null>(null)
 
-  if (!ship) {
+  if (!ship || !ship.id) {
     return <div>No ship selected</div>
   }
+
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto">
@@ -158,7 +159,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                       return
                     }
                     handleTransferCargo(
-                      ship.id,
+                      ship.id!,
                       cargoToTransfer.toShipId,
                       cargoToTransfer.good,
                       cargoToTransfer.quantity
@@ -219,7 +220,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                   onClick={(e) => {
                     e.preventDefault()
                     handleJettisonCargo(
-                      ship.id,
+                      ship.id!,
                       cargoToJettison.good,
                       cargoToJettison.quantity
                     )
