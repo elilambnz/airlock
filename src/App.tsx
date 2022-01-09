@@ -14,7 +14,7 @@ import Navbar from './components/Navbar'
 function App() {
   return (
     <Router>
-      <div className="min-h-full">
+      <div className="min-h-screen">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />

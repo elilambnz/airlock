@@ -4,7 +4,6 @@ import { getMyAccount } from '../api/routes/my'
 
 import { User } from '../types/Account'
 
-import icon from '../assets/airlock-icon.svg'
 import { formatCredits } from '../utils/helpers'
 
 const Navbar = () => {
@@ -38,7 +37,20 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <img className="h-8 w-8" src={icon} alt="Logo" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="#FFF"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
+                />
+              </svg>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
@@ -92,11 +104,15 @@ const Navbar = () => {
                     onClick={() => setShowProfileDropdown((prev) => !prev)}
                   >
                     <span className="sr-only">Open user menu</span>
-                    <img
-                      className="h-8 w-8 rounded-full"
-                      src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                      alt=""
-                    />
+                    <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100">
+                      <svg
+                        className="h-full w-full text-gray-300"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
 

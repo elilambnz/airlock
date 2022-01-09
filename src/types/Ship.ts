@@ -13,7 +13,7 @@ export type ShipResponse = {
 }
 
 export type Ship = {
-  cargo: ShipCargo
+  cargo: ShipCargo[]
   class: string
   flightPlanId: string
   id: string
