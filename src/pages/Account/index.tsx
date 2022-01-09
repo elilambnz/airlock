@@ -199,7 +199,9 @@ function Account() {
                             />
                           </svg>
                           <p className="ml-1 text-sm truncate">
-                            {ship.location}
+                            {ship.flightPlanId
+                              ? 'In transit'
+                              : ship.location ?? 'Unavailable'}
                           </p>
                         </div>
                       </div>

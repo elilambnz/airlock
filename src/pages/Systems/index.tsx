@@ -63,7 +63,9 @@ function Systems() {
 
   const shipOptions = myShips?.ships.map((ship) => ({
     value: ship.id,
-    label: `${ship.type} (${ship.location})`,
+    label: `${ship.type} (${ship.location}) [${
+      ship.cargo.find((c) => c.good === 'FUEL')?.quantity ?? 0
+    }]`,
   }))
 
   const locationOptions = availableLocations?.locations.map((location) => ({
@@ -197,7 +199,6 @@ function Systems() {
                             />
                           )}
                         </div>
-
                         <div className="sm:col-span-2">
                           {locationOptions && (
                             <SelectMenu
@@ -212,7 +213,6 @@ function Systems() {
                             />
                           )}
                         </div>
-
                         <div className="sm:col-span-2 pt-6">
                           <button
                             type="submit"
@@ -385,11 +385,9 @@ function Systems() {
                                   {ship.shipType}
                                 </td>
                                 <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                  {
-                                    myShips?.ships.find(
-                                      (s) => s.id === ship.shipId
-                                    )?.location
-                                  }
+                                  {myShips?.ships.find(
+                                    (s) => s.id === ship.shipId
+                                  )?.location || 'Unknown'}
                                 </td>
                               </tr>
                             ))

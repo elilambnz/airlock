@@ -59,9 +59,9 @@ function Marketplace() {
 
   const shipOptions = myShips?.ships.map((ship) => ({
     value: ship.id,
-    label: `${ship.type} ${ship.maxCargo - ship.spaceAvailable} / ${
+    label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
       ship.maxCargo
-    }`,
+    }) [${ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0}]`,
   }))
 
   const handleBuyGood = async (goodToProccess: GoodToProccess) => {
