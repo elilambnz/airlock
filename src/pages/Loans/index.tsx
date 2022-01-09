@@ -10,7 +10,7 @@ import {
   LoanStatus,
   LoanType,
 } from '../../types/Loan'
-import { capitaliseFirstLetter, formatCredits } from '../../utils/helpers'
+import { capitaliseFirstLetter, formatThousands } from '../../utils/helpers'
 
 function Loans() {
   const [loans, setLoans] = useState<ListLoansResponse>()
@@ -64,10 +64,15 @@ function Loans() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {loans.loans.map((loan: Loan) => (
-                            <tr key={loan.id}>
+                          {loans.loans.map((loan, i) => (
+                            <tr
+                              key={loan.id}
+                              className={
+                                i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                              }
+                            >
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
-                                {formatCredits(loan.repaymentAmount)}
+                                {formatThousands(loan.repaymentAmount)}
                               </td>
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
                                 {moment(loan.due).format('DD/MM/YYYY HH:mm')}
@@ -148,13 +153,18 @@ function Loans() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {availableLoans.loans.map((loan: LoanType) => (
-                            <tr key={loan.type}>
+                          {availableLoans.loans.map((loan, i) => (
+                            <tr
+                              key={loan.type}
+                              className={
+                                i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                              }
+                            >
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
                                 {loan.type}
                               </td>
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                {formatCredits(loan.amount)}
+                                {formatThousands(loan.amount)}
                               </td>
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
                                 {loan.rate}
@@ -163,9 +173,7 @@ function Loans() {
                                 {loan.termInDays}
                               </td>
                               <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                {capitaliseFirstLetter(
-                                  String(loan.collateralRequired)
-                                )}
+                                {loan.collateralRequired ? 'Yes' : 'No'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button

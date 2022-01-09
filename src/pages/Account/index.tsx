@@ -12,14 +12,8 @@ import SimpleModal from '../../components/Modal/SimpleModal'
 import DangerModal from '../../components/Modal/DangerModal'
 
 import { User } from '../../types/Account'
-import {
-  ListShipsResponse,
-  ScrapShipResponse,
-  ShipJettisonCargoResponse,
-  ShipResponse,
-  TransferShipCargoResponse,
-} from '../../types/Ship'
-import { formatCredits } from '../../utils/helpers'
+import { ListShipsResponse } from '../../types/Ship'
+import { formatThousands } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 
 function Account() {
@@ -131,7 +125,7 @@ function Account() {
                       Credits
                     </dt>
                     <dd className="flex items-baseline mt-1 text-3xl font-semibold text-gray-900">
-                      {user?.credits ? formatCredits(user.credits) : 0}
+                      {user?.credits ? formatThousands(user.credits) : 0}
                     </dd>
                   </div>
                 </div>

@@ -13,7 +13,7 @@ const LoadingRows = (props: LoadingRowsProps) => {
       {Array(rows ?? 10)
         .fill(0)
         .map((_, i) => (
-          <tr key={i}>
+          <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
             {Array(cols)
               .fill(0)
               .map((_, j) => (

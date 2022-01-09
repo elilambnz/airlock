@@ -243,7 +243,11 @@ const withdrawFromMyStructure = async (
 const createNewFlightPlan = async (shipId: string, destination: string) => {
   try {
     const response: { data: FlightPlanResponse } = await axios.post(
-      `${BASE_ROUTE}/flight-plans`
+      `${BASE_ROUTE}/flight-plans`,
+      {
+        shipId,
+        destination,
+      }
     )
     return response.data
   } catch (error) {

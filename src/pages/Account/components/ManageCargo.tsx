@@ -56,8 +56,11 @@ const ManageCargo = (props: ManageCargoProps) => {
                 </tr>
               </thead>
               <tbody x-max="2">
-                {ship.cargo.map((cargo) => (
-                  <tr key={cargo.good} className="bg-white">
+                {ship.cargo.map((cargo, i) => (
+                  <tr
+                    key={cargo.good}
+                    className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {capitaliseFirstLetter(cargo.good.toLocaleLowerCase())}
                     </td>

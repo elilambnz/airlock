@@ -4,7 +4,7 @@ import { getMyAccount } from '../api/routes/my'
 
 import { User } from '../types/Account'
 
-import { formatCredits } from '../utils/helpers'
+import { formatThousands } from '../utils/helpers'
 
 const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
@@ -22,10 +22,10 @@ const Navbar = () => {
   const links = [
     { path: '/', name: 'Home' },
     { path: '/account', name: 'Account' },
-    { path: '/loans', name: 'Loans' },
     { path: '/marketplace', name: 'Marketplace' },
     { path: '/systems', name: 'Systems' },
     { path: '/structures', name: 'Structures' },
+    { path: '/loans', name: 'Loans' },
   ]
 
   const location = useLocation()
@@ -94,7 +94,7 @@ const Navbar = () => {
                 </svg>
               </span>
               <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                {formatCredits(user?.credits ?? 0)}
+                {formatThousands(user?.credits ?? 0)}
               </span>
 
               {/* Profile dropdown */}
@@ -252,7 +252,7 @@ const Navbar = () => {
                   </svg>
                 </span>
                 <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                  {formatCredits(user?.credits ?? 0)}
+                  {formatThousands(user?.credits ?? 0)}
                 </span>
               </div>
             </div>

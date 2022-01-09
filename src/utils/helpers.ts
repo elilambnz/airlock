@@ -1,4 +1,4 @@
-export const formatCredits = (credits: number): string => {
+export const formatThousands = (credits: number): string => {
   return String(credits).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 

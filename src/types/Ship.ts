@@ -22,7 +22,7 @@ export type Ship = {
   class: string
   flightPlanId: string
   id?: string
-  location: string
+  location?: string
   manufacturer: string
   maxCargo: number
   plating: number

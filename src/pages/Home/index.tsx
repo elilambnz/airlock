@@ -3,7 +3,7 @@ import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
 import '../../App.css'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { StatusResponse, LeaderboardNetWorthResponse } from '../../types/Game'
-import { capitaliseFirstLetter } from '../../utils/helpers'
+import { capitaliseFirstLetter, formatThousands } from '../../utils/helpers'
 
 function Home() {
   const [gameStatus, setGameStatus] = useState<StatusResponse['status']>()
@@ -85,8 +85,13 @@ function Home() {
                             ]
                               .sort((a, b) => a.rank - b.rank)
                               .map((netWorth, i) => (
-                                <tr key={i}>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                <tr
+                                  key={i}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
                                     <div
                                       className={
                                         'text-sm text-gray-900' +
@@ -96,10 +101,10 @@ function Home() {
                                           : 'font-medium')
                                       }
                                     >
-                                      {netWorth.rank}
+                                      {formatThousands(netWorth.rank)}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
                                     <div
                                       className={
                                         'text-sm text-gray-900' +
@@ -112,7 +117,7 @@ function Home() {
                                       {netWorth.username}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
                                     <div
                                       className={
                                         'text-sm text-gray-900' +
@@ -122,7 +127,7 @@ function Home() {
                                           : 'font-medium')
                                       }
                                     >
-                                      {netWorth.netWorth}
+                                      {formatThousands(netWorth.netWorth)}
                                     </div>
                                   </td>
                                 </tr>

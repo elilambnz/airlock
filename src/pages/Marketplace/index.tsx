@@ -23,7 +23,7 @@ import {
   ListShipTypesResponse,
   ShipListing,
 } from '../../types/Ship'
-import { formatCredits } from '../../utils/helpers'
+import { formatThousands } from '../../utils/helpers'
 
 const START_CURRENT_SYSTEM = 'OE'
 const START_CURRENT_LOCATION = 'OE-PM-TR'
@@ -60,7 +60,7 @@ function Marketplace() {
   const shipOptions = myShips?.ships.map((ship) => ({
     value: ship.id,
     label: `${ship.type} ${ship.maxCargo - ship.spaceAvailable} / ${
-      ship.spaceAvailable
+      ship.maxCargo
     }`,
   }))
 
@@ -189,48 +189,45 @@ function Marketplace() {
                           {marketplace ? (
                             marketplace.marketplace
                               .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                              .map((locationMarketplace) => (
-                                <tr key={locationMarketplace.symbol}>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.symbol}
-                                    </div>
+                              .map((locationMarketplace, i) => (
+                                <tr
+                                  key={locationMarketplace.symbol}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                    {locationMarketplace.symbol}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.pricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.pricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.purchasePricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.purchasePricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.sellPricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.sellPricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.volumePerUnit}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.volumePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.quantityAvailable}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.quantityAvailable
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.spread}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.spread
+                                    )}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
@@ -324,48 +321,45 @@ function Marketplace() {
                           {marketplace ? (
                             marketplace.marketplace
                               .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                              .map((locationMarketplace) => (
-                                <tr key={locationMarketplace.symbol}>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.symbol}
-                                    </div>
+                              .map((locationMarketplace, i) => (
+                                <tr
+                                  key={locationMarketplace.symbol}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                    {locationMarketplace.symbol}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.pricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.pricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.purchasePricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.purchasePricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {formatCredits(
-                                        locationMarketplace.sellPricePerUnit
-                                      )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.sellPricePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.volumePerUnit}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.volumePerUnit
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.quantityAvailable}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.quantityAvailable
+                                    )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {locationMarketplace.spread}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(
+                                      locationMarketplace.spread
+                                    )}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
@@ -476,77 +470,63 @@ function Marketplace() {
                           {availableShips ? (
                             availableShips.shipListings
                               ?.sort((a, b) => a.type.localeCompare(b.type))
-                              .map((ship) => (
-                                <tr key={ship.type}>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.type}
-                                    </div>
+                              .map((ship, i) => (
+                                <tr
+                                  key={ship.type}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                    {ship.type}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.class}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {ship.class}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.manufacturer}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {ship.manufacturer}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.purchaseLocations
-                                        .map((pl) => pl.location)
-                                        .join(', ')}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {ship.purchaseLocations
+                                      .map((pl) => pl.location)
+                                      .join(', ')}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {!ship.purchaseLocations
-                                        .map((pl) => pl.price)
-                                        .every(
-                                          (p) =>
-                                            p ===
-                                            ship.purchaseLocations[0].price
-                                        )
-                                        ? [
-                                            Math.min(
-                                              ...ship.purchaseLocations.map(
-                                                (pl) => pl.price
-                                              )
-                                            ),
-                                            Math.max(
-                                              ...ship.purchaseLocations.map(
-                                                (pl) => pl.price
-                                              )
-                                            ),
-                                          ]
-                                            .map((p) => formatCredits(p))
-                                            .join(' - ')
-                                        : formatCredits(
-                                            ship.purchaseLocations[0].price
-                                          )}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {!ship.purchaseLocations
+                                      .map((pl) => pl.price)
+                                      .every(
+                                        (p) =>
+                                          p === ship.purchaseLocations[0].price
+                                      )
+                                      ? [
+                                          Math.min(
+                                            ...ship.purchaseLocations.map(
+                                              (pl) => pl.price
+                                            )
+                                          ),
+                                          Math.max(
+                                            ...ship.purchaseLocations.map(
+                                              (pl) => pl.price
+                                            )
+                                          ),
+                                        ]
+                                          .map((p) => formatThousands(p))
+                                          .join(' - ')
+                                      : formatThousands(
+                                          ship.purchaseLocations[0].price
+                                        )}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.maxCargo}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(ship.maxCargo)}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.speed}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(ship.speed)}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.weapons}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(ship.weapons)}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900 font-medium">
-                                      {ship.plating}
-                                    </div>
+                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                    {formatThousands(ship.plating)}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button

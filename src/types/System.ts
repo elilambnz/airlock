@@ -3,7 +3,7 @@ import { Location } from './Location'
 import { ShipExternal, ShipListing } from './Ship'
 
 export type SystemsResponse = {
-  systems: System
+  system: System
 }
 
 export type System = {

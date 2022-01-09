@@ -10,6 +10,7 @@ export type Location = {
   dockedShips?: number
   name: string
   symbol: string
+  traits?: string[]
   type: string
   x: number
   y: number
