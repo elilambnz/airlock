@@ -97,7 +97,7 @@ function Account() {
       </header>
       <main>
         <div className="bg-gray-100 min-h-screen">
-          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div>
               <h3 className="text-lg leading-6 font-bold text-gray-900">
                 {user?.username}
@@ -158,16 +158,52 @@ function Account() {
                           {ship.class}
                         </span>
                       </div>
-                      <p className="mt-1 text-gray-500 text-sm truncate">
-                        {ship.manufacturer}
-                      </p>
-                      <p className="mt-2 text-gray-500 text-sm truncate">
-                        Cargo loaded: {ship.maxCargo - ship.spaceAvailable} /{' '}
-                        {ship.maxCargo}
-                      </p>
-                      <p className="mt-2 text-gray-500 text-sm truncate">
-                        Location: {ship.location}
-                      </p>
+                      <div className="flex items-center mt-1 text-gray-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        <p className="ml-1 text-sm truncate">
+                          {ship.manufacturer}
+                        </p>
+                      </div>
+                      <div className="flex items-center mt-1 text-gray-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                        </svg>
+                        <p className="ml-1 text-sm truncate">
+                          {ship.maxCargo - ship.spaceAvailable} /{' '}
+                          {ship.maxCargo}
+                        </p>
+                      </div>
+                      <div className="flex items-center mt-1 text-gray-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        <p className="ml-1 text-sm truncate">{ship.location}</p>
+                      </div>
                     </div>
                     <div className="self-start flex-shrink-0">
                       <button className="w-8 h-8 bg-white inline-flex items-center justify-center text-red-400 rounded-full bg-transparent hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -194,8 +230,14 @@ function Account() {
                     <div className="-mt-px flex divide-x divide-gray-200">
                       <div className="w-0 flex-1 flex">
                         <button
-                          className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
+                          className={
+                            'relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500' +
+                            (ship.spaceAvailable === ship.maxCargo
+                              ? ' text-gray-500'
+                              : '')
+                          }
                           onClick={() => setShipToManageCargo(ship.id)}
+                          disabled={ship.spaceAvailable === ship.maxCargo}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

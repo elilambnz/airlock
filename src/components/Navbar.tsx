@@ -128,35 +128,32 @@ const Navbar = () => {
                 */}
                 {showProfileDropdown && (
                   <div
-                    className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    className="origin-top-right absolute right-0 mt-2 w-74 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
                   >
                     {/* Active: "bg-gray-100", Not Active: " */}
                     <a
-                      href="#"
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       id="user-menu-item-0"
                     >
-                      Your Profile
+                      API Token
                     </a>
+                    <div className="mx-2 mb-2">
+                      <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
+                        <pre>{process.env.REACT_APP_TOKEN}</pre>
+                      </div>
+                    </div>
+
+                    <hr />
 
                     <a
                       href="#"
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       id="user-menu-item-1"
-                    >
-                      Settings
-                    </a>
-
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700"
-                      role="menuitem"
-                      id="user-menu-item-2"
                     >
                       Sign out
                     </a>
