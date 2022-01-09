@@ -117,7 +117,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                   </label>
                   <div className="mt-1">
                     <input
-                      type="text"
+                      type="number"
                       name="quantity"
                       id="quantity"
                       min={1}
@@ -133,7 +133,6 @@ const ManageCargo = (props: ManageCargoProps) => {
                     />
                   </div>
                 </div>
-
                 <div className="sm:col-span-3">
                   {shipOptions && (
                     <SelectMenu
@@ -196,7 +195,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                   </label>
                   <div className="mt-1">
                     <input
-                      type="text"
+                      type="number"
                       name="quantity"
                       id="quantity"
                       min={1}

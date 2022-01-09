@@ -20,9 +20,10 @@ import {
   OwnStructureResponse,
   OwnStructureWithdrawResponse,
   OwnStrucutreDepositResponse,
+  StructureCategory,
 } from '../../types/Structure'
 import { FlightPlanResponse } from '../../types/FlightPlan'
-import { OrderResponse } from '../../types/Order'
+import { Good, OrderResponse } from '../../types/Order'
 
 const BASE_ROUTE = 'my'
 
@@ -166,6 +167,35 @@ const listMyStructures = async () => {
     const response: { data: ListOwnStructuresResponse } = await axios.get(
       `${BASE_ROUTE}/structures`
     )
+
+    // TEST
+    response.data.structures.push({
+      active: false,
+      consumes: [Good.DRONES, Good.MACHINERY],
+      id: 'ckon8d0j400291vnzmgwahsyz',
+      inventory: [
+        {
+          good: Good.FOOD,
+          quantity: 0,
+        },
+        {
+          good: Good.MACHINERY,
+          quantity: 0,
+        },
+        {
+          good: Good.DRONES,
+          quantity: 10,
+        },
+      ],
+      location: 'OE-PM',
+      ownedBy: {
+        username: 'testuser0',
+      },
+      produces: [Good.FOOD],
+      status: 'Production halted. Required inventory is missing.',
+      type: StructureCategory['FARM'],
+    })
+
     return response.data
   } catch (error) {
     console.error(error)
@@ -177,6 +207,7 @@ const getMyStructureInfo = async (id: string) => {
     const response: { data: OwnStructureResponse } = await axios.get(
       `${BASE_ROUTE}/structures/${id}`
     )
+
     return response.data
   } catch (error) {
     console.error(error)

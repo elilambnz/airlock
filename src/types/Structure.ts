@@ -70,7 +70,7 @@ export type Structure = {
   id: string
   materials: StructureMaterial[]
   name: string
-  stabiility: number
+  stability: number
 }
 
 export type StrucutreDepositResponse = {

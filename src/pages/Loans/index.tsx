@@ -6,11 +6,9 @@ import '../../App.css'
 import {
   ListLoansResponse,
   ListLoanTypesResponse,
-  Loan,
   LoanStatus,
-  LoanType,
 } from '../../types/Loan'
-import { capitaliseFirstLetter, formatThousands } from '../../utils/helpers'
+import { formatThousands } from '../../utils/helpers'
 
 function Loans() {
   const [loans, setLoans] = useState<ListLoansResponse>()
@@ -83,7 +81,7 @@ function Loans() {
                                     'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
                                     (loan.status === LoanStatus.CURRENT
                                       ? ' bg-green-100 text-green-800'
-                                      : 'bg-yellow-100 text-yellow-800')
+                                      : ' bg-yellow-100 text-yellow-800')
                                   }
                                 >
                                   {loan.status}
