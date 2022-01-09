@@ -4,11 +4,13 @@ import {
   buyShip,
   createPurchaseOrder,
   createSellOrder,
+  listMyShips,
 } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
 import { listGoodTypes, listShipTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
+import SelectMenu from '../../components/SelectMenu'
 import LoadingRows from '../../components/Table/LoadingRows'
 import {
   LocationMarketplace,
@@ -17,6 +19,7 @@ import {
 import { ListGoodTypesResponse } from '../../types/Order'
 import {
   ListShipListingsResponse,
+  ListShipsResponse,
   ListShipTypesResponse,
   ShipListing,
 } from '../../types/Ship'
@@ -34,6 +37,7 @@ function Marketplace() {
   const [availableShips, setAvailableShips] =
     useState<ListShipListingsResponse>()
   const [marketplace, setMarketplace] = useState<LocationMarketplaceResponse>()
+  const [myShips, setMyShips] = useState<ListShipsResponse>()
 
   const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
   const [shipTypes, setShipTypes] = useState<ListShipTypesResponse>()
@@ -46,11 +50,19 @@ function Marketplace() {
     const init = async () => {
       setAvailableShips(await getShipListings(START_CURRENT_SYSTEM))
       setMarketplace(await getLocationMarketplace(START_CURRENT_LOCATION))
+      setMyShips(await listMyShips())
       setGoodTypes(await listGoodTypes())
       setShipTypes(await listShipTypes())
     }
     init()
   }, [])
+
+  const shipOptions = myShips?.ships.map((ship) => ({
+    value: ship.id,
+    label: `${ship.type} ${ship.maxCargo - ship.spaceAvailable} / ${
+      ship.spaceAvailable
+    }`,
+  }))
 
   const handleBuyGood = async (goodToProccess: GoodToProccess) => {
     if (!goodToProccess.shipId || !goodToProccess.quantity) {
@@ -78,6 +90,15 @@ function Marketplace() {
         goodToProccess.symbol,
         goodToProccess.quantity
       )
+      console.log(result)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const handleBuyShip = async (location: string, type: string) => {
+    try {
+      const result = await buyShip(location, type)
       console.log(result)
     } catch (error) {
       console.error(error)
@@ -581,17 +602,19 @@ function Marketplace() {
                   }
                 />
               </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  To Ship
-                </label>
-                <input
-                  className="mt-1 form-input w-full"
-                  type="text"
-                  onChange={(e) =>
-                    setGoodToBuy({ ...goodToBuy, shipId: e.target.value })
-                  }
-                />
+              <div className="sm:col-span-3">
+                {shipOptions && (
+                  <SelectMenu
+                    label="Select Ship"
+                    options={shipOptions}
+                    onChange={(value) => {
+                      setGoodToBuy({
+                        ...goodToBuy,
+                        shipId: value,
+                      })
+                    }}
+                  />
+                )}
               </div>
               <button className="m-4" onClick={() => setGoodToBuy(null)}>
                 Cancel
@@ -636,17 +659,19 @@ function Marketplace() {
                   }
                 />
               </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  From Ship
-                </label>
-                <input
-                  className="mt-1 form-input w-full"
-                  type="text"
-                  onChange={(e) =>
-                    setGoodToSell({ ...goodToSell, shipId: e.target.value })
-                  }
-                />
+              <div className="sm:col-span-3">
+                {shipOptions && (
+                  <SelectMenu
+                    label="Select Ship"
+                    options={shipOptions}
+                    onChange={(value) => {
+                      setGoodToSell({
+                        ...goodToSell,
+                        shipId: value,
+                      })
+                    }}
+                  />
+                )}
               </div>
               <button className="m-4" onClick={() => setGoodToSell(null)}>
                 Cancel
@@ -654,7 +679,7 @@ function Marketplace() {
               <button
                 className="m-4"
                 onClick={() => {
-                  handleBuyGood(goodToSell)
+                  handleSellGood(goodToSell)
                 }}
               >
                 Sell
@@ -672,16 +697,29 @@ function Marketplace() {
               <p>
                 You are buying <strong>{shipToBuy.type}</strong>
               </p>
-              <p>
-                <strong>{shipToBuy.purchaseLocations[0].price}</strong> credits
-              </p>
-              <button onClick={() => setShipToBuy(null)}>Cancel</button>
-              <button
-                onClick={() => {
-                  // handleBuyShip
-                }}
-              >
-                Buy
+              {shipToBuy.purchaseLocations.map((pl) => (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {pl.location}
+                  </label>
+                  <div className="mt-1">
+                    <p>
+                      <strong>{pl.price}</strong> credits
+                    </p>
+                    <button
+                      className="m-4"
+                      onClick={() => {
+                        handleBuyShip(pl.location, shipToBuy.type)
+                      }}
+                    >
+                      Buy
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button className="m-4" onClick={() => setShipToBuy(null)}>
+                Cancel
               </button>
             </div>
           }
