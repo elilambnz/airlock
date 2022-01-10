@@ -23,6 +23,17 @@ import NotFound from './pages/NotFound'
 import { User } from './types/Account'
 import { getMyAccount } from './api/routes/my'
 
+import Plausible from 'plausible-tracker'
+
+const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
+  Plausible({
+    domain: process.env.REACT_APP_DOMAIN,
+  })
+// This tracks the current page view and all future ones as well
+enableAutoPageviews()
+// Track all existing and future outbound links
+enableAutoOutboundTracking()
+
 function App() {
   return (
     <BrowserRouter>
@@ -149,16 +160,31 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
 
   const signin = async (token: string) => {
-    if (!token) {
-      throw new Error('No token provided')
+    try {
+      if (!token) {
+        throw new Error('No token provided')
+      }
+      setApiToken(token)
+      const user = await getMyAccount()
+      if (!user) {
+        throw new Error('User not found')
+      }
+      setUser(user.user)
+      navigate('/', { replace: true })
+
+      // Track the user's sign in
+      trackEvent('signin', {
+        props: {
+          username: user.user.username,
+          credits: String(user.user.credits),
+          joinedAt: user.user.joinedAt,
+          shipCount: String(user.user.shipCount),
+          structureCount: String(user.user.structureCount),
+        },
+      })
+    } catch (error) {
+      console.error(error)
     }
-    setApiToken(token)
-    const user = await getMyAccount()
-    if (!user) {
-      throw new Error('User not found')
-    }
-    setUser(user.user)
-    navigate('/', { replace: true })
   }
 
   const signout = () => {
