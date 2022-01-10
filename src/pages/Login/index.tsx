@@ -114,7 +114,7 @@ const Login = () => {
                   >
                     SpaceTraders API
                   </a>{' '}
-                  web app writen in React by{' '}
+                  web app written in React by{' '}
                   <a
                     href="https://github.com/elilambnz"
                     rel="noopener noreferrer"
