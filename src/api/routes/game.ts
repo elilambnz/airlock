@@ -1,5 +1,5 @@
 import { LeaderboardNetWorthResponse, StatusResponse } from '../../types/Game'
-import axios from '../axios'
+import { default as axios } from '../../utils/axiosInstance'
 
 const BASE_ROUTE = 'game'
 

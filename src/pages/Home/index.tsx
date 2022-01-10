@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
+import { useAuth } from '../../App'
 import '../../App.css'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { StatusResponse, LeaderboardNetWorthResponse } from '../../types/Game'
@@ -8,6 +9,8 @@ import { capitaliseFirstLetter, formatThousands } from '../../utils/helpers'
 function Home() {
   const [gameStatus, setGameStatus] = useState<StatusResponse['status']>()
   const [leaderboard, setLeaderboard] = useState<LeaderboardNetWorthResponse>()
+
+  const auth = useAuth()
 
   useEffect(() => {
     const init = async () => {
@@ -96,7 +99,7 @@ function Home() {
                                       className={
                                         'text-sm text-gray-900' +
                                         (netWorth.username ===
-                                        process.env.REACT_APP_USERNAME
+                                        auth.user?.username
                                           ? ' font-bold'
                                           : 'font-medium')
                                       }
@@ -109,7 +112,7 @@ function Home() {
                                       className={
                                         'text-sm text-gray-900' +
                                         (netWorth.username ===
-                                        process.env.REACT_APP_USERNAME
+                                        auth.user?.username
                                           ? ' font-bold'
                                           : 'font-medium')
                                       }
@@ -122,7 +125,7 @@ function Home() {
                                       className={
                                         'text-sm text-gray-900' +
                                         (netWorth.username ===
-                                        process.env.REACT_APP_USERNAME
+                                        auth.user?.username
                                           ? ' font-bold'
                                           : 'font-medium')
                                       }

@@ -2,7 +2,7 @@ import { ListLoanTypesResponse } from '../../types/Loan'
 import { ListGoodTypesResponse } from '../../types/Order'
 import { ListShipTypesResponse } from '../../types/Ship'
 import { ListStructureTypesResponse } from '../../types/Structure'
-import axios from '../axios'
+import { default as axios } from '../../utils/axiosInstance'
 
 const BASE_ROUTE = 'types'
 

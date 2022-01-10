@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getMyAccount } from '../api/routes/my'
+import { useAuth } from '../App'
 
 import { User } from '../types/Account'
 
@@ -10,6 +11,9 @@ const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User>()
+
+  const location = useLocation()
+  const auth = useAuth()
 
   useEffect(() => {
     const init = async () => {
@@ -27,8 +31,6 @@ const Navbar = () => {
     { path: '/structures', name: 'Structures' },
     { path: '/loans', name: 'Loans' },
   ]
-
-  const location = useLocation()
 
   return (
     <nav className="bg-gray-800">
@@ -147,18 +149,18 @@ const Navbar = () => {
                     </a>
                     <div className="mx-3 mb-2">
                       <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
-                        <pre>{process.env.REACT_APP_TOKEN}</pre>
+                        <pre>{auth.apiToken}</pre>
                       </div>
                     </div>
                     <hr />
-                    <a
-                      href="#"
+                    <button
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       id="user-menu-item-1"
+                      onClick={() => auth.signout()}
                     >
                       Sign out
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
@@ -262,15 +264,15 @@ const Navbar = () => {
               </a>
               <div className="mx-3">
                 <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
-                  <pre>{process.env.REACT_APP_TOKEN}</pre>
+                  <pre>{auth.apiToken}</pre>
                 </div>
               </div>
-              <a
-                href="#"
+              <button
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
+                onClick={() => auth.signout()}
               >
                 Sign out
-              </a>
+              </button>
             </div>
           </div>
         </div>

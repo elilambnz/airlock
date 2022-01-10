@@ -1,5 +1,5 @@
 import { LocationMarketplaceResponse } from '../../types/Location'
-import axios from '../axios'
+import { default as axios } from '../../utils/axiosInstance'
 
 const BASE_ROUTE = 'locations'
 

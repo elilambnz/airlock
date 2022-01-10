@@ -55,9 +55,9 @@ const SimpleModal = (props: SimpleModalProps) => {
                 >
                   {props.title}
                 </h3>
-                <div className="mt-2">{content}</div>
               </div>
             </div>
+            <div className="mt-2 px-4">{content}</div>
             <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
               <button
                 type="button"

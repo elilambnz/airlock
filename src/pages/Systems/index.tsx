@@ -17,6 +17,7 @@ import {
 } from '../../types/System'
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
+import { useAuth } from '../../App'
 
 const START_CURRENT_SYSTEM = 'OE'
 
@@ -31,6 +32,8 @@ function Systems() {
   const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [newFlightPlan, setNewFlightPlan] =
     useState<{ shipId?: string; destination?: string }>()
+
+  const auth = useAuth()
 
   const updateCurrentSystem = async (systemSymbol: string) => {
     setCurrentSystem(await getSystemInfo(systemSymbol))
@@ -74,11 +77,11 @@ function Systems() {
   }))
 
   const myActiveFlightPlans = allFlightPlans?.flightPlans.filter(
-    (flightPlan) => flightPlan.username === process.env.REACT_APP_USERNAME
+    (flightPlan) => flightPlan.username === auth.user?.username
   )
 
   const myDockedShips = allDockedShips?.ships.filter(
-    (ship) => ship.username === process.env.REACT_APP_USERNAME
+    (ship) => ship.username === auth.user?.username
   )
 
   return (
@@ -247,7 +250,7 @@ function Systems() {
                   Active Flight Plans
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  User {process.env.REACT_APP_USERNAME}
+                  User {auth.user?.username}
                 </p>
               </div>
               <div className="flex flex-col">
@@ -348,7 +351,7 @@ function Systems() {
                   Docked Ships
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  User {process.env.REACT_APP_USERNAME}
+                  User {auth.user?.username}
                 </p>
               </div>
               <div className="flex flex-col">

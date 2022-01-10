@@ -5,7 +5,7 @@ import {
   SystemDockedShipsResponse,
   SystemsResponse,
 } from '../../types/System'
-import axios from '../axios'
+import { default as axios } from '../../utils/axiosInstance'
 
 const BASE_ROUTE = 'systems'
 

@@ -1,4 +1,4 @@
-import axios from '../axios'
+import { default as axios } from '../../utils/axiosInstance'
 
 import { AccountResponse } from '../../types/Account'
 import {
@@ -169,32 +169,33 @@ const listMyStructures = async () => {
     )
 
     // TEST
-    response.data.structures.push({
-      active: false,
-      consumes: [Good.DRONES, Good.MACHINERY],
-      id: 'ckon8d0j400291vnzmgwahsyz',
-      inventory: [
-        {
-          good: Good.FOOD,
-          quantity: 0,
+    process.env.NODE_ENV === 'development' &&
+      response.data.structures.push({
+        active: false,
+        consumes: [Good.DRONES, Good.MACHINERY],
+        id: 'ckon8d0j400291vnzmgwahsyz',
+        inventory: [
+          {
+            good: Good.FOOD,
+            quantity: 0,
+          },
+          {
+            good: Good.MACHINERY,
+            quantity: 0,
+          },
+          {
+            good: Good.DRONES,
+            quantity: 10,
+          },
+        ],
+        location: 'OE-PM',
+        ownedBy: {
+          username: 'testuser0',
         },
-        {
-          good: Good.MACHINERY,
-          quantity: 0,
-        },
-        {
-          good: Good.DRONES,
-          quantity: 10,
-        },
-      ],
-      location: 'OE-PM',
-      ownedBy: {
-        username: 'testuser0',
-      },
-      produces: [Good.FOOD],
-      status: 'Production halted. Required inventory is missing.',
-      type: StructureCategory['FARM'],
-    })
+        produces: [Good.FOOD],
+        status: 'Production halted. Required inventory is missing.',
+        type: StructureCategory['FARM'],
+      })
 
     return response.data
   } catch (error) {
