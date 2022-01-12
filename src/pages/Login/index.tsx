@@ -60,11 +60,11 @@ const Login = () => {
       if (!response) {
         throw new Error()
       }
-      await auth.signin(response.token, '/')
-      removeValue(API_TOKEN_KEY, !rememberMe)
       setValue(API_TOKEN_KEY, response.token, rememberMe)
+      await auth.signin(response.token, '/')
     } catch (error: any) {
       setRegistrationError(error.message || 'Error generating token')
+      removeValue(API_TOKEN_KEY, rememberMe)
     } finally {
       setLoading(false)
     }
@@ -74,11 +74,11 @@ const Login = () => {
     setLoading(true)
     setLoginError(undefined)
     try {
-      await auth.signin(apiToken, '/')
-      removeValue(API_TOKEN_KEY, !rememberMe)
       setValue(API_TOKEN_KEY, apiToken, rememberMe)
+      await auth.signin(apiToken, '/')
     } catch (error: any) {
       setLoginError(error.message || 'Error logging in')
+      removeValue(API_TOKEN_KEY, rememberMe)
     } finally {
       setLoading(false)
     }
