@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getValue, API_TOKEN_KEY } from './browserStorage'
 
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -6,11 +7,13 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const apiToken =
-      localStorage.getItem('al-api-token') ??
-      sessionStorage.getItem('al-api-token')
-
-    config.headers = { ...config.headers, Authorization: `Bearer ${apiToken}` }
+    const apiToken = getValue(API_TOKEN_KEY, true) ?? getValue(API_TOKEN_KEY)
+    if (apiToken) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${apiToken}`,
+      }
+    }
     return config
   },
   (error) => Promise.reject(error)

@@ -24,6 +24,7 @@ import { User } from './types/Account'
 import { getMyAccount } from './api/routes/my'
 
 import Plausible from 'plausible-tracker'
+import { API_TOKEN_KEY, removeValue } from './utils/browserStorage'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
@@ -117,21 +118,8 @@ function AuthLayout() {
 }
 
 function RequireAuth({ children }: { children: JSX.Element }) {
-  const auth = useAuth()
-
-  useEffect(() => {
-    const apiToken = auth.apiToken
-    const storedToken =
-      localStorage.getItem('al-api-token') ??
-      sessionStorage.getItem('al-api-token')
-    console.info('Restored token:', !!storedToken)
-
-    if (!apiToken && storedToken) {
-      auth.signin(storedToken)
-    }
-  }, [auth])
-
   const location = useLocation()
+  const auth = useAuth()
 
   if (!auth.apiToken) {
     // Redirect them to the /login page, but save the current location they were
@@ -147,7 +135,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 interface AuthContextType {
   user?: User
   apiToken?: string
-  signin: (token: string) => void
+  signin: (token: string, from: string) => Promise<void>
   signout: () => void
 }
 
@@ -159,18 +147,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const navigate = useNavigate()
 
-  const signin = async (token: string) => {
+  const signin = async (token: string, from: string) => {
     try {
-      if (!token) {
-        throw new Error('No token provided')
-      }
       setApiToken(token)
       const user = await getMyAccount()
       if (!user) {
         throw new Error('User not found')
       }
       setUser(user.user)
-      navigate('/', { replace: true })
+      // Send them back to the page they tried to visit when they were
+      // redirected to the login page. Use { replace: true } so we don't create
+      // another entry in the history stack for the login page.  This means that
+      // when they get to the protected page and click the back button, they
+      // won't end up back on the login page, which is also really nice for the
+      // user experience.
+      navigate(from, { replace: true })
 
       // Track the user's sign in
       trackEvent('signin', {
@@ -184,13 +175,14 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       })
     } catch (error) {
       console.error(error)
+      throw error
     }
   }
 
   const signout = () => {
     setUser(undefined)
-    localStorage.removeItem('al-api-token')
-    sessionStorage.removeItem('al-api-token')
+    removeValue(API_TOKEN_KEY, true)
+    removeValue(API_TOKEN_KEY)
     window.location.reload()
   }
 

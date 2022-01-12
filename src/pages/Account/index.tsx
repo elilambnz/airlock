@@ -8,22 +8,32 @@ import {
   transferShipCargo,
 } from '../../api/routes/my'
 import '../../App.css'
-import SimpleModal from '../../components/Modal/SimpleModal'
 import DangerModal from '../../components/Modal/DangerModal'
 
 import { User } from '../../types/Account'
-import { ListShipsResponse } from '../../types/Ship'
+import { ListShipsResponse, ShipCargo } from '../../types/Ship'
 import { formatThousands } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
+import ActionModal from '../../components/Modal/ActionModal'
+
+export enum CargoManageMode {
+  TRANSFER,
+  JETTISON,
+}
 
 function Account() {
   const [user, setUser] = useState<User>()
   const [myShips, setMyShips] = useState<ListShipsResponse>()
 
-  const [shipToManageCargo, setShipToManageCargo] = useState<string | null>(
-    null
-  )
-  const [shipToScrap, setShipToScrap] = useState<string | null>(null)
+  const [shipToManageCargo, setShipToManageCargo] = useState<string>()
+  const [cargoManageMode, setCargoManageMode] = useState<CargoManageMode>()
+  const [cargoToTransfer, setCargoToTransfer] = useState<
+    ShipCargo & { shipId?: string; toShipId?: string }
+  >()
+  const [cargoToJettison, setCargoToJettison] = useState<
+    ShipCargo & { shipId?: string }
+  >()
+  const [shipToScrap, setShipToScrap] = useState<string>()
 
   useEffect(() => {
     const init = async () => {
@@ -35,11 +45,12 @@ function Account() {
   }, [])
 
   const handleTransferCargo = async (
-    shipId: string,
-    toShipId: string,
-    good: string,
-    quantity: number
+    cargoToTransfer: ShipCargo & { shipId?: string; toShipId?: string }
   ) => {
+    const { shipId, toShipId, good, quantity } = cargoToTransfer
+    if (!shipId || !toShipId) {
+      return
+    }
     try {
       const response = await transferShipCargo(shipId, toShipId, good, quantity)
       console.log(response)
@@ -59,10 +70,12 @@ function Account() {
   }
 
   const handleJettisonCargo = async (
-    shipId: string,
-    good: string,
-    quantity: number
+    cargoToJettison: ShipCargo & { shipId?: string }
   ) => {
+    const { shipId, good, quantity } = cargoToJettison
+    if (!shipId) {
+      return
+    }
     try {
       const result = await jettisonShipCargo(shipId, good, quantity)
       console.log(result)
@@ -78,7 +91,7 @@ function Account() {
     } catch (error) {
       console.error('Error scrapping ship', error)
     } finally {
-      setShipToScrap(null)
+      setShipToScrap(undefined)
     }
   }
 
@@ -326,8 +339,15 @@ function Account() {
         </div>
       </main>
       {shipToManageCargo && (
-        <SimpleModal
+        <ActionModal
           title="Manage cargo"
+          actionText={
+            cargoManageMode === CargoManageMode.TRANSFER
+              ? 'Transfer'
+              : cargoManageMode === CargoManageMode.JETTISON
+              ? 'Jettison'
+              : ''
+          }
           content={
             <ManageCargo
               ship={myShips?.ships.find(
@@ -341,11 +361,32 @@ function Account() {
                     s.maxCargo
                   }`,
                 }))}
-              handleJettisonCargo={handleJettisonCargo}
-              handleTransferCargo={handleTransferCargo}
+              cargoToTransfer={cargoToTransfer}
+              setCargoToTransfer={setCargoToTransfer}
+              cargoToJettison={cargoToJettison}
+              setCargoToJettison={setCargoToJettison}
+              setCargoManageMode={setCargoManageMode}
             />
           }
-          handleClose={() => setShipToManageCargo(null)}
+          handleAction={() =>
+            cargoManageMode === CargoManageMode.TRANSFER
+              ? cargoToTransfer && handleTransferCargo(cargoToTransfer)
+              : cargoManageMode === CargoManageMode.JETTISON
+              ? cargoToJettison && handleJettisonCargo(cargoToJettison)
+              : null
+          }
+          actionDanger={cargoManageMode === CargoManageMode.JETTISON}
+          actionDisabled={
+            (cargoManageMode === CargoManageMode.TRANSFER &&
+              !cargoToTransfer) ||
+            (cargoManageMode === CargoManageMode.JETTISON && !cargoToJettison)
+          }
+          handleClose={() => {
+            setShipToManageCargo(undefined)
+            setCargoManageMode(undefined)
+            setCargoToTransfer(undefined)
+            setCargoToJettison(undefined)
+          }}
         />
       )}
       {shipToScrap && (
@@ -353,7 +394,7 @@ function Account() {
           title="Scrap Ship"
           content="Are you sure you want to scrap this ship for credits?"
           actionText="Scrap"
-          handleClose={() => setShipToScrap(null)}
+          handleClose={() => setShipToScrap(undefined)}
           handleConfirm={() => handleScrapShip(shipToScrap)}
         />
       )}

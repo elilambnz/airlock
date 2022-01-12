@@ -1,9 +1,16 @@
 import React, { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { generateToken } from '../../api/routes/users'
 import { useAuth } from '../../App'
 import '../../App.css'
 import Alert from '../../components/Alert'
 import SimpleModal from '../../components/Modal/SimpleModal'
+import {
+  getValue,
+  setValue,
+  removeValue,
+  API_TOKEN_KEY,
+} from '../../utils/browserStorage'
 
 const Login = () => {
   const [randomBackgroundIndex, setRandomBackgroundIndex] = React.useState(0)
@@ -21,24 +28,29 @@ const Login = () => {
   const [useExistingToken, setUseExistingToken] = React.useState(false)
 
   const auth = useAuth()
+  const { state }: any = useLocation()
 
   useEffect(() => {
     setRandomBackgroundIndex(Math.floor(Math.random() * 3) + 1)
   }, [])
 
   useEffect(() => {
-    const apiToken = auth.apiToken
-    const storedToken =
-      localStorage.getItem('al-api-token') ??
-      sessionStorage.getItem('al-api-token')
-    console.info('Restored token:', !!storedToken)
-
-    if (!apiToken && storedToken) {
-      // Attempt sign in with existing token
+    const attemptLogin = async (apiToken: string) => {
       setLoading(true)
-      auth.signin(storedToken)
+      setRegistrationError(undefined)
+      try {
+        await auth.signin(apiToken, state?.from || '/')
+      } catch (error: any) {
+        setRegistrationError(error.message || 'Error logging in')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [auth])
+    const storedToken = getValue(API_TOKEN_KEY, true) ?? getValue(API_TOKEN_KEY)
+    if (storedToken) {
+      attemptLogin(storedToken)
+    }
+  }, [state])
 
   const handleRegister = async (username: string, rememberMe: boolean) => {
     setLoading(true)
@@ -46,15 +58,11 @@ const Login = () => {
     try {
       const response = await generateToken(username)
       if (!response) {
-        setRegistrationError('Error generating token')
-        return
+        throw new Error()
       }
-      if (rememberMe) {
-        localStorage.setItem('al-api-token', response.token)
-      } else {
-        sessionStorage.setItem('al-api-token', response.token)
-      }
-      auth.signin(response.token)
+      await auth.signin(response.token, '/')
+      removeValue(API_TOKEN_KEY, !rememberMe)
+      setValue(API_TOKEN_KEY, response.token, rememberMe)
     } catch (error: any) {
       setRegistrationError(error.message || 'Error generating token')
     } finally {
@@ -66,15 +74,11 @@ const Login = () => {
     setLoading(true)
     setLoginError(undefined)
     try {
-      console.log('handleLogin', apiToken, rememberMe)
-      if (rememberMe) {
-        localStorage.setItem('al-api-token', apiToken)
-      } else {
-        sessionStorage.setItem('al-api-token', apiToken)
-      }
-      auth.signin(apiToken)
+      await auth.signin(apiToken, '/')
+      removeValue(API_TOKEN_KEY, !rememberMe)
+      setValue(API_TOKEN_KEY, apiToken, rememberMe)
     } catch (error: any) {
-      setRegistrationError(error.message || 'Error logging in')
+      setLoginError(error.message || 'Error logging in')
     } finally {
       setLoading(false)
     }
@@ -352,7 +356,10 @@ const Login = () => {
               </form>
             </div>
           }
-          handleClose={() => setUseExistingToken(false)}
+          handleClose={() => {
+            setUseExistingToken(false)
+            setLoginError(undefined)
+          }}
         />
       )}
     </>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
+import { CargoManageMode } from '..'
 import SelectMenu from '../../../components/SelectMenu'
 import { Ship, ShipCargo } from '../../../types/Ship'
 import { capitaliseFirstLetter } from '../../../utils/helpers'
@@ -6,22 +7,23 @@ import { capitaliseFirstLetter } from '../../../utils/helpers'
 interface ManageCargoProps {
   ship?: Ship
   shipOptions?: { value: string; label: string }[]
-  handleJettisonCargo: (shipId: string, good: string, quantity: number) => void
-  handleTransferCargo: (
-    shipId: string,
-    toShipId: string,
-    good: string,
-    quantity: number
-  ) => void
+  cargoToTransfer?: ShipCargo & { toShipId?: string }
+  setCargoToTransfer: (value?: ShipCargo & { toShipId?: string }) => void
+  cargoToJettison?: ShipCargo
+  setCargoToJettison: (value?: ShipCargo) => void
+  setCargoManageMode: (mode: CargoManageMode) => void
 }
 
 const ManageCargo = (props: ManageCargoProps) => {
-  const { ship, shipOptions, handleJettisonCargo, handleTransferCargo } = props
-
-  const [cargoToTransfer, setCargoToTransfer] = useState<
-    (ShipCargo & { toShipId?: string }) | null
-  >(null)
-  const [cargoToJettison, setCargoToJettison] = useState<ShipCargo | null>(null)
+  const {
+    ship,
+    shipOptions,
+    cargoToTransfer,
+    setCargoToTransfer,
+    cargoToJettison,
+    setCargoToJettison,
+    setCargoManageMode,
+  } = props
 
   if (!ship || !ship.id) {
     return <div>No ship selected</div>
@@ -71,7 +73,8 @@ const ManageCargo = (props: ManageCargoProps) => {
                       <button
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() => {
-                          setCargoToJettison(null)
+                          setCargoManageMode(CargoManageMode.TRANSFER)
+                          setCargoToJettison(undefined)
                           setCargoToTransfer(cargo)
                         }}
                       >
@@ -82,7 +85,8 @@ const ManageCargo = (props: ManageCargoProps) => {
                       <button
                         className="text-red-600 hover:text-red-900"
                         onClick={() => {
-                          setCargoToTransfer(null)
+                          setCargoManageMode(CargoManageMode.JETTISON)
+                          setCargoToTransfer(undefined)
                           setCargoToJettison(cargo)
                         }}
                       >
@@ -149,29 +153,6 @@ const ManageCargo = (props: ManageCargoProps) => {
                 </div>
               </div>
             </div>
-
-            <div className="pt-5">
-              <div className="flex">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (!cargoToTransfer.toShipId) {
-                      return
-                    }
-                    handleTransferCargo(
-                      ship.id!,
-                      cargoToTransfer.toShipId,
-                      cargoToTransfer.good,
-                      cargoToTransfer.quantity
-                    )
-                  }}
-                >
-                  Transfer
-                </button>
-              </div>
-            </div>
           </form>
         )}
         {cargoToJettison && (
@@ -211,25 +192,6 @@ const ManageCargo = (props: ManageCargoProps) => {
                     />
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="pt-5">
-              <div className="flex">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleJettisonCargo(
-                      ship.id!,
-                      cargoToJettison.good,
-                      cargoToJettison.quantity
-                    )
-                  }}
-                >
-                  Jettison
-                </button>
               </div>
             </div>
           </form>
