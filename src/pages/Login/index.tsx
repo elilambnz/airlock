@@ -50,7 +50,7 @@ const Login = () => {
     if (storedToken) {
       attemptLogin(storedToken)
     }
-  }, [state])
+  }, [auth, state])
 
   const handleRegister = async (username: string, rememberMe: boolean) => {
     setLoading(true)

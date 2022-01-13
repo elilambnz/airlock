@@ -3,8 +3,12 @@ import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
 import { useAuth } from '../../App'
 import '../../App.css'
 import LoadingRows from '../../components/Table/LoadingRows'
-import { StatusResponse, LeaderboardNetWorthResponse } from '../../types/Game'
-import { capitaliseFirstLetter, formatThousands } from '../../utils/helpers'
+import {
+  StatusResponse,
+  LeaderboardNetWorthResponse,
+  NetWorth,
+} from '../../types/Game'
+import { capitaliseFirstLetter, formatNumberCommas } from '../../utils/helpers'
 
 function Home() {
   const [gameStatus, setGameStatus] = useState<StatusResponse['status']>()
@@ -19,6 +23,11 @@ function Home() {
     }
     init()
   }, [])
+
+  const combinedLeaderboard = (leaderboard &&
+    [...leaderboard.netWorth, ...[leaderboard.userNetWorth]]
+      .filter((u) => !!u)
+      ?.sort((a, b) => a!.rank - b!.rank)) as NetWorth[]
 
   return (
     <>
@@ -81,60 +90,52 @@ function Home() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {leaderboard ? (
-                            [
-                              ...leaderboard.netWorth,
-                              ...[leaderboard.userNetWorth],
-                            ]
-                              .sort((a, b) => a.rank - b.rank)
-                              .map((netWorth, i) => (
-                                <tr
-                                  key={i}
-                                  className={
-                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                  }
-                                >
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
-                                    <div
-                                      className={
-                                        'text-sm text-gray-900' +
-                                        (netWorth.username ===
-                                        auth.user?.username
-                                          ? ' font-bold'
-                                          : 'font-medium')
-                                      }
-                                    >
-                                      {formatThousands(netWorth.rank)}
-                                    </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                    <div
-                                      className={
-                                        'text-sm text-gray-900' +
-                                        (netWorth.username ===
-                                        auth.user?.username
-                                          ? ' font-bold'
-                                          : 'font-medium')
-                                      }
-                                    >
-                                      {netWorth.username}
-                                    </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                    <div
-                                      className={
-                                        'text-sm text-gray-900' +
-                                        (netWorth.username ===
-                                        auth.user?.username
-                                          ? ' font-bold'
-                                          : 'font-medium')
-                                      }
-                                    >
-                                      {formatThousands(netWorth.netWorth)}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))
+                          {combinedLeaderboard ? (
+                            combinedLeaderboard.map((user, i) => (
+                              <tr
+                                key={i}
+                                className={
+                                  i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                }
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                  <div
+                                    className={
+                                      'text-sm text-gray-900' +
+                                      (user.username === auth.user?.username
+                                        ? ' font-bold'
+                                        : 'font-medium')
+                                    }
+                                  >
+                                    {formatNumberCommas(user.rank)}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                  <div
+                                    className={
+                                      'text-sm text-gray-900' +
+                                      (user.username === auth.user?.username
+                                        ? ' font-bold'
+                                        : 'font-medium')
+                                    }
+                                  >
+                                    {user.username}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                  <div
+                                    className={
+                                      'text-sm text-gray-900' +
+                                      (user.username === auth.user?.username
+                                        ? ' font-bold'
+                                        : 'font-medium')
+                                    }
+                                  >
+                                    {formatNumberCommas(user.netWorth)}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
                           ) : (
                             <LoadingRows cols={3} rows={11} />
                           )}

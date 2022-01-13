@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { CargoManageMode } from '..'
 import SelectMenu from '../../../components/SelectMenu'
 import { Ship, ShipCargo } from '../../../types/Ship'

@@ -22,7 +22,7 @@ import {
   StructureResponse,
 } from '../../types/Structure'
 import { ListSystemLocationsResponse } from '../../types/System'
-import { formatThousands } from '../../utils/helpers'
+import { formatNumberCommas } from '../../utils/helpers'
 
 const START_CURRENT_SYSTEM = 'OE'
 
@@ -165,7 +165,7 @@ function Structures() {
 
   const structureTypeOptions = structureTypes?.structures.map((structure) => ({
     value: structure.type,
-    label: `${structure.type} (${formatThousands(structure.price)})`,
+    label: `${structure.type} (${formatNumberCommas(structure.price)})`,
   }))
 
   const shipOptions = myShips?.ships.map((ship) => ({
@@ -308,13 +308,13 @@ function Structures() {
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                   {structure.type}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {structure.location}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   <span
                                     className={
                                       'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
@@ -326,10 +326,10 @@ function Structures() {
                                     {structure.active ? 'Active' : 'Inactive'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                   {structure.status}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                   {structure.consumes
                                     .map(
                                       (good) =>
@@ -341,7 +341,7 @@ function Structures() {
                                     )
                                     .join(', ')}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                   {structure.produces
                                     .map(
                                       (good) =>
@@ -484,11 +484,13 @@ function Structures() {
                                   </p>
                                   <p className="text-gray-500">
                                     Quantity:{' '}
-                                    {formatThousands(material.quantity)}
+                                    {formatNumberCommas(material.quantity)}
                                   </p>
                                   <p className="text-gray-500">
                                     Target quantity:{' '}
-                                    {formatThousands(material.targetQuantity)}
+                                    {formatNumberCommas(
+                                      material.targetQuantity
+                                    )}
                                   </p>
                                 </div>
                               )
@@ -708,9 +710,9 @@ function Structures() {
                     label="Good"
                     options={
                       structureInfo.structure.materials.map((g) => ({
-                        label: `${g.good} (${formatThousands(
+                        label: `${g.good} (${formatNumberCommas(
                           g.quantity
-                        )}/${formatThousands(g.targetQuantity)})`,
+                        )}/${formatNumberCommas(g.targetQuantity)})`,
                         value: g.good,
                       })) ?? []
                     }

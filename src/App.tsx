@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import {
   BrowserRouter,
   Routes,
@@ -134,6 +134,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
 interface AuthContextType {
   user?: User
+  setUser: React.Dispatch<React.SetStateAction<User | undefined>>
   apiToken?: string
   signin: (token: string, from: string) => Promise<void>
   signout: () => void
@@ -186,7 +187,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.reload()
   }
 
-  const value = { user, apiToken, signin, signout }
+  const value = { user, setUser, apiToken, signin, signout }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -19,7 +19,7 @@ import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { useAuth } from '../../App'
 
-const START_CURRENT_SYSTEM = 'OE'
+const STARTER_SYSTEM = 'OE'
 
 function Systems() {
   const [currentSystem, setCurrentSystem] = useState<SystemsResponse>()
@@ -38,27 +38,45 @@ function Systems() {
   const updateCurrentSystem = async (systemSymbol: string) => {
     setCurrentSystem(await getSystemInfo(systemSymbol))
     setAvailableLocations(await getSystemLocations(systemSymbol))
+    setAllFlightPlans(await getSystemFlightPlans(systemSymbol))
+    setAllDockedShips(await getSystemDockedShips(systemSymbol))
   }
 
   useEffect(() => {
-    updateCurrentSystem(START_CURRENT_SYSTEM)
-
     const init = async () => {
-      setAllFlightPlans(await getSystemFlightPlans(START_CURRENT_SYSTEM))
-      setAllDockedShips(await getSystemDockedShips(START_CURRENT_SYSTEM))
       setMyShips(await listMyShips())
     }
     init()
   }, [])
+
+  const knownSystems = new Set([
+    STARTER_SYSTEM,
+    ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
+  ])
+  const knownSystemOptions: { value: string; label: string }[] = [
+    ...knownSystems,
+  ].map((s) => ({
+    value: s!,
+    label: s!,
+  }))
+
+  useEffect(() => {
+    if (!currentSystem && knownSystemOptions.length > 0) {
+      updateCurrentSystem(knownSystemOptions[0].value)
+    }
+  }, [currentSystem, knownSystemOptions])
 
   const handleCreateFlightPlan = async (
     shipId: string,
     destination: string
   ) => {
     try {
+      if (!currentSystem) {
+        throw new Error('No current system')
+      }
       const result = await createNewFlightPlan(shipId, destination)
       console.log(result)
-      setAllFlightPlans(await getSystemFlightPlans(START_CURRENT_SYSTEM))
+      setAllFlightPlans(await getSystemFlightPlans(currentSystem.system.symbol))
     } catch (error) {
       console.error(error)
     }
@@ -141,22 +159,22 @@ function Systems() {
                                     i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                   }
                                 >
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                     {location.name}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                     {location.symbol}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                     {location.type}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                  <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                     {location.traits?.join(', ')}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                     {location.allowsConstruction ? 'Yes' : 'No'}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                     ({location.x}, {location.y})
                                   </td>
                                 </tr>
@@ -302,25 +320,25 @@ function Systems() {
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                   {
                                     myShips?.ships.find(
                                       (s) => s.id === flightPlan.shipId
                                     )?.type
                                   }
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {flightPlan.departure}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {flightPlan.destination}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.createdAt).format(
                                     'DD/MM/YYYY HH:mm:ss A'
                                   )}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.arrivesAt).format(
                                     'DD/MM/YYYY HH:mm:ss A'
                                   )}
@@ -384,10 +402,10 @@ function Systems() {
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                   {ship.shipType}
                                 </td>
-                                <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {myShips?.ships.find(
                                     (s) => s.id === ship.shipId
                                   )?.location || 'Unknown'}

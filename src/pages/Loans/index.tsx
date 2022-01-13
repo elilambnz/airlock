@@ -8,7 +8,7 @@ import {
   ListLoanTypesResponse,
   LoanStatus,
 } from '../../types/Loan'
-import { formatThousands } from '../../utils/helpers'
+import { formatNumberCommas } from '../../utils/helpers'
 
 function Loans() {
   const [loans, setLoans] = useState<ListLoansResponse>()
@@ -69,10 +69,10 @@ function Loans() {
                                 i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                               }
                             >
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
-                                {formatThousands(loan.repaymentAmount)}
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                {formatNumberCommas(loan.repaymentAmount)}
                               </td>
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {moment(loan.due).format('DD/MM/YYYY HH:mm')}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -158,19 +158,19 @@ function Loans() {
                                 i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                               }
                             >
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                 {loan.type}
                               </td>
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
-                                {formatThousands(loan.amount)}
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                {formatNumberCommas(loan.amount)}
                               </td>
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {loan.rate}
                               </td>
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {loan.termInDays}
                               </td>
-                              <td className="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {loan.collateralRequired ? 'Yes' : 'No'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

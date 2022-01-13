@@ -5,7 +5,7 @@ import { useAuth } from '../App'
 
 import { User } from '../types/Account'
 
-import { formatThousands } from '../utils/helpers'
+import { abbreviateNumber, formatNumberCommas } from '../utils/helpers'
 
 const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
@@ -78,26 +78,28 @@ const Navbar = () => {
           </div>
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
-              <span className="bg-gray-800 p-1 rounded-full text-gray-400">
-                <span className="sr-only">Credits</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                  />
-                </svg>
-              </span>
-              <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                {formatThousands(user?.credits ?? 0)}
-              </span>
+              <Link to="/account" className="flex items-center">
+                <span className="bg-gray-800 p-1 rounded-full text-gray-400">
+                  <span className="sr-only">Credits</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                </span>
+                <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
+                  {abbreviateNumber(user?.credits ?? 0)}
+                </span>
+              </Link>
 
               {/* Profile dropdown */}
               <div className="ml-3 relative">
@@ -134,33 +136,41 @@ const Navbar = () => {
                 */}
                 {showProfileDropdown && (
                   <div
-                    className="origin-top-right absolute right-0 mt-2 w-74 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    className="origin-top-right absolute right-0 mt-2 w-74 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none divide-y divide-gray-200"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
                   >
                     {/* Active: "bg-gray-100", Not Active: " */}
-                    <a
-                      className="block px-4 py-2 text-sm text-gray-700"
-                      role="menuitem"
-                      id="user-menu-item-0"
-                    >
-                      API Token
-                    </a>
-                    <div className="mx-3 mb-2">
-                      <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
-                        <pre>{auth.apiToken}</pre>
+                    <div className="py-1">
+                      <span
+                        className="block px-4 py-2 text-sm text-gray-700 font-medium"
+                        role="menuitem"
+                        id="user-menu-item-0"
+                      >
+                        {user?.username}
+                      </span>
+                      <div role="menuitem" id="user-menu-item-1">
+                        <span className="block px-4 py-1 text-xs text-gray-700">
+                          API Token
+                        </span>
+                        <div className="mx-3 mb-2">
+                          <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
+                            <pre>{auth.apiToken}</pre>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <hr />
-                    <button
-                      className="block px-4 py-2 text-sm text-gray-700"
-                      role="menuitem"
-                      id="user-menu-item-1"
-                      onClick={() => auth.signout()}
-                    >
-                      Sign out
-                    </button>
+                    <div className="py-1">
+                      <button
+                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        role="menuitem"
+                        id="user-menu-item-2"
+                        onClick={() => auth.signout()}
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -226,53 +236,62 @@ const Navbar = () => {
               </Link>
             ))}
           </div>
-          <div className="pt-4 pb-3 border-t border-gray-700">
-            <div className="flex items-center px-5">
-              <div className="flex-shrink-0">
-                <img
-                  className="h-10 w-10 rounded-full"
-                  src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                  alt=""
-                />
-              </div>
-              <div className="inline-flex ml-3">
-                <span className="bg-gray-800 p-1 rounded-full text-gray-400">
-                  <span className="sr-only">Credits</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
+          <div className="pt-4 pb-3 border-t border-gray-700 divide-y divide-gray-700">
+            <div className="py-1">
+              <div className="flex items-center px-5">
+                <div className="flex-shrink-0">
+                  <img
+                    className="h-10 w-10 rounded-full"
+                    src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                    alt=""
+                  />
+                </div>
+                <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
+                  {user?.username}
                 </span>
-                <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                  {formatThousands(user?.credits ?? 0)}
-                </span>
+                <Link to="/account" className="flex items-center">
+                  <span className="bg-gray-800 p-1 rounded-full text-gray-400">
+                    <span className="sr-only">Credits</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
+                    {abbreviateNumber(user?.credits ?? 0)}
+                  </span>
+                </Link>
               </div>
-            </div>
-            <div className="mt-3 px-2 space-y-1">
-              <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-400">
-                API Token
-              </a>
-              <div className="mx-3">
-                <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
-                  <pre>{auth.apiToken}</pre>
+              <div className="p-2 mb-2 space-y-1">
+                <span className="block px-4 py-1 text-sm text-gray-400">
+                  API Token
+                </span>
+                <div className="mx-3 mb-2">
+                  <div className="rounded-md text-xs bg-gray-50 px-2 py-2 overflow-auto">
+                    <pre>{auth.apiToken}</pre>
+                  </div>
                 </div>
               </div>
-              <button
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700"
-                onClick={() => auth.signout()}
-              >
-                Sign out
-              </button>
+            </div>
+            <div className="py-1">
+              <div className="px-2 pt-2 space-y-1 sm:px-3">
+                <button
+                  className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => auth.signout()}
+                >
+                  Sign out
+                </button>
+              </div>
             </div>
           </div>
         </div>

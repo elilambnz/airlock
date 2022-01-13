@@ -4,7 +4,7 @@ export type StatusResponse = {
 
 export type LeaderboardNetWorthResponse = {
   netWorth: NetWorth[]
-  userNetWorth: NetWorth
+  userNetWorth?: NetWorth
 }
 
 export type NetWorth = {

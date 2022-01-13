@@ -20,9 +20,10 @@ export type ListShipListingsResponse = {
 export type Ship = {
   cargo: ShipCargo[]
   class: string
-  flightPlanId: string
-  id?: string
+  flightPlanId?: string
+  id: string
   location?: string
+  loadingSpeed: number
   manufacturer: string
   maxCargo: number
   plating: number
@@ -30,8 +31,8 @@ export type Ship = {
   speed: number
   type: string
   weapons: number
-  x: number
-  y: number
+  x?: number
+  y?: number
 }
 
 export type ShipCargo = {
