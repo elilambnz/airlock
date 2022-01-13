@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { createNewFlightPlan, listMyShips } from '../../api/routes/my'
+import {
+  createNewFlightPlan,
+  listMyShips,
+  initiateWarpJump,
+} from '../../api/routes/my'
 import {
   getSystemDockedShips,
   getSystemFlightPlans,
@@ -8,7 +12,7 @@ import {
 } from '../../api/routes/systems'
 import '../../App.css'
 import SelectMenu from '../../components/SelectMenu'
-import { ListShipsResponse } from '../../types/Ship'
+import { ListShipsResponse, Ship } from '../../types/Ship'
 import {
   ListSystemFlightPlansResponse,
   ListSystemLocationsResponse,
@@ -34,6 +38,8 @@ function Systems() {
     useState<SystemDockedShipsResponse>()
   const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [newFlightPlan, setNewFlightPlan] =
+    useState<{ shipId?: string; destination?: string }>()
+  const [newWarpJump, setNewWarpJump] =
     useState<{ shipId?: string; destination?: string }>()
 
   const auth = useAuth()
@@ -100,6 +106,15 @@ function Systems() {
     }
   }
 
+  const handleInitiateWarpJump = async (shipId: string) => {
+    try {
+      const result = await initiateWarpJump(shipId)
+      console.log(result)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   const shipOptions = myShips?.ships.map((ship) => ({
     value: ship.id,
     label: `${ship.type} (${ship.location}) [${
@@ -116,9 +131,11 @@ function Systems() {
     (flightPlan) => flightPlan.username === auth.user?.username
   )
 
-  const myDockedShips = allDockedShips?.ships.filter(
-    (ship) => ship.username === auth.user?.username
-  )
+  // Might be more efficient to filter myShips, but we have to consider ships in transit
+  const myDockedShips = allDockedShips?.ships
+    .filter((s) => s.username === auth.user?.username)
+    .map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
+    .filter((s) => !!s) as Ship[]
 
   return (
     <>
@@ -203,7 +220,7 @@ function Systems() {
                       Flight plans
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {allFlightPlans?.flightPlans.length ?? 0}
+                      {myActiveFlightPlans?.length ?? 0}
                     </dd>
                   </div>
                 </div>
@@ -213,7 +230,7 @@ function Systems() {
                       Docked ships
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {allDockedShips?.ships.length ?? 0}
+                      {myDockedShips?.length ?? 0}
                     </dd>
                   </div>
                 </div>
@@ -516,18 +533,18 @@ function Systems() {
                           {myDockedShips && myDockedShips.length > 0 ? (
                             myDockedShips.map((ship, i) => (
                               <tr
-                                key={ship.shipId}
+                                key={ship.id}
                                 className={
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                  {ship.shipType}
+                                  {ship.type}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                  {myShips?.ships.find(
-                                    (s) => s.id === ship.shipId
-                                  )?.location || 'Unknown'}
+                                  {ship.flightPlanId
+                                    ? 'In transit'
+                                    : ship.location}
                                 </td>
                               </tr>
                             ))
@@ -544,6 +561,58 @@ function Systems() {
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Warp Jumps
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  {currentSystem &&
+                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                    <form className="min-w-full divide-y divide-gray-200">
+                      <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-2">
+                          {shipOptions && (
+                            <SelectMenu
+                              label="Select Ship"
+                              options={shipOptions}
+                              onChange={(value) => {
+                                setNewWarpJump({
+                                  ...newWarpJump,
+                                  shipId: value,
+                                })
+                              }}
+                            />
+                          )}
+                        </div>
+                        <div className="sm:col-span-2 pt-6">
+                          <button
+                            type="submit"
+                            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (!newWarpJump?.shipId) {
+                                return
+                              }
+                              handleInitiateWarpJump(newWarpJump.shipId)
+                            }}
+                          >
+                            Initiate Jump
+                          </button>
+                        </div>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>

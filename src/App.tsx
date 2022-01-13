@@ -145,11 +145,16 @@ export const AuthContext = React.createContext<AuthContextType>(null!)
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User>()
   const [apiToken, setApiToken] = React.useState<string>()
+  const [loading, setLoading] = React.useState(false)
 
   const navigate = useNavigate()
 
   const signin = async (token: string, from: string) => {
+    if (loading) {
+      return
+    }
     try {
+      setLoading(true)
       setApiToken(token)
       const user = await getMyAccount()
       if (!user) {
@@ -177,6 +182,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error(error)
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 

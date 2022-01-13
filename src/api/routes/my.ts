@@ -21,6 +21,7 @@ import {
   OwnStructureWithdrawResponse,
   OwnStrucutreDepositResponse,
   StructureCategory,
+  WarpJumpResponse,
 } from '../../types/Structure'
 import { FlightPlanResponse } from '../../types/FlightPlan'
 import { Good, OrderResponse } from '../../types/Order'
@@ -357,6 +358,21 @@ const createSellOrder = async (
   }
 }
 
+const initiateWarpJump = async (shipId: string) => {
+  try {
+    const response: { data: WarpJumpResponse } = await axios.post(
+      `${BASE_ROUTE}/warp-jumps`,
+      {
+        shipId,
+      }
+    )
+    return response.data
+  } catch (error: any) {
+    console.error(error)
+    throw error.response.data.error
+  }
+}
+
 export {
   getMyAccount,
   listMyShips,
@@ -377,4 +393,5 @@ export {
   getFlightPlanInfo,
   createPurchaseOrder,
   createSellOrder,
+  initiateWarpJump,
 }

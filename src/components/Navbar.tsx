@@ -1,27 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { getMyAccount } from '../api/routes/my'
 import { useAuth } from '../App'
-
-import { User } from '../types/Account'
 
 import { abbreviateNumber } from '../utils/helpers'
 
 const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [user, setUser] = useState<User>()
 
   const location = useLocation()
   const auth = useAuth()
-
-  useEffect(() => {
-    const init = async () => {
-      const account = await getMyAccount()
-      setUser(account?.user)
-    }
-    init()
-  }, [])
 
   const links = [
     { path: '/', name: 'Home' },
@@ -97,7 +85,7 @@ const Navbar = () => {
                   </svg>
                 </span>
                 <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                  {abbreviateNumber(user?.credits ?? 0)}
+                  {abbreviateNumber(auth.user?.credits ?? 0)}
                 </span>
               </Link>
 
@@ -148,7 +136,7 @@ const Navbar = () => {
                         role="menuitem"
                         id="user-menu-item-0"
                       >
-                        {user?.username}
+                        {auth.user?.username}
                       </span>
                       <div role="menuitem" id="user-menu-item-1">
                         <span className="block px-4 py-1 text-xs text-gray-700">
@@ -251,7 +239,7 @@ const Navbar = () => {
                   </span>
                 </div>
                 <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
-                  {user?.username}
+                  {auth.user?.username}
                 </span>
                 <Link to="/account" className="flex items-center">
                   <span className="bg-gray-800 p-1 rounded-full text-gray-400">
@@ -272,7 +260,7 @@ const Navbar = () => {
                     </svg>
                   </span>
                   <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                    {abbreviateNumber(user?.credits ?? 0)}
+                    {abbreviateNumber(auth.user?.credits ?? 0)}
                   </span>
                 </Link>
               </div>

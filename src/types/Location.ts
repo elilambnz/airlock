@@ -1,5 +1,6 @@
 import { Good } from './Order'
 import { ShipExternal } from './Ship'
+import { Structure } from './Structure'
 
 export type LocationResponse = {
   location: Location
@@ -8,6 +9,7 @@ export type LocationResponse = {
 export type Location = {
   allowsConstruction: boolean
   dockedShips?: number
+  messages?: string[]
   name: string
   symbol: string
   traits?: string[]
@@ -40,4 +42,8 @@ export type LocationMarketplace = {
 
 export type LocationShipResponse = {
   ships: ShipExternal[]
+}
+
+export type LocationStructuresResponse = {
+  structures: Structure[]
 }
