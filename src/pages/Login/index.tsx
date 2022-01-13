@@ -245,7 +245,7 @@ const Login = () => {
               </div>
 
               {registrationError && (
-                <div className="mt-6">
+                <div className="mt-6 max-w-4xl">
                   <Alert message={registrationError} />
                 </div>
               )}
@@ -359,7 +359,7 @@ const Login = () => {
                 </div>
 
                 {loginError && (
-                  <div className="mt-6">
+                  <div className="mt-6 max-w-4xl">
                     <Alert message={loginError} />
                   </div>
                 )}

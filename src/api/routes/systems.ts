@@ -15,8 +15,9 @@ const getShipListings = async (systemSymbol: string) => {
       `${BASE_ROUTE}/${systemSymbol}/ship-listings`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -26,8 +27,9 @@ const getSystemInfo = async (systemSymbol: string) => {
       `${BASE_ROUTE}/${systemSymbol}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -37,8 +39,9 @@ const getSystemLocations = async (systemSymbol: string) => {
       `${BASE_ROUTE}/${systemSymbol}/locations`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -48,8 +51,9 @@ const getSystemFlightPlans = async (systemSymbol: string) => {
       `${BASE_ROUTE}/${systemSymbol}/flight-plans`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -59,8 +63,9 @@ const getSystemDockedShips = async (systemSymbol: string) => {
       `${BASE_ROUTE}/${systemSymbol}/ships`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 

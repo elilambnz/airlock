@@ -12,8 +12,9 @@ const listGoodTypes = async () => {
       `${BASE_ROUTE}/goods`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -23,8 +24,9 @@ const listShipTypes = async () => {
       `${BASE_ROUTE}/ships`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -34,8 +36,9 @@ const listLoanTypes = async () => {
       `${BASE_ROUTE}/loans`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -45,8 +48,9 @@ const listStructureTypes = async () => {
       `${BASE_ROUTE}/structures`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 

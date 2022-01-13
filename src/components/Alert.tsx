@@ -12,7 +12,7 @@ const Alert = (props: AlertProps) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto">
       <div className="rounded-md bg-red-50 p-4">
         <div className="flex">
           <div className="flex-shrink-0">

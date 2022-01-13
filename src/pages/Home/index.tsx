@@ -8,7 +8,11 @@ import {
   LeaderboardNetWorthResponse,
   NetWorth,
 } from '../../types/Game'
-import { capitaliseFirstLetter, formatNumberCommas } from '../../utils/helpers'
+import {
+  abbreviateNumber,
+  capitaliseFirstLetter,
+  formatNumberCommas,
+} from '../../utils/helpers'
 
 function Home() {
   const [gameStatus, setGameStatus] = useState<StatusResponse['status']>()
@@ -131,7 +135,7 @@ function Home() {
                                         : 'font-medium')
                                     }
                                   >
-                                    {formatNumberCommas(user.netWorth)}
+                                    {abbreviateNumber(user.netWorth)}
                                   </div>
                                 </td>
                               </tr>

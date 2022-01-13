@@ -18,10 +18,13 @@ import {
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { useAuth } from '../../App'
+import Alert from '../../components/Alert'
 
 const STARTER_SYSTEM = 'OE'
 
 function Systems() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState()
   const [currentSystem, setCurrentSystem] = useState<SystemsResponse>()
   const [availableLocations, setAvailableLocations] =
     useState<ListSystemLocationsResponse>()
@@ -36,10 +39,27 @@ function Systems() {
   const auth = useAuth()
 
   const updateCurrentSystem = async (systemSymbol: string) => {
-    setCurrentSystem(await getSystemInfo(systemSymbol))
-    setAvailableLocations(await getSystemLocations(systemSymbol))
-    setAllFlightPlans(await getSystemFlightPlans(systemSymbol))
-    setAllDockedShips(await getSystemDockedShips(systemSymbol))
+    if (loading) {
+      console.log('Already loading, ignoring request')
+      return
+    }
+    console.log('Updating current system to', systemSymbol)
+    try {
+      setLoading(true)
+      setError(undefined)
+      setCurrentSystem(await getSystemInfo(systemSymbol))
+      setAvailableLocations(await getSystemLocations(systemSymbol))
+      setAllFlightPlans(await getSystemFlightPlans(systemSymbol))
+      setAllDockedShips(await getSystemDockedShips(systemSymbol))
+      console.log('finished loading')
+    } catch (error: any) {
+      console.error(error)
+      if (error.code && error.code !== 400) {
+        setError(error.message ?? 'Unknown error')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -112,79 +132,174 @@ function Systems() {
       <main>
         <div className="bg-gray-100 min-h-screen">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto py-6">
-              <h2 className="text-2xl font-bold text-gray-900">Locations</h2>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                {currentSystem &&
-                  `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
-              </p>
+            {error && (
+              <div className="mb-4">
+                <Alert message={error} />
+              </div>
+            )}
+
+            <div className="md:flex md:items-center md:justify-between md:space-x-5">
+              <div className="flex items-start space-x-5">
+                <div className="flex-shrink-0">
+                  <div className="relative">
+                    <span className="inline-block h-16 w-16 rounded-full overflow-hidden bg-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-full w-full text-gray-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      className="absolute inset-0 shadow-inner rounded-full"
+                      aria-hidden="true"
+                    ></span>
+                  </div>
+                </div>
+                <div className="pt-1.5">
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {currentSystem?.system.name}
+                  </h1>
+                  <p className="text-sm font-medium text-gray-500">
+                    {currentSystem?.system.symbol}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-reverse sm:space-y-0 sm:space-x-3 md:mt-0 md:flex-row md:space-x-3">
+                {knownSystemOptions && (
+                  <SelectMenu
+                    label="Select System"
+                    options={knownSystemOptions}
+                    value={currentSystem?.system.symbol}
+                    onChange={(value) => {
+                      updateCurrentSystem(value)
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    {
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Name
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Symbol
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Traits
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Allows Construction
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Coordinates
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {availableLocations ? (
-                            availableLocations.locations
-                              .sort((a, b) => a.x - b.x || a.y - b.y)
-                              .map((location, i) => (
-                                <tr
-                                  key={location.name}
-                                  className={
-                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                  }
-                                >
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                    {location.name}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {location.symbol}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {location.type}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                    {location.traits?.join(', ')}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {location.allowsConstruction ? 'Yes' : 'No'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    ({location.x}, {location.y})
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
-                            <LoadingRows cols={6} />
-                          )}
-                        </tbody>
-                      </table>
-                    }
+            <div>
+              <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Locations
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      {availableLocations?.locations.length}
+                    </dd>
+                  </div>
+                </div>
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Flight plans
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      {allFlightPlans?.flightPlans.length ?? 0}
+                    </dd>
+                  </div>
+                </div>
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Docked ships
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      {allDockedShips?.ships.length ?? 0}
+                    </dd>
+                  </div>
+                </div>
+              </dl>
+            </div>
+
+            <div className="mt-5 bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Locations
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  {currentSystem &&
+                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                </p>
+              </div>
+              <div className="flex flex-col">
+                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                      {
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Symbol
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Traits
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Allows Construction
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Coordinates
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {availableLocations ? (
+                              availableLocations.locations
+                                .sort((a, b) => a.x - b.x || a.y - b.y)
+                                .map((location, i) => (
+                                  <tr
+                                    key={location.name}
+                                    className={
+                                      i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                    }
+                                  >
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                      {location.name}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {location.symbol}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {location.type}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                                      {location.traits?.join(', ')}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {location.allowsConstruction
+                                        ? 'Yes'
+                                        : 'No'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      ({location.x}, {location.y})
+                                    </td>
+                                  </tr>
+                                ))
+                            ) : (
+                              <LoadingRows cols={6} />
+                            )}
+                          </tbody>
+                        </table>
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
@@ -199,6 +314,10 @@ function Systems() {
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Create New Flight Plan
                 </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  {currentSystem &&
+                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                </p>
               </div>
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -268,7 +387,8 @@ function Systems() {
                   Active Flight Plans
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  User {auth.user?.username}
+                  {currentSystem &&
+                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
                 </p>
               </div>
               <div className="flex flex-col">
@@ -351,7 +471,7 @@ function Systems() {
                                 className="px-6 py-4 text-gray-500"
                                 colSpan={5}
                               >
-                                You have no active flight plans
+                                You have no active flight plans.
                               </td>
                             </tr>
                           )}
@@ -369,7 +489,8 @@ function Systems() {
                   Docked Ships
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  User {auth.user?.username}
+                  {currentSystem &&
+                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
                 </p>
               </div>
               <div className="flex flex-col">
@@ -416,9 +537,9 @@ function Systems() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={5}
+                                colSpan={2}
                               >
-                                You have no docked ships
+                                You have no docked ships.
                               </td>
                             </tr>
                           )}

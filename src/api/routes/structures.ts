@@ -47,8 +47,9 @@ const getStructureInfo = async (id: string) => {
       `${BASE_ROUTE}/${id}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -68,8 +69,9 @@ const depositToStructure = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 

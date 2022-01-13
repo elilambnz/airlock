@@ -11,7 +11,7 @@ import DangerModal from '../../components/Modal/DangerModal'
 
 import { User } from '../../types/Account'
 import { ListShipsResponse, ShipCargo } from '../../types/Ship'
-import { abbreviateNumber, formatNumberCommas } from '../../utils/helpers'
+import { abbreviateNumber } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 import ActionModal from '../../components/Modal/ActionModal'
 import { useAuth } from '../../App'
@@ -133,9 +133,23 @@ function Account() {
                     <div className="text-sm">
                       <Link
                         to="/marketplace"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                        className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
                       >
                         Buy more ships
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="ml-1 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
                       </Link>
                     </div>
                   </div>
@@ -153,9 +167,23 @@ function Account() {
                     <div className="text-sm">
                       <Link
                         to="/structures"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                        className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
                       >
                         View structures
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="ml-1 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
                       </Link>
                     </div>
                   </div>
@@ -172,10 +200,24 @@ function Account() {
                   <div className="bg-gray-50 px-4 py-4 sm:px-6">
                     <div className="text-sm">
                       <Link
-                        to="/marketplace"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                        to="/loans"
+                        className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
                       >
                         View loans
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="ml-1 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
                       </Link>
                     </div>
                   </div>

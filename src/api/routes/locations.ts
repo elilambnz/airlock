@@ -9,8 +9,9 @@ const getLocationMarketplace = async (locationSymbol: string) => {
       `${BASE_ROUTE}/${locationSymbol}/marketplace`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 

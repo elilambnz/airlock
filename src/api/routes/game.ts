@@ -9,8 +9,9 @@ const getGameStatus = async () => {
       `${BASE_ROUTE}/status`
     )
     return response.data?.status
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -20,8 +21,9 @@ const getLeaderboardNetWorth = async () => {
       `${BASE_ROUTE}/leaderboard/net-worth`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 

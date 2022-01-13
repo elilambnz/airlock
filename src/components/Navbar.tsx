@@ -5,7 +5,7 @@ import { useAuth } from '../App'
 
 import { User } from '../types/Account'
 
-import { abbreviateNumber, formatNumberCommas } from '../utils/helpers'
+import { abbreviateNumber } from '../utils/helpers'
 
 const Navbar = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
@@ -240,11 +240,15 @@ const Navbar = () => {
             <div className="py-1">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
-                  <img
-                    className="h-10 w-10 rounded-full"
-                    src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                    alt=""
-                  />
+                  <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100">
+                    <svg
+                      className="h-full w-full text-gray-300"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                  </span>
                 </div>
                 <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
                   {user?.username}

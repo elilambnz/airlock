@@ -22,7 +22,7 @@ import {
   StructureResponse,
 } from '../../types/Structure'
 import { ListSystemLocationsResponse } from '../../types/System'
-import { formatNumberCommas } from '../../utils/helpers'
+import { abbreviateNumber, formatNumberCommas } from '../../utils/helpers'
 
 const START_CURRENT_SYSTEM = 'OE'
 
@@ -165,7 +165,7 @@ function Structures() {
 
   const structureTypeOptions = structureTypes?.structures.map((structure) => ({
     value: structure.type,
-    label: `${structure.type} (${formatNumberCommas(structure.price)})`,
+    label: `${structure.type} (${abbreviateNumber(structure.price)})`,
   }))
 
   const shipOptions = myShips?.ships.map((ship) => ({

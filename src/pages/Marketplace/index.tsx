@@ -23,7 +23,7 @@ import {
   ListShipTypesResponse,
   ShipListing,
 } from '../../types/Ship'
-import { formatNumberCommas } from '../../utils/helpers'
+import { abbreviateNumber, formatNumberCommas } from '../../utils/helpers'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -77,6 +77,7 @@ function Marketplace() {
           })) ?? []
       )
     }, [myShips?.ships])
+  console.log('marketplaceLocationOptions', marketplaceLocationOptions.length)
 
   useEffect(() => {
     if (!marketplaceLocation && marketplaceLocationOptions.length > 0) {
@@ -251,71 +252,87 @@ function Marketplace() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {marketplace ? (
-                            marketplace.marketplace
-                              .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                              .map((locationMarketplace, i) => (
-                                <tr
-                                  key={locationMarketplace.symbol}
-                                  className={
-                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                  }
-                                >
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                    {locationMarketplace.symbol}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.pricePerUnit
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.purchasePricePerUnit
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.sellPricePerUnit
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.volumePerUnit
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.quantityAvailable
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {formatNumberCommas(
-                                      locationMarketplace.spread
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button
-                                      className="text-indigo-600 hover:text-indigo-900"
-                                      onClick={() => {
-                                        setGoodToBuy(locationMarketplace)
-                                      }}
+                          {marketplaceLocationOptions.length > 0 ? (
+                            <>
+                              {marketplace ? (
+                                marketplace.marketplace
+                                  .sort((a, b) =>
+                                    a.symbol.localeCompare(b.symbol)
+                                  )
+                                  .map((locationMarketplace, i) => (
+                                    <tr
+                                      key={locationMarketplace.symbol}
+                                      className={
+                                        i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                      }
                                     >
-                                      Buy
-                                    </button>
-                                    <button
-                                      className="ml-4 text-emerald-600 hover:text-emerald-900"
-                                      onClick={() => {
-                                        setGoodToSell(locationMarketplace)
-                                      }}
-                                    >
-                                      Sell
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                        {locationMarketplace.symbol}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {abbreviateNumber(
+                                          locationMarketplace.pricePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {abbreviateNumber(
+                                          locationMarketplace.purchasePricePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {abbreviateNumber(
+                                          locationMarketplace.sellPricePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.volumePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.quantityAvailable
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.spread
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button
+                                          className="text-indigo-600 hover:text-indigo-900"
+                                          onClick={() => {
+                                            setGoodToBuy(locationMarketplace)
+                                          }}
+                                        >
+                                          Buy
+                                        </button>
+                                        <button
+                                          className="ml-4 text-emerald-600 hover:text-emerald-900"
+                                          onClick={() => {
+                                            setGoodToSell(locationMarketplace)
+                                          }}
+                                        >
+                                          Sell
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                              ) : (
+                                <LoadingRows cols={8} rows={3} />
+                              )}
+                            </>
                           ) : (
-                            <LoadingRows cols={8} rows={3} />
+                            <tr className="bg-white text-center">
+                              <td
+                                className="px-6 py-4 text-gray-500"
+                                colSpan={8}
+                              >
+                                No markets available. You must have at least one
+                                ship docked at a location to buy or sell goods.
+                              </td>
+                            </tr>
                           )}
                         </tbody>
                       </table>

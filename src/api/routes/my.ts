@@ -33,8 +33,9 @@ const getMyAccount = async () => {
       `${BASE_ROUTE}/account`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -44,8 +45,9 @@ const listMyShips = async () => {
       `${BASE_ROUTE}/ships`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -55,8 +57,9 @@ const getShipInfo = async (id: string) => {
       `${BASE_ROUTE}/ships/${id}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -74,8 +77,9 @@ const jettisonShipCargo = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -85,8 +89,9 @@ const scrapShip = async (id: string) => {
       `${BASE_ROUTE}/ships/${id}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -106,8 +111,9 @@ const transferShipCargo = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -121,8 +127,9 @@ const buyShip = async (location: string, type: string) => {
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -132,8 +139,9 @@ const listMyLoans = async () => {
       `${BASE_ROUTE}/loans`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -143,8 +151,9 @@ const payOffLoan = async (id: string) => {
       `${BASE_ROUTE}/loans/${id}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -157,8 +166,9 @@ const takeOutLoan = async (type: string) => {
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -198,8 +208,9 @@ const listMyStructures = async () => {
       })
 
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -210,8 +221,9 @@ const getMyStructureInfo = async (id: string) => {
     )
 
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -225,8 +237,9 @@ const createNewStructure = async (location: string, type: string) => {
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -246,8 +259,9 @@ const depositToMyStructure = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -267,8 +281,9 @@ const withdrawFromMyStructure = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -282,8 +297,9 @@ const createNewFlightPlan = async (shipId: string, destination: string) => {
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -293,8 +309,9 @@ const getFlightPlanInfo = async (id: string) => {
       `${BASE_ROUTE}/flight-plans/${id}`
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -313,8 +330,9 @@ const createPurchaseOrder = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
@@ -333,8 +351,9 @@ const createSellOrder = async (
       }
     )
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    throw error.response.data.error
   }
 }
 
