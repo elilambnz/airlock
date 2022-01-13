@@ -77,7 +77,6 @@ function Marketplace() {
           })) ?? []
       )
     }, [myShips?.ships])
-  console.log('marketplaceLocationOptions', marketplaceLocationOptions.length)
 
   useEffect(() => {
     if (!marketplaceLocation && marketplaceLocationOptions.length > 0) {
@@ -114,7 +113,6 @@ function Marketplace() {
   useEffect(() => {
     if (marketplaceShipSystem) {
       const updateAvailableShips = async () => {
-        setMarketplace(await getLocationMarketplace(marketplaceShipSystem))
         setAvailableShips(await getShipListings(marketplaceShipSystem))
       }
       updateAvailableShips()
@@ -501,7 +499,7 @@ function Marketplace() {
                                 </tr>
                               ))
                           ) : (
-                            <LoadingRows cols={10} />
+                            <LoadingRows cols={9} />
                           )}
                         </tbody>
                       </table>

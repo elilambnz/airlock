@@ -40,10 +40,8 @@ function Systems() {
 
   const updateCurrentSystem = async (systemSymbol: string) => {
     if (loading) {
-      console.log('Already loading, ignoring request')
       return
     }
-    console.log('Updating current system to', systemSymbol)
     try {
       setLoading(true)
       setError(undefined)
@@ -51,7 +49,6 @@ function Systems() {
       setAvailableLocations(await getSystemLocations(systemSymbol))
       setAllFlightPlans(await getSystemFlightPlans(systemSymbol))
       setAllDockedShips(await getSystemDockedShips(systemSymbol))
-      console.log('finished loading')
     } catch (error: any) {
       console.error(error)
       if (error.code && error.code !== 400) {
@@ -84,6 +81,7 @@ function Systems() {
     if (!currentSystem && knownSystemOptions.length > 0) {
       updateCurrentSystem(knownSystemOptions[0].value)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSystem, knownSystemOptions])
 
   const handleCreateFlightPlan = async (
