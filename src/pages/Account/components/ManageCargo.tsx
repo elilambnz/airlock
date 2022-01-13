@@ -8,10 +8,27 @@ interface ManageCargoProps {
   ship?: Ship
   shipOptions?: { value: string; label: string }[]
   cargoToTransfer?: ShipCargo & { toShipId?: string }
-  setCargoToTransfer: (value?: ShipCargo & { toShipId?: string }) => void
+  setCargoToTransfer: React.Dispatch<
+    React.SetStateAction<
+      | (ShipCargo & {
+          shipId?: string | undefined
+          toShipId?: string | undefined
+        })
+      | undefined
+    >
+  >
   cargoToJettison?: ShipCargo
-  setCargoToJettison: (value?: ShipCargo) => void
-  setCargoManageMode: (mode: CargoManageMode) => void
+  setCargoToJettison: React.Dispatch<
+    React.SetStateAction<
+      | (ShipCargo & {
+          shipId?: string | undefined
+        })
+      | undefined
+    >
+  >
+  setCargoManageMode: React.Dispatch<
+    React.SetStateAction<CargoManageMode | undefined>
+  >
 }
 
 const ManageCargo = (props: ManageCargoProps) => {
@@ -75,7 +92,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                         onClick={() => {
                           setCargoManageMode(CargoManageMode.TRANSFER)
                           setCargoToJettison(undefined)
-                          setCargoToTransfer(cargo)
+                          setCargoToTransfer({ ...cargo, shipId: ship.id })
                         }}
                       >
                         Transfer
@@ -87,7 +104,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                         onClick={() => {
                           setCargoManageMode(CargoManageMode.JETTISON)
                           setCargoToTransfer(undefined)
-                          setCargoToJettison(cargo)
+                          setCargoToJettison({ ...cargo, shipId: ship.id })
                         }}
                       >
                         Jettison
@@ -129,10 +146,13 @@ const ManageCargo = (props: ManageCargoProps) => {
                       defaultValue={cargoToTransfer.quantity}
                       className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                       onChange={(e) => {
-                        setCargoToTransfer({
-                          ...cargoToTransfer,
-                          quantity: parseInt(e.target.value),
-                        })
+                        setCargoToTransfer(
+                          (prev) =>
+                            prev && {
+                              ...prev,
+                              quantity: parseInt(e.target.value),
+                            }
+                        )
                       }}
                     />
                   </div>
@@ -143,10 +163,13 @@ const ManageCargo = (props: ManageCargoProps) => {
                       label="Select Ship"
                       options={shipOptions}
                       onChange={(value) => {
-                        setCargoToTransfer({
-                          ...cargoToTransfer,
-                          toShipId: value,
-                        })
+                        setCargoToTransfer(
+                          (prev) =>
+                            prev && {
+                              ...prev,
+                              toShipId: value,
+                            }
+                        )
                       }}
                     />
                   )}
@@ -184,10 +207,13 @@ const ManageCargo = (props: ManageCargoProps) => {
                       defaultValue={cargoToJettison.quantity}
                       className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                       onChange={(e) => {
-                        setCargoToJettison({
-                          ...cargoToJettison,
-                          quantity: parseInt(e.target.value),
-                        })
+                        setCargoToJettison(
+                          (prev) =>
+                            prev && {
+                              ...prev,
+                              quantity: parseInt(e.target.value),
+                            }
+                        )
                       }}
                     />
                   </div>

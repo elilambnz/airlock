@@ -63,7 +63,9 @@ function Marketplace() {
     value: ship.id,
     label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
       ship.maxCargo
-    }) [${ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0}]`,
+    }) [${ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0}] ${
+      ship.location
+    }`,
   }))
 
   const marketplaceLocationOptions: { value: string; label: string }[] =
@@ -209,6 +211,18 @@ function Marketplace() {
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
+                              Quantity Available
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Volume/Unit
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Price/Unit
                             </th>
                             <th
@@ -223,18 +237,7 @@ function Marketplace() {
                             >
                               Sell Price/Unit
                             </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Volume/Unit
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Quantity Available
-                            </th>
+
                             <th
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -269,6 +272,16 @@ function Marketplace() {
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                         {abbreviateNumber(
+                                          locationMarketplace.quantityAvailable
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.volumePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {abbreviateNumber(
                                           locationMarketplace.pricePerUnit
                                         )}
                                       </td>
@@ -280,16 +293,6 @@ function Marketplace() {
                                       <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                         {abbreviateNumber(
                                           locationMarketplace.sellPricePerUnit
-                                        )}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                        {formatNumberCommas(
-                                          locationMarketplace.volumePerUnit
-                                        )}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                        {formatNumberCommas(
-                                          locationMarketplace.quantityAvailable
                                         )}
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
@@ -523,23 +526,6 @@ function Marketplace() {
                 <strong>{goodToBuy.purchasePricePerUnit}</strong> credits per
                 unit
               </p>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Quantity
-                </label>
-                <input
-                  className="mt-1 form-input w-full"
-                  type="number"
-                  min={1}
-                  max={goodToBuy.quantityAvailable}
-                  onChange={(e) =>
-                    setGoodToBuy({
-                      ...goodToBuy,
-                      quantity: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
               <div className="sm:col-span-3">
                 {shipOptions && (
                   <SelectMenu
@@ -554,6 +540,38 @@ function Marketplace() {
                   />
                 )}
               </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Quantity
+                </label>
+                <input
+                  className="mt-1 form-input w-full"
+                  type="number"
+                  min={1}
+                  max={goodToBuy.quantityAvailable}
+                  defaultValue={
+                    myShips?.ships.find((s) => s.id === goodToBuy.shipId)
+                      ?.spaceAvailable
+                  }
+                  onChange={(e) =>
+                    setGoodToBuy({
+                      ...goodToBuy,
+                      quantity: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              {goodToBuy.quantity && (
+                <p className="mt-4">
+                  Total cost{' '}
+                  <strong>
+                    {formatNumberCommas(
+                      goodToBuy.quantity * goodToBuy.purchasePricePerUnit
+                    )}
+                  </strong>{' '}
+                  credits
+                </p>
+              )}
               <button className="m-4" onClick={() => setGoodToBuy(null)}>
                 Cancel
               </button>
@@ -581,6 +599,31 @@ function Marketplace() {
               <p>
                 <strong>{goodToSell.sellPricePerUnit}</strong> credits per unit
               </p>
+
+              <div className="sm:col-span-3">
+                {shipOptions && (
+                  <SelectMenu
+                    label="Select Ship"
+                    options={shipOptions}
+                    onChange={(value) => {
+                      setGoodToSell({
+                        ...goodToSell,
+                        shipId: value,
+                      })
+                    }}
+                  />
+                )}
+              </div>
+              {myShips?.ships.find((s) => s.id === goodToSell.shipId) && (
+                <span className="block text-sm font-medium text-gray-700">
+                  Ship has{' '}
+                  {myShips?.ships
+                    .find((s) => s.id === goodToSell.shipId)
+                    ?.cargo?.find((c) => c.good === goodToSell.symbol)
+                    ?.quantity ?? 0}{' '}
+                  {goodToSell.symbol}
+                </span>
+              )}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Quantity
@@ -597,20 +640,17 @@ function Marketplace() {
                   }
                 />
               </div>
-              <div className="sm:col-span-3">
-                {shipOptions && (
-                  <SelectMenu
-                    label="Select Ship"
-                    options={shipOptions}
-                    onChange={(value) => {
-                      setGoodToSell({
-                        ...goodToSell,
-                        shipId: value,
-                      })
-                    }}
-                  />
-                )}
-              </div>
+              {goodToSell.quantity && (
+                <p className="mt-4">
+                  Total sale{' '}
+                  <strong>
+                    {formatNumberCommas(
+                      goodToSell.quantity * goodToSell.sellPricePerUnit
+                    )}
+                  </strong>{' '}
+                  credits
+                </p>
+              )}
               <button className="m-4" onClick={() => setGoodToSell(null)}>
                 Cancel
               </button>

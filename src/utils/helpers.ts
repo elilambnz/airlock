@@ -1,3 +1,6 @@
+import moment, { Moment } from 'moment'
+import clamp from "lodash/clamp";
+
 export const formatNumberCommas = (number: number): string => {
   return String(number).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
@@ -21,3 +24,13 @@ export const abbreviateNumber = (number: number): string => {
 export function capitaliseFirstLetter(string: string): string {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
+
+// Get percentage between 2 moments relative to now
+export const getProgress = (start: Moment, end: Moment) => {
+  const p = Math.round(
+    (Number((moment().format("x"))) - Number(start.format("x"))) /
+      (Number(end.format("x")) - Number(start.format("x"))) *
+      100
+  )
+  return clamp(p, 0, 100);
+};

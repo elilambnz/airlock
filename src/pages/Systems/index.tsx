@@ -23,6 +23,7 @@ import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { useAuth } from '../../App'
 import Alert from '../../components/Alert'
+import ActiveProgress from '../../components/Progress/ActiveProgress'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -443,6 +444,12 @@ function Systems() {
                             >
                               Arrives At
                             </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Progress
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -470,13 +477,19 @@ function Systems() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.createdAt).format(
-                                    'DD/MM/YYYY HH:mm:ss A'
+                                    'DD/MM/YYYY hh:mm:ss a'
                                   )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.arrivesAt).format(
-                                    'DD/MM/YYYY HH:mm:ss A'
+                                    'DD/MM/YYYY hh:mm:ss a'
                                   )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                  <ActiveProgress
+                                    start={moment(flightPlan.createdAt)}
+                                    end={moment(flightPlan.arrivesAt)}
+                                  />
                                 </td>
                               </tr>
                             ))
@@ -484,7 +497,7 @@ function Systems() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={5}
+                                colSpan={6}
                               >
                                 You have no active flight plans.
                               </td>

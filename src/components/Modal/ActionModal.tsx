@@ -118,7 +118,10 @@ const ActionModal = (props: ActionModalProps) => {
                     ? ' bg-red-600 hover:bg-red-700 focus:ring-red-500'
                     : ' bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500')
                 }
-                onClick={handleAction}
+                onClick={() => {
+                  console.log('handleAction')
+                  handleAction()
+                }}
                 disabled={actionDisabled}
               >
                 {actionText}

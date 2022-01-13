@@ -73,7 +73,7 @@ function Loans() {
                                 {formatNumberCommas(loan.repaymentAmount)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {moment(loan.due).format('DD/MM/YYYY HH:mm')}
+                                {moment(loan.due).format('DD/MM/YYYY hh:mm a')}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
