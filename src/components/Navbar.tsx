@@ -17,6 +17,7 @@ const Navbar = () => {
     { path: '/marketplace', name: 'Marketplace' },
     { path: '/systems', name: 'Systems' },
     { path: '/structures', name: 'Structures' },
+    { path: '/automation', name: 'Automation' },
     { path: '/loans', name: 'Loans' },
   ]
 

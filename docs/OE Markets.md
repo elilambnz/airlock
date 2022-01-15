@@ -56,8 +56,8 @@
 | ELECTRONICS   | 35.0K              | 1           | 86         | 95                  | 77              | 9      |
 | FUEL          | 98.1K              | 1           | 2          | 3                   | 1               | 1      |
 | MACHINERY     | 29.9K              | 2           | 400        | 409                 | 391             | 9      |
-| SHIP_PARTS    | 138                | 4           | 2.6K       | @.6K                | 2.5K            | 67     |
-| ZUCO_CRYSTALS | 792 1 37.7K 40.    | 5K          | 34.        | 9K                  | 2,              | 766    |
+| SHIP_PARTS    | 138                | 4           | 2.6K       | 2.6K                | 2.5K            | 67     |
+| ZUCO_CRYSTALS | 792                | 1           | 37.5K      | 40.3K               | 34.7K           | 2766   |
 
 ## OE-UC-AD
 
@@ -66,7 +66,7 @@
 | DRONES             | 8.8K               | 1           | 63         | 64                  | 62              | 1      |
 | FUEL               | 51.4K              | 1           | 17         | 18                  | 16              | 1      |
 | SHIP_PLATING       | 69.8K              | 2           | 101        | 107                 | 95              | 6      |
-| UNSTABLE_COMPOUNDS | 84 3 1.9K          | 2.          | 0K         | 1.                  | 8K              | 85     |
+| UNSTABLE_COMPOUNDS | 84                 | 3           | 1.9K       | 2.0K                | 1.8K            | 84     |
 
 ## OE-CR
 

@@ -49,7 +49,7 @@ export type CreateStructureResponse = {
   structure: OwnStructure
 }
 
-export type OwnStrucutreDepositResponse = {
+export type OwnStructureDepositResponse = {
   deposit: Material[]
   ship: Ship
   structure: OwnStructure
@@ -73,7 +73,7 @@ export type Structure = {
   stability: number
 }
 
-export type StrucutreDepositResponse = {
+export type StructureDepositResponse = {
   deposit: Material[]
   ship: Ship
   structure: Structure

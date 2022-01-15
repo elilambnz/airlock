@@ -17,6 +17,7 @@ import Account from './pages/Account'
 import Marketplace from './pages/Marketplace'
 import Systems from './pages/Systems'
 import Structures from './pages/Structures'
+import Automation from './pages/Automation'
 import Loans from './pages/Loans'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
@@ -36,59 +37,73 @@ enableAutoPageviews()
 enableAutoOutboundTracking()
 
 function App() {
+  const routes = [
+    {
+      path: '/',
+      element: (
+        <RequireAuth>
+          <Home />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/account',
+      element: (
+        <RequireAuth>
+          <Account />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/marketplace',
+      element: (
+        <RequireAuth>
+          <Marketplace />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/systems',
+      element: (
+        <RequireAuth>
+          <Systems />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/structures',
+      element: (
+        <RequireAuth>
+          <Structures />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/automation',
+      element: (
+        <RequireAuth>
+          <Automation />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: '/loans',
+      element: (
+        <RequireAuth>
+          <Loans />
+        </RequireAuth>
+      ),
+    },
+  ]
+
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route
-              path="/"
-              element={
-                <RequireAuth>
-                  <Home />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/account"
-              element={
-                <RequireAuth>
-                  <Account />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/marketplace"
-              element={
-                <RequireAuth>
-                  <Marketplace />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/systems"
-              element={
-                <RequireAuth>
-                  <Systems />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/structures"
-              element={
-                <RequireAuth>
-                  <Structures />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/loans"
-              element={
-                <RequireAuth>
-                  <Loans />
-                </RequireAuth>
-              }
-            />
+            {routes.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
           </Route>
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />

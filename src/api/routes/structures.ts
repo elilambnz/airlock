@@ -1,7 +1,6 @@
-import { Good } from '../../types/Order'
 import {
   StructureResponse,
-  StrucutreDepositResponse,
+  StructureDepositResponse,
 } from '../../types/Structure'
 import { default as axios } from '../../utils/axiosInstance'
 
@@ -9,40 +8,6 @@ const BASE_ROUTE = 'structures'
 
 const getStructureInfo = async (id: string) => {
   try {
-    // TEST
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        structure: {
-          completed: true,
-          id: 'ckonbz97y1650ninzroui51fm',
-          materials: [
-            {
-              good: Good['MACHINERY'],
-              quantity: 12000,
-              targetQuantity: 15000,
-            },
-            {
-              good: Good['CONSTRUCTION_MATERIALS'],
-              quantity: 20000,
-              targetQuantity: 25000,
-            },
-            {
-              good: Good['ELECTRONICS'],
-              quantity: 8000,
-              targetQuantity: 10000,
-            },
-            {
-              good: Good['METALS'],
-              quantity: 120000,
-              targetQuantity: 150000,
-            },
-          ],
-          name: 'Warp Gate',
-          stability: 0.8,
-        },
-      }
-    }
-
     const response: { data: StructureResponse } = await axios.get(
       `${BASE_ROUTE}/${id}`
     )
@@ -60,7 +25,7 @@ const depositToStructure = async (
   quantity: number
 ) => {
   try {
-    const response: { data: StrucutreDepositResponse } = await axios.post(
+    const response: { data: StructureDepositResponse } = await axios.post(
       `${BASE_ROUTE}/${id}/deposit`,
       {
         shipId,

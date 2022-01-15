@@ -4,27 +4,29 @@ interface SelectMenuProps {
   label?: string
   options: any[]
   value?: string
+  defaultValue?: string
   onChange: (value: string) => void
 }
 
 const SelectMenu = (props: SelectMenuProps) => {
-  const { label, options, value, onChange } = props
+  const { label, options, value, defaultValue, onChange } = props
 
   return (
     <div>
       {label && (
         <label
-          htmlFor="label"
+          htmlFor={label}
           className="block text-sm font-medium text-gray-700"
         >
           {label}
         </label>
       )}
       <select
-        id="label"
-        name="label"
+        id={label}
+        name={label}
         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
         value={value}
+        defaultValue={defaultValue}
         onChange={(e) => {
           onChange(e.target.value)
         }}
