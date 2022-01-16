@@ -1,7 +1,10 @@
 export type TradeRoute = {
+  id: string
   events: TradeRouteEvent[]
   assignedShips: string[]
-  paused: boolean
+  autoRefuel: boolean
+  status: TradeRouteStatus
+  errorMessage?: string
 }
 
 export type TradeRouteEvent = {
@@ -19,4 +22,10 @@ export enum RouteEventType {
 export type RouteEventGood = {
   good: string
   quantity: number
+}
+
+export enum TradeRouteStatus {
+  ACTIVE = 'Active',
+  PAUSED = 'Paused',
+  ERROR = 'Error',
 }

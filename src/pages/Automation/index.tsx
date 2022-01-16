@@ -6,14 +6,22 @@ import { listGoodTypes, listShipTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
 import SelectMenu from '../../components/SelectMenu'
+import useAutomation from '../../hooks/useAutomation'
 import {
   RouteEventType,
   TradeRoute,
   TradeRouteEvent,
+  TradeRouteStatus,
 } from '../../types/Automation'
 import { LocationMarketplaceResponse } from '../../types/Location'
 import { ListGoodTypesResponse } from '../../types/Order'
 import { ListShipsResponse, ListShipTypesResponse } from '../../types/Ship'
+import moment from 'moment'
+import 'moment-duration-format'
+import { AutomationStatus } from '../../providers/AutomationProvider'
+import RouteSteps from './components/RouteSteps'
+import AssignedShips from './components/AssignedShips'
+import Alert from '../../components/Alert'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -25,9 +33,11 @@ function Automation() {
   const [marketplaceShipSystem, setMarketplaceShipSystem] = useState<string>()
 
   const [newTradeRoute, setNewTradeRoute] = useState<TradeRoute>({
+    id: '',
     events: [],
     assignedShips: [],
-    paused: false,
+    autoRefuel: true,
+    status: TradeRouteStatus.ACTIVE,
   })
   const [newTradeRouteLocation, setNewTradeRouteLocation] =
     useState<TradeRouteEvent>({
@@ -43,53 +53,22 @@ function Automation() {
       },
     }
   )
-  const [tradeRoutes, setTradeRoutes] = useState<TradeRoute[]>([
-    {
-      events: [
-        {
-          type: RouteEventType.BUY,
-          good: {
-            good: 'FUEL',
-            quantity: 20,
-          },
-        },
-        {
-          type: RouteEventType.BUY,
-          good: {
-            good: 'METALS',
-            quantity: 80,
-          },
-        },
-        {
-          type: RouteEventType.TRAVEL,
-          location: 'OE-PM',
-        },
-        {
-          type: RouteEventType.SELL,
-          good: {
-            good: 'METALS',
-            quantity: 80,
-          },
-        },
-        {
-          type: RouteEventType.BUY,
-          good: {
-            good: 'FUEL',
-            quantity: 20,
-          },
-        },
-        {
-          type: RouteEventType.TRAVEL,
-          location: 'OE-PM-TR',
-        },
-      ],
-      assignedShips: ['ship1', 'ship2'],
-      paused: false,
-    },
-  ])
+  const [newTradeRouteShip, setNewTradeRouteShip] = useState('')
+
+  const [routeToManage, setRouteToManage] = useState<TradeRoute>()
 
   const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
   const [shipTypes, setShipTypes] = useState<ListShipTypesResponse>()
+
+  const {
+    status,
+    runTime,
+    tradeRoutes,
+    tradeRouteLog,
+    addTradeRoute,
+    removeTradeRoute,
+    updateTradeRouteStatus,
+  } = useAutomation()
 
   useEffect(() => {
     const init = async () => {
@@ -100,17 +79,27 @@ function Automation() {
     init()
   }, [])
 
-  console.log('goodTypes', goodTypes)
-  console.log('shipTypes', shipTypes)
+  // console.log('goodTypes', goodTypes)
+  // console.log('shipTypes', shipTypes)
 
-  const shipOptions = myShips?.ships.map((ship) => ({
-    value: ship.id,
-    label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
-      ship.maxCargo
-    }) [${ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0}] ${
-      ship.location
-    }`,
-  }))
+  const shipOptions = myShips?.ships
+    .filter(
+      (s) =>
+        !tradeRoutes
+          .reduce(
+            (acc: string[], cur) => [...acc, cur.assignedShips].flat(),
+            []
+          )
+          .includes(s.id)
+    )
+    ?.map((ship) => ({
+      value: ship.id,
+      label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
+        ship.maxCargo
+      }) [${
+        ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0
+      }] ${ship.location}`,
+    }))
 
   const marketplaceLocationOptions: { value: string; label: string }[] =
     useMemo(() => {
@@ -156,51 +145,6 @@ function Automation() {
     }
   }, [marketplaceShipSystem, knownSystemOptions])
 
-  const getIconForEvent = (event: RouteEventType) => {
-    switch (event) {
-      case RouteEventType.BUY:
-      case RouteEventType.SELL:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
-      case RouteEventType.TRAVEL:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-          </svg>
-        )
-    }
-  }
-
-  const getColourForEvent = (event: RouteEventType) => {
-    switch (event) {
-      case RouteEventType.BUY:
-        return 'blue'
-      case RouteEventType.SELL:
-        return 'green'
-      case RouteEventType.TRAVEL:
-        return 'gray'
-      default:
-        return 'black'
-    }
-  }
-
   const addGoodToTradeRouteDisabled = !(
     newTradeRoute.events.filter((e) => e.type === RouteEventType.TRAVEL)
       .length > 0
@@ -237,6 +181,54 @@ function Automation() {
       <main>
         <div className="bg-gray-100 min-h-screen">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div>
+              <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Status
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      <span
+                        className={
+                          'inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium' +
+                          (status === AutomationStatus.Running
+                            ? ' bg-green-100 text-green-800'
+                            : status === AutomationStatus.Stopped
+                            ? ' bg-red-100 text-red-800'
+                            : '')
+                        }
+                      >
+                        {status}
+                      </span>
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Run Time
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      {moment.duration(runTime, 'seconds').format('HH:mm:ss')}
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Tasks
+                    </dt>
+                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                      {tradeRoutes.length}
+                    </dd>
+                  </div>
+                </div>
+              </dl>
+            </div>
+
             <div className="max-w-7xl mx-auto py-6">
               <h2 className="text-2xl font-bold text-gray-900">Trading</h2>
             </div>
@@ -406,101 +398,39 @@ function Automation() {
                       </div>
                     </form>
 
-                    <div className="flow-root p-6 max-w-xl">
-                      {newTradeRoute.events.length > 0 ? (
-                        <ul className="-mb-8">
-                          {newTradeRoute.events.map((event, i) => (
-                            <li key={i}>
-                              <div className="relative pb-8">
-                                {i !== newTradeRoute.events.length - 1 && (
-                                  <span
-                                    className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
-                                    aria-hidden="true"
-                                  ></span>
-                                )}
-                                <div className="relative flex space-x-3">
-                                  <div>
-                                    <span
-                                      className={
-                                        'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
-                                        ` bg-${getColourForEvent(
-                                          event.type
-                                        )}-500`
-                                      }
-                                    >
-                                      {getIconForEvent(event.type)}
-                                    </span>
-                                  </div>
-                                  <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                    <div>
-                                      {event.type === RouteEventType.BUY ? (
-                                        <p className="text-sm text-gray-500">
-                                          Buy{' '}
-                                          <span className="font-medium text-gray-900">
-                                            {event.good?.quantity} units
-                                          </span>{' '}
-                                          of{' '}
-                                          <span className="font-medium text-gray-900">
-                                            {event.good?.good}
-                                          </span>
-                                        </p>
-                                      ) : event.type === RouteEventType.SELL ? (
-                                        <p className="text-sm text-gray-500">
-                                          Sell{' '}
-                                          <span className="font-medium text-gray-900">
-                                            {event.good?.quantity} units
-                                          </span>{' '}
-                                          of{' '}
-                                          <span className="font-medium text-gray-900">
-                                            {event.good?.good}
-                                          </span>
-                                        </p>
-                                      ) : event.type ===
-                                        RouteEventType.TRAVEL ? (
-                                        <p className="text-sm text-gray-500">
-                                          Travel to{' '}
-                                          <span className="font-medium text-gray-900">
-                                            {event.location}
-                                          </span>
-                                        </p>
-                                      ) : (
-                                        ''
-                                      )}
-                                    </div>
-                                    <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                      <button
-                                        className="text-red-600 hover:text-red-900"
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          setNewTradeRoute((prev) => ({
-                                            ...prev,
-                                            events: prev.events.filter(
-                                              (_, ei) => ei !== i
-                                            ),
-                                          }))
-                                        }}
-                                      >
-                                        Remove
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500">
-                          No steps defined. Start by adding either a trade or a
-                          travel step.
-                        </p>
-                      )}
-                    </div>
+                    <RouteSteps
+                      tradeRoute={newTradeRoute}
+                      setTradeRoute={setNewTradeRoute}
+                    />
 
                     <div className="mt-4 px-6">
                       <h4 className="text-md leading-6 font-medium text-gray-900">
-                        Assign Ship
+                        Assign Ships
                       </h4>
+                    </div>
+                    <div className="mt-4 px-6 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <input
+                          id="autoRefuel"
+                          name="autoRefuel"
+                          type="checkbox"
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          defaultChecked={newTradeRoute?.autoRefuel}
+                          onChange={(e) => {
+                            e.preventDefault()
+                            setNewTradeRoute((prev) => ({
+                              ...prev,
+                              autoRefuel: e.target.checked,
+                            }))
+                          }}
+                        />
+                        <label
+                          htmlFor="autoRefuel"
+                          className="ml-2 block text-sm text-gray-900"
+                        >
+                          Auto Refuel
+                        </label>
+                      </div>
                     </div>
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -508,69 +438,62 @@ function Automation() {
                           {shipOptions && (
                             <SelectMenu
                               label="Select Ship"
-                              options={shipOptions}
+                              options={shipOptions.filter(
+                                (s) =>
+                                  !newTradeRoute.assignedShips.includes(s.value)
+                              )}
                               onChange={(value) => {
-                                setNewTradeRoute((prev) => ({
-                                  ...prev,
-                                  assignedShips: [...prev.assignedShips, value],
-                                }))
+                                setNewTradeRouteShip(value)
                               }}
                             />
                           )}
                         </div>
+                        <div className="sm:col-span-2 pt-6">
+                          <button
+                            type="submit"
+                            className={
+                              'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (!newTradeRouteShip
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={!newTradeRouteShip}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (!newTradeRoute || !newTradeRouteShip) {
+                                return
+                              }
+                              setNewTradeRoute((prev) => ({
+                                ...prev,
+                                assignedShips: [
+                                  ...prev.assignedShips,
+                                  newTradeRouteShip,
+                                ],
+                              }))
+                            }}
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
                     </form>
 
-                    <div className="flow-root p-6 max-w-xl">
-                      {newTradeRoute.assignedShips.length > 0 ? (
-                        newTradeRoute.assignedShips.map((ship, i) => (
-                          <div key={i}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <span
-                                  className={
-                                    'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
-                                    ` bg-gray-500`
-                                  }
-                                >
-                                  {getIconForEvent(RouteEventType.TRAVEL)}
-                                </span>
-                                <div className="ml-2">
-                                  <p className="text-sm text-gray-900">
-                                    {ship}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                <button
-                                  className="text-red-600 hover:text-red-900"
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    setNewTradeRoute((prev) => ({
-                                      ...prev,
-                                      assignedShips: prev.assignedShips.filter(
-                                        (s) => s !== ship
-                                      ),
-                                    }))
-                                  }}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">
-                          No ships assigned.
-                        </p>
-                      )}
-                    </div>
+                    <AssignedShips
+                      tradeRoute={newTradeRoute}
+                      setTradeRoute={setNewTradeRoute}
+                    />
 
                     <div className="p-6">
                       <button
                         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        onClick={() => {}}
+                        onClick={() => {
+                          addTradeRoute(newTradeRoute)
+                          setNewTradeRoute({
+                            ...newTradeRoute,
+                            events: [],
+                            assignedShips: [],
+                          })
+                        }}
                       >
                         Save
                       </button>
@@ -615,6 +538,18 @@ function Automation() {
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
+                              Auto Refuel
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Status
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Actions
                             </th>
                           </tr>
@@ -643,50 +578,61 @@ function Automation() {
                                     .join(' → ')}
                                 </td>
                                 <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                  {route.events
-                                    .filter(
-                                      (e) =>
-                                        e.type === RouteEventType.BUY ||
-                                        e.type === RouteEventType.SELL
-                                    )
-                                    .reduce(
-                                      (acc: string[], cur) => [
-                                        ...acc,
-                                        String(cur.good?.good),
-                                      ],
-                                      []
-                                    )
-                                    .join(', ')}
+                                  {[
+                                    ...new Set(
+                                      route.events
+                                        .filter(
+                                          (e) =>
+                                            e.type === RouteEventType.BUY ||
+                                            e.type === RouteEventType.SELL
+                                        )
+                                        .reduce(
+                                          (acc: string[], cur) => [
+                                            ...acc,
+                                            String(cur.good?.good),
+                                          ],
+                                          []
+                                        )
+                                    ),
+                                  ].join(', ')}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                   {route.assignedShips.join(', ')}
                                 </td>
+                                <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                                  {route.autoRefuel ? 'Yes' : 'No'}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                  {!route.paused ? (
-                                    <button
-                                      className="text-indigo-600 hover:text-indigo-900"
-                                      onClick={() => {}}
-                                    >
-                                      Pause
-                                    </button>
-                                  ) : (
-                                    <button
-                                      className="text-green-600 hover:text-green-900"
-                                      onClick={() => {}}
-                                    >
-                                      Resume
-                                    </button>
-                                  )}
-                                  <button
-                                    className="ml-4 text-indigo-600 hover:text-indigo-900"
-                                    onClick={() => {}}
+                                  <span
+                                    className={
+                                      'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                      (route.status === TradeRouteStatus.ACTIVE
+                                        ? ' bg-green-100 text-green-800'
+                                        : route.status ===
+                                          TradeRouteStatus.PAUSED
+                                        ? ' bg-yellow-100 text-yellow-800'
+                                        : route.status ===
+                                          TradeRouteStatus.ERROR
+                                        ? ' bg-red-100 text-red-800'
+                                        : '')
+                                    }
                                   >
-                                    View Log
+                                    {route.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                  <button
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                    onClick={() => {
+                                      setRouteToManage(route)
+                                    }}
+                                  >
+                                    Manage
                                   </button>
                                   <button
                                     className="ml-4 text-red-600 hover:text-red-900"
                                     onClick={() => {
-                                      // removeRoute(route.id)
+                                      removeTradeRoute(route.id)
                                     }}
                                   >
                                     Remove
@@ -698,7 +644,7 @@ function Automation() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={4}
+                                colSpan={5}
                               >
                                 No routes available.
                               </td>
@@ -719,6 +665,80 @@ function Automation() {
           title="Info"
           content="Automation rules are saved to a secondary database. This means that you can leave the game and come back later and still have the rules you set."
           handleClose={() => setShowInfo(false)}
+        />
+      )}
+      {routeToManage && (
+        <SimpleModal
+          title="Manage Route"
+          content={
+            <div>
+              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
+                TradeRouteStatus.ERROR && (
+                <Alert message={routeToManage.errorMessage} />
+              )}
+              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
+                TradeRouteStatus.ACTIVE && (
+                <button
+                  className="mt-4 text-red-600 hover:text-red-900"
+                  onClick={() => {
+                    updateTradeRouteStatus(
+                      routeToManage.id,
+                      TradeRouteStatus.PAUSED
+                    )
+                  }}
+                >
+                  Pause
+                </button>
+              )}
+              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
+                TradeRouteStatus.ACTIVE && (
+                <button
+                  className="mt-4 text-green-600 hover:text-green-900"
+                  onClick={() => {
+                    updateTradeRouteStatus(
+                      routeToManage.id,
+                      TradeRouteStatus.ACTIVE
+                    )
+                  }}
+                >
+                  Resume
+                </button>
+              )}
+              <div className="mt-4">
+                <h4 className="text-md leading-6 font-medium text-gray-900">
+                  Steps
+                </h4>
+              </div>
+              <RouteSteps tradeRoute={routeToManage} />
+              <div className="mt-4">
+                <h4 className="text-md leading-6 font-medium text-gray-900">
+                  Assigned Ships
+                </h4>
+              </div>
+              <div className="mt-4">
+                Auto Refuel: {routeToManage.autoRefuel ? 'Yes' : 'No'}
+              </div>
+              <AssignedShips tradeRoute={routeToManage} />
+              <details>
+                <summary className="text-md leading-6 font-medium text-gray-900 hover:cursor-pointer">
+                  Show log
+                </summary>
+                <div
+                  className="bg-gray-900 p-4 rounded-md text-white overflow-auto"
+                  style={{ height: '200px' }}
+                >
+                  <pre className="text-xs">
+                    {tradeRouteLog[routeToManage.id]?.map(
+                      (l: string, i: number) => (
+                        <p key={i}>{l}</p>
+                      )
+                    )}
+                  </pre>
+                </div>
+              </details>
+            </div>
+          }
+          handleClose={() => setRouteToManage(undefined)}
         />
       )}
     </>

@@ -56,8 +56,8 @@ function Marketplace() {
     init()
   }, [])
 
-  console.log('goodTypes', goodTypes)
-  console.log('shipTypes', shipTypes)
+  // console.log('goodTypes', goodTypes)
+  // console.log('shipTypes', shipTypes)
 
   const shipOptions = myShips?.ships.map((ship) => ({
     value: ship.id,

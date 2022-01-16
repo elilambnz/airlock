@@ -26,6 +26,7 @@ import { getMyAccount } from './api/routes/my'
 
 import Plausible from 'plausible-tracker'
 import { API_TOKEN_KEY, removeValue } from './utils/browserStorage'
+import { AutomationProvider } from './providers/AutomationProvider'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
@@ -99,17 +100,19 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route element={<AppLayout />}>
-            {routes.map(({ path, element }) => (
-              <Route key={path} path={path} element={element} />
-            ))}
-          </Route>
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
+        <AutomationProvider>
+          <Routes>
+            <Route element={<AppLayout />}>
+              {routes.map(({ path, element }) => (
+                <Route key={path} path={path} element={element} />
+              ))}
+            </Route>
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </AutomationProvider>
       </AuthProvider>
     </BrowserRouter>
   )

@@ -213,27 +213,30 @@ Testing a return trip with manual trading.
 
 | LOCATION | PRICE/UNIT | PURCHASE PRICE/UNIT | SELL PRICE/UNIT | SPREAD |
 | -------- | ---------- | ------------------- | --------------- | ------ |
-| OE-KO    | 37         | 39                  | 35              | 2      |
-| OE-NY    | 70         | 72                  | 68              | 2      |
+| OE-KO    | 39         | 41                  | 37              | 2      |
+| OE-NY    | 64         | 67                  | 61              | 3      |
 
 | FROM  | TO    | PROFIT/UNIT | \*80 UNITS | FUEL REQUIRED |
 | ----- | ----- | ----------- | ---------- | ------------- |
-| OE-KO | OE-NY | 29          | 2,320      | 17            |
+| OE-KO | OE-NY | 20          | 1,600      | 17            |
 
 **METALS**
 
 | LOCATION | PRICE/UNIT | PURCHASE PRICE/UNIT | SELL PRICE/UNIT | SPREAD |
 | -------- | ---------- | ------------------- | --------------- | ------ |
-| OE-KO    | 30         | 31                  | 29              | 1      |
-| OE-PM-TR | 13         | 14                  | 12              | 1      |
-| OE-PM    | 29         | 30                  | 28              | 1      |
+| OE-KO    | 27         | 28                  | 26              | 1      |
+| OE-PM-TR | ?          | ?                   | ?               | ?      |
+| OE-PM    | ?          | ?                   | ?               | ?      |
 | OE-NY    | 10         | 11                  | 9               | 1      |
 
 | FROM  | TO    | PROFIT/UNIT | \*80 UNITS | FUEL REQUIRED |
 | ----- | ----- | ----------- | ---------- | ------------- |
-| OE-NY | OE-KO | 16          | 1,280      | 17            |
+| OE-NY | OE-KO | 15          | 1,200      | 17            |
 
 **TOTAL**
 
-~ 3,600 profit per round trip \* 3 ships
-= ~10,800
+~ 2,800 profit per round trip
+
+\* 3 ships = ~8,400 (minus fuel)
+
+\* 4 ships = ~11,200 (minus fuel)

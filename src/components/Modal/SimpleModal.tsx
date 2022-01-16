@@ -5,7 +5,7 @@ interface SimpleModalProps {
 }
 
 const SimpleModal = (props: SimpleModalProps) => {
-  const { content, handleClose } = props
+  const { title, content, handleClose } = props
 
   return (
     <div className="bg-gray-300" style={{ height: '560px' }}>
@@ -53,7 +53,7 @@ const SimpleModal = (props: SimpleModalProps) => {
                   className="text-lg leading-6 font-medium text-gray-900"
                   id="modal-headline"
                 >
-                  {props.title}
+                  {title}
                 </h3>
               </div>
             </div>
