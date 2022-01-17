@@ -1,4 +1,4 @@
-import { Good } from './Order'
+import { GoodType } from './Order'
 import { ShipExternal } from './Ship'
 import { Structure } from './Structure'
 
@@ -36,7 +36,7 @@ export type LocationMarketplace = {
   quantityAvailable: number
   sellPricePerUnit: number
   spread: number
-  symbol: Good
+  symbol: GoodType
   volumePerUnit: number
 }
 

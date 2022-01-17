@@ -1,4 +1,4 @@
-import { Good } from './Order'
+import { GoodType } from './Order'
 import { Ship } from './Ship'
 
 export type ListStructureTypesResponse = {
@@ -7,10 +7,10 @@ export type ListStructureTypesResponse = {
 
 export type StructureType = {
   allowedLocationTypes: string[]
-  consumes: Good[]
+  consumes: GoodType[]
   name: string
   price: number
-  produces: Good[]
+  produces: GoodType[]
   type: string
 }
 
@@ -24,18 +24,18 @@ export type OwnStructureResponse = {
 
 export type OwnStructure = {
   active: boolean
-  consumes: Good[]
+  consumes: GoodType[]
   id: string
   inventory: Material[]
   location: string
   ownedBy: { username: string }
-  produces: Good[]
+  produces: GoodType[]
   status: string
   type: StructureCategory
 }
 
 export type Material = {
-  good: Good
+  good: GoodType
   quantity: number
 }
 

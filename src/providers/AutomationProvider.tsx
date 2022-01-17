@@ -18,7 +18,7 @@ import {
   TradeRoute,
   TradeRouteStatus,
 } from '../types/Automation'
-import { Good } from '../types/Order'
+import { GoodType } from '../types/Order'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -30,8 +30,8 @@ export const AutomationContext = createContext({
   runTime: 0,
   tradeRoutes: [] as TradeRoute[],
   tradeRouteLog: {} as { [id: string]: string[] },
-  addTradeRoute: (tradeRoute: TradeRoute) => {},
-  removeTradeRoute: (id: string, version: number) => {},
+  addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
+  removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
   updateTradeRouteStatus: (id: string, status: TradeRouteStatus) => {},
 })
 
@@ -100,6 +100,7 @@ export const AutomationProvider = (props: any) => {
     } else {
       stop()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, tradeRoutes])
 
   const sleep = (ms: number) => {
@@ -161,7 +162,7 @@ export const AutomationProvider = (props: any) => {
                       )
                       const purchaseResult = await createPurchaseOrder(
                         ship.ship.id,
-                        Good.FUEL,
+                        GoodType.FUEL,
                         fuelRequired
                       )
                       updateUser({ credits: purchaseResult.credits })
@@ -327,9 +328,9 @@ export const AutomationProvider = (props: any) => {
     }
   }
 
-  const removeTradeRoute = (id: string, version: number) => {
+  const removeTradeRoute = async (id: string, version: number) => {
     try {
-      const response = removeTradingRoute(id, version)
+      const response = await removeTradingRoute(id, version)
       console.log('removeTradeRoute', response)
 
       setTradeRoutes((prev) => prev.filter((r) => r.id !== id))

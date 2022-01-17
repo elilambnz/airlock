@@ -7,7 +7,7 @@ export type OrderResponse = {
 }
 
 export type Order = {
-  good: Good
+  good: GoodType
   pricePerUnit: number
   quantity: number
   total: number
@@ -17,7 +17,7 @@ export type ListGoodTypesResponse = {
   goods: Good[]
 }
 
-export enum Good {
+export enum GoodType {
   FUEL = 'FUEL',
   CHEMICALS = 'CHEMICALS',
   METALS = 'METALS',
@@ -42,4 +42,10 @@ export enum Good {
   NANOBOTS = 'NANOBOTS',
   RESEARCH = 'RESEARCH',
   ZUCO_CRYSTALS = 'ZUCO_CRYSTALS',
+}
+
+export type Good = {
+  name: string
+  symbol: GoodType
+  volumePerUnit: number
 }

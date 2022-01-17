@@ -4,10 +4,12 @@ import { RouteEventType, TradeRoute } from '../../../types/Automation'
 interface RouteStepsProps {
   tradeRoute: TradeRoute
   setTradeRoute?: React.Dispatch<React.SetStateAction<TradeRoute>>
+  notActive?: boolean
+  handleResume?: (index: number) => void
 }
 
 const RouteSteps = (props: RouteStepsProps) => {
-  const { tradeRoute, setTradeRoute } = props
+  const { tradeRoute, setTradeRoute, notActive, handleResume } = props
 
   const getIconForEvent = (event: RouteEventType) => {
     switch (event) {
@@ -126,6 +128,19 @@ const RouteSteps = (props: RouteStepsProps) => {
                           }}
                         >
                           Remove
+                        </button>
+                      </div>
+                    )}
+                    {notActive && handleResume && (
+                      <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                        <button
+                          className="text-green-600 hover:text-green-900"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleResume(i)
+                          }}
+                        >
+                          Resume from step
                         </button>
                       </div>
                     )}

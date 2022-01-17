@@ -1,4 +1,4 @@
-import { Good } from './Order'
+import { GoodType } from './Order'
 import { PurchaseLocation } from './System'
 
 export type ListShipTypesResponse = {
@@ -36,7 +36,7 @@ export type Ship = {
 }
 
 export type ShipCargo = {
-  good: Good
+  good: GoodType
   quantity: number
   totalVolume: number
 }
@@ -51,7 +51,7 @@ export type BuyShipResponse = {
 }
 
 export type ShipJettisonCargoResponse = {
-  good: Good
+  good: GoodType
   quantityRemaining: number
   shipId: string
 }

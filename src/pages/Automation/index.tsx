@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { getLocationMarketplace } from '../../api/routes/locations'
 import { listMyShips } from '../../api/routes/my'
-import { getShipListings } from '../../api/routes/systems'
-import { listGoodTypes, listShipTypes } from '../../api/routes/types'
+import { getSystemLocations } from '../../api/routes/systems'
+import { listGoodTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
 import SelectMenu from '../../components/SelectMenu'
@@ -13,15 +12,17 @@ import {
   TradeRouteEvent,
   TradeRouteStatus,
 } from '../../types/Automation'
-import { LocationMarketplaceResponse } from '../../types/Location'
+import { ListSystemLocationsResponse } from '../../types/System'
 import { ListGoodTypesResponse } from '../../types/Order'
-import { ListShipsResponse, ListShipTypesResponse } from '../../types/Ship'
+import { ListShipsResponse } from '../../types/Ship'
 import moment from 'moment'
 import 'moment-duration-format'
 import { AutomationStatus } from '../../providers/AutomationProvider'
 import RouteSteps from './components/RouteSteps'
 import AssignedShips from './components/AssignedShips'
 import Alert from '../../components/Alert'
+import { getLocationMarketplace } from '../../api/routes/locations'
+import { LocationMarketplaceResponse } from '../../types/Location'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -29,8 +30,12 @@ function Automation() {
   const [showInfo, setShowInfo] = useState(false)
   const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [marketplaceLocation, setMarketplaceLocation] = useState<string>()
-  const [marketplace, setMarketplace] = useState<LocationMarketplaceResponse>()
-  const [marketplaceShipSystem, setMarketplaceShipSystem] = useState<string>()
+  const [currentSystem, setCurrentSystem] = useState<string>()
+  const [availableLocations, setAvailableLocations] =
+    useState<ListSystemLocationsResponse>()
+  const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
+  const [availableGoods, setAvailableGoods] =
+    useState<LocationMarketplaceResponse>()
 
   const [newTradeRoute, setNewTradeRoute] = useState<TradeRoute>({
     _version: 0,
@@ -55,11 +60,7 @@ function Automation() {
     }
   )
   const [newTradeRouteShip, setNewTradeRouteShip] = useState('')
-
   const [routeToManage, setRouteToManage] = useState<TradeRoute>()
-
-  const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
-  const [shipTypes, setShipTypes] = useState<ListShipTypesResponse>()
 
   const {
     status,
@@ -75,13 +76,9 @@ function Automation() {
     const init = async () => {
       setMyShips(await listMyShips())
       setGoodTypes(await listGoodTypes())
-      setShipTypes(await listShipTypes())
     }
     init()
   }, [])
-
-  // console.log('goodTypes', goodTypes)
-  // console.log('shipTypes', shipTypes)
 
   const shipOptions = myShips?.ships
     .filter(
@@ -102,37 +99,13 @@ function Automation() {
       }] ${ship.location}`,
     }))
 
-  const marketplaceLocationOptions: { value: string; label: string }[] =
-    useMemo(() => {
-      return (
-        myShips?.ships
-          .filter((s) => !!s.location)
-          ?.map((s) => ({
-            value: s.location!,
-            label: s.location!,
-          })) ?? []
-      )
-    }, [myShips?.ships])
+  const knownSystems = useMemo(() => {
+    return new Set([
+      STARTER_SYSTEM,
+      ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
+    ])
+  }, [myShips?.ships])
 
-  useEffect(() => {
-    if (!marketplaceLocation && marketplaceLocationOptions.length > 0) {
-      setMarketplaceLocation(marketplaceLocationOptions[0].value)
-    }
-  }, [marketplaceLocation, marketplaceLocationOptions])
-
-  useEffect(() => {
-    if (marketplaceLocation) {
-      const updateMarketplace = async () => {
-        setMarketplace(await getLocationMarketplace(marketplaceLocation))
-      }
-      updateMarketplace()
-    }
-  }, [marketplaceLocation])
-
-  const knownSystems = new Set([
-    STARTER_SYSTEM,
-    ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
-  ])
   const knownSystemOptions: { value: string; label: string }[] = [
     ...knownSystems,
   ].map((s) => ({
@@ -141,15 +114,99 @@ function Automation() {
   }))
 
   useEffect(() => {
-    if (!marketplaceShipSystem && knownSystemOptions.length > 0) {
-      setMarketplaceShipSystem(knownSystemOptions[0].value)
+    if (!currentSystem && [...knownSystems].length > 0) {
+      setCurrentSystem([...knownSystems][0])
     }
-  }, [marketplaceShipSystem, knownSystemOptions])
+  }, [currentSystem, knownSystems])
+
+  useEffect(() => {
+    if (currentSystem) {
+      const updateLocations = async () => {
+        try {
+          setAvailableLocations(undefined)
+          setAvailableLocations(await getSystemLocations(currentSystem))
+        } catch (error) {
+          console.error('Error getting locations', error)
+        }
+      }
+      updateLocations()
+    }
+  }, [currentSystem])
+
+  useEffect(() => {
+    const travelEvents = newTradeRoute.events.filter(
+      (e) => e.type === RouteEventType.TRAVEL
+    )
+    const lastTravelEvent = travelEvents[travelEvents.length - 1]
+    if (currentSystem && lastTravelEvent) {
+      setMarketplaceLocation(lastTravelEvent.location)
+    }
+  }, [currentSystem, newTradeRoute])
+
+  useEffect(() => {
+    if (marketplaceLocation) {
+      const updateGoods = async () => {
+        try {
+          setAvailableGoods(undefined)
+          setAvailableGoods(await getLocationMarketplace(marketplaceLocation))
+        } catch (error) {
+          console.error('Error getting goods', error)
+        }
+      }
+      updateGoods()
+    }
+  }, [marketplaceLocation])
+
+  const locationOptions = availableLocations?.locations.map((l) => ({
+    value: l.symbol,
+    label: `${l.name} (${l.symbol})`,
+  }))
+
+  const goodOptions = goodTypes?.goods.map((g) => {
+    const availableGood = availableGoods?.marketplace.find((m) => {
+      return m.symbol === g.symbol
+    })
+    return {
+      value: g.symbol,
+      label: `${g.name} ${
+        availableGood
+          ? `(${
+              newTradeRouteTrade.type === RouteEventType.BUY
+                ? `Buy: ${availableGood.purchasePricePerUnit}`
+                : RouteEventType.SELL
+                ? `Sell: ${availableGood.sellPricePerUnit}`
+                : 0
+            })`
+          : ''
+      }`,
+    }
+  })
 
   const addGoodToTradeRouteDisabled = !(
     newTradeRoute.events.filter((e) => e.type === RouteEventType.TRAVEL)
       .length > 0
   )
+
+  const handleSaveTradeRoute = async () => {
+    try {
+      await addTradeRoute(newTradeRoute)
+      setNewTradeRoute({
+        ...newTradeRoute,
+        events: [],
+        assignedShips: [],
+      })
+    } catch (error) {
+      console.error('Error adding trade route', error)
+    }
+  }
+
+  const handleRemoveTradeRoute = async (id: string, version: number) => {
+    try {
+      await removeTradeRoute(id, version)
+    } catch (error) {
+      console.error('Error removing trade route', error)
+    }
+  }
 
   return (
     <>
@@ -254,31 +311,26 @@ function Automation() {
                         <div className="sm:col-span-2">
                           <SelectMenu
                             label="Select Destination System"
-                            options={[
-                              {
-                                value: STARTER_SYSTEM,
-                                label: STARTER_SYSTEM,
-                              },
-                            ]}
-                            onChange={(value) => {}}
+                            options={knownSystemOptions}
+                            value={currentSystem}
+                            onChange={(value) => {
+                              setCurrentSystem(value)
+                            }}
                           />
                         </div>
                         <div className="sm:col-span-2">
-                          <SelectMenu
-                            label="Select Destination Location"
-                            options={[
-                              {
-                                value: marketplaceLocation,
-                                label: marketplaceLocation,
-                              },
-                            ]}
-                            onChange={(value) => {
-                              setNewTradeRouteLocation((prev) => ({
-                                ...prev,
-                                location: value,
-                              }))
-                            }}
-                          />
+                          {locationOptions && (
+                            <SelectMenu
+                              label="Select Destination Location"
+                              options={locationOptions}
+                              onChange={(value) => {
+                                setNewTradeRouteLocation((prev) => ({
+                                  ...prev,
+                                  location: value,
+                                }))
+                              }}
+                            />
+                          )}
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button
@@ -304,25 +356,22 @@ function Automation() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          <SelectMenu
-                            label="Select Good"
-                            options={[
-                              {
-                                value: 'FUEL',
-                                label: 'FUEL',
-                              },
-                            ]}
-                            onChange={(value) => {
-                              setNewTradeRouteTrade((prev) => ({
-                                ...prev,
-                                good: {
-                                  ...prev.good,
-                                  good: value,
-                                  quantity: prev.good?.quantity || 1,
-                                },
-                              }))
-                            }}
-                          />
+                          {goodOptions && (
+                            <SelectMenu
+                              label="Select Good"
+                              options={goodOptions}
+                              onChange={(value) => {
+                                setNewTradeRouteTrade((prev) => ({
+                                  ...prev,
+                                  good: {
+                                    ...prev.good,
+                                    good: value,
+                                    quantity: prev.good?.quantity || 1,
+                                  },
+                                }))
+                              }}
+                            />
+                          )}
                         </div>
                         <div className="sm:col-span-1">
                           <label
@@ -488,12 +537,7 @@ function Automation() {
                       <button
                         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={() => {
-                          addTradeRoute(newTradeRoute)
-                          setNewTradeRoute({
-                            ...newTradeRoute,
-                            events: [],
-                            assignedShips: [],
-                          })
+                          handleSaveTradeRoute()
                         }}
                       >
                         Save
@@ -633,7 +677,10 @@ function Automation() {
                                   <button
                                     className="ml-4 text-red-600 hover:text-red-900"
                                     onClick={() => {
-                                      removeTradeRoute(route.id, route._version)
+                                      handleRemoveTradeRoute(
+                                        route.id,
+                                        route._version
+                                      )
                                     }}
                                   >
                                     Remove
@@ -702,7 +749,7 @@ function Automation() {
                     )
                   }}
                 >
-                  Resume
+                  Resume from start
                 </button>
               )}
               <div className="mt-4">
@@ -710,7 +757,19 @@ function Automation() {
                   Steps
                 </h4>
               </div>
-              <RouteSteps tradeRoute={routeToManage} />
+              <RouteSteps
+                tradeRoute={routeToManage}
+                notActive={
+                  tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
+                  TradeRouteStatus.ACTIVE
+                }
+                handleResume={() => {
+                  updateTradeRouteStatus(
+                    routeToManage.id,
+                    TradeRouteStatus.ACTIVE
+                  )
+                }}
+              />
               <div className="mt-4">
                 <h4 className="text-md leading-6 font-medium text-gray-900">
                   Assigned Ships
