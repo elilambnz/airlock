@@ -69,7 +69,8 @@ function Automation() {
     tradeRouteLog,
     addTradeRoute,
     removeTradeRoute,
-    updateTradeRouteStatus,
+    pauseTradeRoute,
+    resumeTradeRoute,
   } = useAutomation()
 
   useEffect(() => {
@@ -729,10 +730,7 @@ function Automation() {
                 <button
                   className="mt-4 text-red-600 hover:text-red-900"
                   onClick={() => {
-                    updateTradeRouteStatus(
-                      routeToManage.id,
-                      TradeRouteStatus.PAUSED
-                    )
+                    pauseTradeRoute(routeToManage.id)
                   }}
                 >
                   Pause
@@ -743,10 +741,7 @@ function Automation() {
                 <button
                   className="mt-4 text-green-600 hover:text-green-900"
                   onClick={() => {
-                    updateTradeRouteStatus(
-                      routeToManage.id,
-                      TradeRouteStatus.ACTIVE
-                    )
+                    resumeTradeRoute(routeToManage.id)
                   }}
                 >
                   Resume from start
@@ -763,11 +758,8 @@ function Automation() {
                   tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
                   TradeRouteStatus.ACTIVE
                 }
-                handleResume={() => {
-                  updateTradeRouteStatus(
-                    routeToManage.id,
-                    TradeRouteStatus.ACTIVE
-                  )
+                handleResume={(step: number) => {
+                  resumeTradeRoute(routeToManage.id, step)
                 }}
               />
               <div className="mt-4">

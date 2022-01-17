@@ -14,7 +14,7 @@ const getLocationMarketplace = async (locationSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -26,7 +26,7 @@ const getLocationStructures = async (locationSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

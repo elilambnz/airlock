@@ -30,7 +30,7 @@ const getTradingRoutes = async () => {
     return routes
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -54,7 +54,7 @@ const createTradingRoute = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -69,7 +69,7 @@ const removeTradingRoute = async (id: string, version: number) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

@@ -14,7 +14,7 @@ const listGoodTypes = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -26,7 +26,7 @@ const listShipTypes = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -38,7 +38,7 @@ const listLoanTypes = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -50,7 +50,7 @@ const listStructureTypes = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

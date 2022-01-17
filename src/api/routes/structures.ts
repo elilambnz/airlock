@@ -14,7 +14,7 @@ const getStructureInfo = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -36,7 +36,7 @@ const depositToStructure = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

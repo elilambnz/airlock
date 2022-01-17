@@ -35,7 +35,7 @@ const getMyAccount = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -47,7 +47,7 @@ const listMyShips = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -59,7 +59,7 @@ const getShipInfo = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -79,7 +79,7 @@ const jettisonShipCargo = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -91,7 +91,7 @@ const scrapShip = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -113,7 +113,7 @@ const transferShipCargo = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -129,7 +129,7 @@ const buyShip = async (location: string, type: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -141,7 +141,7 @@ const listMyLoans = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -153,7 +153,7 @@ const payOffLoan = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -168,7 +168,7 @@ const takeOutLoan = async (type: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -181,7 +181,7 @@ const listMyStructures = async () => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -194,7 +194,7 @@ const getMyStructureInfo = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -210,7 +210,7 @@ const createNewStructure = async (location: string, type: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -232,7 +232,7 @@ const depositToMyStructure = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -254,7 +254,7 @@ const withdrawFromMyStructure = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -270,7 +270,7 @@ const createNewFlightPlan = async (shipId: string, destination: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -282,7 +282,7 @@ const getFlightPlanInfo = async (id: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -303,7 +303,7 @@ const createPurchaseOrder = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -324,7 +324,7 @@ const createSellOrder = async (
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -339,7 +339,7 @@ const initiateWarpJump = async (shipId: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

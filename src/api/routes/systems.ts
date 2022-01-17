@@ -17,7 +17,7 @@ const getShipListings = async (systemSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -29,7 +29,7 @@ const getSystemInfo = async (systemSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -41,7 +41,7 @@ const getSystemLocations = async (systemSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -53,7 +53,7 @@ const getSystemFlightPlans = async (systemSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 
@@ -65,7 +65,7 @@ const getSystemDockedShips = async (systemSymbol: string) => {
     return response.data
   } catch (error: any) {
     console.error(error)
-    throw error.response.data.error
+    throw error.response?.data?.error
   }
 }
 

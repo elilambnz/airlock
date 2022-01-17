@@ -19,6 +19,7 @@ import {
   TradeRouteStatus,
 } from '../types/Automation'
 import { GoodType } from '../types/Order'
+import { sleep } from '../utils/helpers'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -32,7 +33,8 @@ export const AutomationContext = createContext({
   tradeRouteLog: {} as { [id: string]: string[] },
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
-  updateTradeRouteStatus: (id: string, status: TradeRouteStatus) => {},
+  pauseTradeRoute: (id: string) => {},
+  resumeTradeRoute: (id: string, step?: number) => {},
 })
 
 export const AutomationProvider = (props: any) => {
@@ -103,10 +105,6 @@ export const AutomationProvider = (props: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, tradeRoutes])
 
-  const sleep = (ms: number) => {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
   // FIXME: Pausing and resuming trade routes is not working
   const automateTradeRoute = async (
     tradeRoute: TradeRoute,
@@ -114,7 +112,18 @@ export const AutomationProvider = (props: any) => {
   ) => {
     if (tradeRoute.status === TradeRouteStatus.ACTIVE) {
       try {
-        for (const event of tradeRoute.events) {
+        // for (const event of tradeRoute.events) {
+        console.log('startFromStep', tradeRoute.startFromStep ?? 0)
+
+        for (
+          let i = tradeRoute.startFromStep ?? 0;
+          i < tradeRoute.events.length;
+          i++
+        ) {
+          console.log('*** step', i)
+
+          const event = tradeRoute.events[i]
+
           try {
             if (event.type === RouteEventType.TRAVEL) {
               if (!event.location) {
@@ -274,6 +283,17 @@ export const AutomationProvider = (props: any) => {
           tradeRoute.id,
           'Trade route completed. Starting again.'
         )
+        // Reset startFromStep
+        setTradeRoutes((prev) =>
+          prev.map((r) =>
+            r.id === tradeRoute.id
+              ? {
+                  ...r,
+                  startFromStep: 0,
+                }
+              : r
+          )
+        )
         automateTradeRoute(tradeRoute, taskIndex)
       } catch (error: any) {
         console.error('EXIT LOOP', error)
@@ -347,6 +367,26 @@ export const AutomationProvider = (props: any) => {
     )
   }
 
+  const pauseTradeRoute = async (id: string) => {
+    updateTradeRouteStatus(id, TradeRouteStatus.PAUSED)
+  }
+
+  const resumeTradeRoute = async (id: string, step?: number) => {
+    console.log('resumeTradeRoute', id, step)
+
+    setTradeRoutes((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status: TradeRouteStatus.ACTIVE,
+              startFromStep: step ?? 0,
+            }
+          : r
+      )
+    )
+  }
+
   const tick = () => {
     setRunTime((prev) => prev + 1)
   }
@@ -358,7 +398,8 @@ export const AutomationProvider = (props: any) => {
     tradeRouteLog,
     addTradeRoute,
     removeTradeRoute,
-    updateTradeRouteStatus,
+    pauseTradeRoute,
+    resumeTradeRoute,
   }
   return <AutomationContext.Provider value={value} {...props} />
 }

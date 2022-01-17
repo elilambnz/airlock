@@ -6,6 +6,7 @@ export type TradeRoute = {
   autoRefuel: boolean
   status: TradeRouteStatus
   errorMessage?: string
+  startFromStep?: number
 }
 
 export type TradeRouteEvent = {
