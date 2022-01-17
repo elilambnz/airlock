@@ -12,6 +12,7 @@ import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
 import SelectMenu from '../../components/SelectMenu'
 import LoadingRows from '../../components/Table/LoadingRows'
+import { useUpdateUser } from '../../hooks/useUpdateUser'
 import {
   LocationMarketplace,
   LocationMarketplaceResponse,
@@ -46,6 +47,8 @@ function Marketplace() {
   const [goodToBuy, setGoodToBuy] = useState<GoodToProcess | null>(null)
   const [goodToSell, setGoodToSell] = useState<GoodToProcess | null>(null)
   const [shipToBuy, setShipToBuy] = useState<ShipListing | null>(null)
+
+  const updateUser = useUpdateUser()
 
   useEffect(() => {
     const init = async () => {
@@ -131,6 +134,7 @@ function Marketplace() {
         goodToProcess.symbol,
         goodToProcess.quantity
       )
+      updateUser({ credits: result.credits })
       console.log(result)
     } catch (error) {
       console.error(error)
@@ -147,6 +151,7 @@ function Marketplace() {
         goodToProcess.symbol,
         goodToProcess.quantity
       )
+      updateUser({ credits: result.credits })
       console.log(result)
     } catch (error) {
       console.error(error)
@@ -156,6 +161,7 @@ function Marketplace() {
   const handleBuyShip = async (location: string, type: string) => {
     try {
       const result = await buyShip(location, type)
+      updateUser({ credits: result.credits })
       console.log(result)
     } catch (error) {
       console.error(error)

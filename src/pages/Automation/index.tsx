@@ -33,6 +33,7 @@ function Automation() {
   const [marketplaceShipSystem, setMarketplaceShipSystem] = useState<string>()
 
   const [newTradeRoute, setNewTradeRoute] = useState<TradeRoute>({
+    _version: 0,
     id: '',
     events: [],
     assignedShips: [],
@@ -632,7 +633,7 @@ function Automation() {
                                   <button
                                     className="ml-4 text-red-600 hover:text-red-900"
                                     onClick={() => {
-                                      removeTradeRoute(route.id)
+                                      removeTradeRoute(route.id, route._version)
                                     }}
                                   >
                                     Remove
@@ -644,7 +645,7 @@ function Automation() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={5}
+                                colSpan={6}
                               >
                                 No routes available.
                               </td>

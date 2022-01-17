@@ -1,4 +1,5 @@
 export type TradeRoute = {
+  _version: number
   id: string
   events: TradeRouteEvent[]
   assignedShips: string[]

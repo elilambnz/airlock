@@ -1,5 +1,10 @@
 import React, { useState, useEffect, createContext } from 'react'
 import {
+  getTradingRoutes,
+  createTradingRoute,
+  removeTradingRoute,
+} from '../api/routes/auxiliary'
+import {
   createNewFlightPlan,
   createPurchaseOrder,
   createSellOrder,
@@ -7,6 +12,7 @@ import {
   getShipInfo,
 } from '../api/routes/my'
 import { useAuth } from '../App'
+import { useUpdateUser } from '../hooks/useUpdateUser'
 import {
   RouteEventType,
   TradeRoute,
@@ -25,67 +31,28 @@ export const AutomationContext = createContext({
   tradeRoutes: [] as TradeRoute[],
   tradeRouteLog: {} as { [id: string]: string[] },
   addTradeRoute: (tradeRoute: TradeRoute) => {},
-  removeTradeRoute: (id: string) => {},
+  removeTradeRoute: (id: string, version: number) => {},
   updateTradeRouteStatus: (id: string, status: TradeRouteStatus) => {},
 })
 
 export const AutomationProvider = (props: any) => {
   const [status, setStatus] = useState(AutomationStatus.Stopped)
   const [runTime, setRunTime] = useState(0)
-  const [tradeRoutes, setTradeRoutes] = useState<TradeRoute[]>([
-    {
-      id: 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-      events: [
-        {
-          type: RouteEventType.TRAVEL,
-          location: 'OE-NY',
-        },
-        {
-          type: RouteEventType.SELL,
-          good: {
-            good: 'EXPLOSIVES',
-            quantity: 80,
-          },
-        },
-        {
-          type: RouteEventType.BUY,
-          good: {
-            good: 'METALS',
-            quantity: 80,
-          },
-        },
-        {
-          type: RouteEventType.TRAVEL,
-          location: 'OE-KO',
-        },
-        {
-          type: RouteEventType.SELL,
-          good: {
-            good: 'METALS',
-            quantity: 80,
-          },
-        },
-        {
-          type: RouteEventType.BUY,
-          good: {
-            good: 'EXPLOSIVES',
-            quantity: 83,
-          },
-        },
-      ],
-      assignedShips: [
-        'cky9jeni243821ds6whazjp3h',
-        'ckycupbrd9743615s6bz6shroc',
-        'ckybzkpt530735515s69wlbsfif',
-      ],
-      autoRefuel: true,
-      status: TradeRouteStatus.ACTIVE,
-    },
-  ])
+  const [tradeRoutes, setTradeRoutes] = useState<TradeRoute[]>([])
   const [tradeRouteLog, setTradeRouteLog] =
     useState<{ [id: string]: string[] }>()
 
-  const { user } = useAuth()
+  const { user, apiToken } = useAuth()
+  const updateUser = useUpdateUser()
+
+  useEffect(() => {
+    if (apiToken) {
+      const init = async () => {
+        setTradeRoutes(await getTradingRoutes())
+      }
+      init()
+    }
+  }, [apiToken])
 
   useEffect(() => {
     if (status === AutomationStatus.Running) {
@@ -192,11 +159,12 @@ export const AutomationProvider = (props: any) => {
                       const fuelRequired = parseInt(
                         error.message.match(/\d+/g)[0]
                       )
-                      await createPurchaseOrder(
+                      const purchaseResult = await createPurchaseOrder(
                         ship.ship.id,
                         Good.FUEL,
                         fuelRequired
                       )
+                      updateUser({ credits: purchaseResult.credits })
                       // Retry create new flight plan
                       const result = await createNewFlightPlan(
                         shipId,
@@ -234,12 +202,23 @@ export const AutomationProvider = (props: any) => {
               for await (const shipId of tradeRoute.assignedShips) {
                 const ship = await getShipInfo(shipId)
                 if (ship.ship.spaceAvailable >= event.good!.quantity) {
-                  await createPurchaseOrder(
+                  const purchaseResult = await createPurchaseOrder(
                     shipId,
                     event.good!.good,
                     event.good!.quantity
                   )
+                  updateUser({ credits: purchaseResult.credits })
                 } else {
+                  if (
+                    ship.ship.cargo.find(
+                      (cargo) => cargo.good === event.good!.good
+                    )?.quantity ??
+                    0 >= event.good!.quantity
+                  ) {
+                    // Not throwing an error because the ship already has enough of the good
+                    console.warn('Ship already has good in cargo')
+                    continue
+                  }
                   throw new Error(
                     `Ship ${shipId} does not have enough space available to buy ${
                       event.good!.quantity
@@ -266,11 +245,12 @@ export const AutomationProvider = (props: any) => {
                     ?.quantity ??
                   0 >= event.good!.quantity
                 ) {
-                  await createSellOrder(
+                  const sellResult = await createSellOrder(
                     shipId,
                     event.good!.good,
                     event.good!.quantity
                   )
+                  updateUser({ credits: sellResult.credits })
                 } else {
                   // Not throwing an error here because it's possible that the ship has no goods to sell if it's the first event in the route
                   console.warn(
@@ -331,12 +311,31 @@ export const AutomationProvider = (props: any) => {
     }))
   }
 
-  const addTradeRoute = (tradeRoute: TradeRoute) => {
-    setTradeRoutes([...tradeRoutes, tradeRoute])
+  const addTradeRoute = async (tradeRoute: TradeRoute) => {
+    try {
+      const response = await createTradingRoute(
+        tradeRoute.events,
+        tradeRoute.assignedShips,
+        tradeRoute.autoRefuel
+      )
+      console.log('addTradeRoute', response)
+
+      const _version = response._version
+      setTradeRoutes([...tradeRoutes, { ...tradeRoute, _version }])
+    } catch (error) {
+      console.error('Error creating trade route:', error)
+    }
   }
 
-  const removeTradeRoute = (id: string) => {
-    setTradeRoutes((prev) => prev.filter((r) => r.id !== id))
+  const removeTradeRoute = (id: string, version: number) => {
+    try {
+      const response = removeTradingRoute(id, version)
+      console.log('removeTradeRoute', response)
+
+      setTradeRoutes((prev) => prev.filter((r) => r.id !== id))
+    } catch (error) {
+      console.error('Error removing trade route:', error)
+    }
   }
 
   const updateTradeRouteStatus = (id: string, status: TradeRouteStatus) => {
@@ -362,3 +361,54 @@ export const AutomationProvider = (props: any) => {
   }
   return <AutomationContext.Provider value={value} {...props} />
 }
+
+// [
+//   {
+//     id: 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
+//     events: [
+//       {
+//         type: RouteEventType.TRAVEL,
+//         location: 'OE-NY',
+//       },
+//       {
+//         type: RouteEventType.SELL,
+//         good: {
+//           good: 'EXPLOSIVES',
+//           quantity: 80,
+//         },
+//       },
+//       {
+//         type: RouteEventType.BUY,
+//         good: {
+//           good: 'METALS',
+//           quantity: 80,
+//         },
+//       },
+//       {
+//         type: RouteEventType.TRAVEL,
+//         location: 'OE-KO',
+//       },
+//       {
+//         type: RouteEventType.SELL,
+//         good: {
+//           good: 'METALS',
+//           quantity: 80,
+//         },
+//       },
+//       {
+//         type: RouteEventType.BUY,
+//         good: {
+//           good: 'EXPLOSIVES',
+//           quantity: 80,
+//         },
+//       },
+//     ],
+//     assignedShips: [
+//       'cky9jeni243821ds6whazjp3h',
+//       'ckycupbrd9743615s6bz6shroc',
+//       'ckybzkpt530735515s69wlbsfif',
+//     ],
+//     autoRefuel: true,
+//     status: TradeRouteStatus.ACTIVE,
+//   },
+// ]

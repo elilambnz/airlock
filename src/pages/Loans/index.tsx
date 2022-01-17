@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
 import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'
+import { useUpdateUser } from '../../hooks/useUpdateUser'
 import {
   ListLoansResponse,
   ListLoanTypesResponse,
@@ -14,6 +15,8 @@ function Loans() {
   const [loans, setLoans] = useState<ListLoansResponse>()
   const [availableLoans, setAvailableLoans] = useState<ListLoanTypesResponse>()
 
+  const updateUser = useUpdateUser()
+
   useEffect(() => {
     const init = async () => {
       setLoans(await listMyLoans())
@@ -21,6 +24,18 @@ function Loans() {
     }
     init()
   }, [])
+
+  const handleTakeOutLoan = async (type: string) => {
+    const result = await takeOutLoan(type)
+    updateUser({ credits: result.credits })
+    setLoans(await listMyLoans())
+  }
+
+  const handlePayOffLoan = async (id: string) => {
+    const result = await payOffLoan(id)
+    updateUser({ credits: result.credits })
+    setLoans(await listMyLoans())
+  }
 
   return (
     <>
@@ -96,7 +111,7 @@ function Loans() {
                                 <button
                                   className="text-indigo-600 hover:text-indigo-900"
                                   onClick={() => {
-                                    payOffLoan(loan.id)
+                                    handlePayOffLoan(loan.id)
                                   }}
                                 >
                                   Pay Off Loan
@@ -177,7 +192,7 @@ function Loans() {
                                 <button
                                   className="text-indigo-600 hover:text-indigo-900"
                                   onClick={() => {
-                                    takeOutLoan(loan.type)
+                                    handleTakeOutLoan(loan.type)
                                   }}
                                 >
                                   Take Out Loan
