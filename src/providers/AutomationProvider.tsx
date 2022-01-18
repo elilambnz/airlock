@@ -147,6 +147,29 @@ export const AutomationProvider = (props: any) => {
                   )
                   if (flightPlan.flightPlan.destination !== event.location) {
                     // Ship is not traveling to the correct location
+                    // There are more than one travel events, so we need to check if the ship is already traveling to another location in the route
+                    const nextTravelEventIndex = tradeRoute.events.findIndex(
+                      (e) => e.location === flightPlan.flightPlan.destination
+                    )
+                    console.log('nextTravelEventIndex', nextTravelEventIndex)
+
+                    if (nextTravelEventIndex !== -1) {
+                      // The ship is already traveling to another location in the route
+                      // So we don't need to move the ship
+                      console.warn(
+                        'Ship is already traveling to another location in the route. Updating startFromStep',
+                        nextTravelEventIndex
+                      )
+                      setTradeRoutes((prev) => [
+                        ...prev.slice(0, taskIndex),
+                        {
+                          ...prev[taskIndex],
+                          startFromStep: nextTravelEventIndex,
+                        },
+                        ...prev.slice(taskIndex + 1),
+                      ])
+                      break
+                    }
                     throw new Error(
                       `Ship ${ship.ship.id} is not traveling to ${event.location}`
                     )

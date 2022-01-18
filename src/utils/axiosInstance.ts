@@ -8,6 +8,16 @@ let rateLimitLimit = 2
 let rateLimitRemaining = 2
 let pendingRequests = 0
 
+const BURST_RATE_LIMIT = 8
+const BURST_RATE_LIMIT_INTERVAL_MS = INTERVAL_MS * BURST_RATE_LIMIT
+let burstRateRemaining = BURST_RATE_LIMIT
+
+setInterval(() => {
+  // Reset the burst rate limit
+  burstRateRemaining = BURST_RATE_LIMIT
+  console.debug('Burst rate limit reset, remaining:', burstRateRemaining)
+}, BURST_RATE_LIMIT_INTERVAL_MS)
+
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
 })
@@ -19,7 +29,7 @@ axiosInstance.interceptors.request.use(
       pendingRequests++
       console.debug('Pending requests:', pendingRequests)
       let interval = setInterval(() => {
-        if (rateLimitRemaining > 0) {
+        if (rateLimitRemaining > 0 && burstRateRemaining > 0) {
           clearInterval(interval)
 
           const apiToken =
@@ -32,10 +42,14 @@ axiosInstance.interceptors.request.use(
           }
 
           pendingRequests--
-          console.debug('Pending requests:', pendingRequests)
+          console.debug('Pending requests lowered:', pendingRequests)
           rateLimitRemaining--
           console.debug('Rate limit lowered, remaining:', rateLimitRemaining)
+          burstRateRemaining--
+          console.debug('Burst rate remaining:', burstRateRemaining)
+
           resolve(config)
+          console.debug('*** Request resolved ***')
         }
       }, INTERVAL_MS)
     })
