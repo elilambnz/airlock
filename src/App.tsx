@@ -31,6 +31,7 @@ import { AutomationProvider } from './providers/AutomationProvider'
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
     domain: process.env.REACT_APP_DOMAIN,
+    apiHost: process.env.REACT_APP_PLAUSIBLE_API_HOST,
   })
 // This tracks the current page view and all future ones as well
 enableAutoPageviews()
