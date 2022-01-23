@@ -8,6 +8,7 @@ import {
   ListLoansResponse,
   ListLoanTypesResponse,
   LoanStatus,
+  LoanTier,
 } from '../../types/Loan'
 import { formatNumberCommas } from '../../utils/helpers'
 
@@ -60,6 +61,9 @@ function Loans() {
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                              Type
+                            </th>
+                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                               Repayment Amount
                             </th>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -67,9 +71,6 @@ function Loans() {
                             </th>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                               Status
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Type
                             </th>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                               Actions
@@ -84,7 +85,11 @@ function Loans() {
                                 i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                               }
                             >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {/* @ts-ignore */}
+                                {LoanTier[loan.type]}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {formatNumberCommas(loan.repaymentAmount)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
@@ -99,23 +104,22 @@ function Loans() {
                                       : ' bg-yellow-100 text-yellow-800')
                                   }
                                 >
-                                  {loan.status}
+                                  {/* @ts-ignore */}
+                                  {LoanStatus[loan.status]}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                  {loan.type}
-                                </span>
-                              </td>
+
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button
-                                  className="text-indigo-600 hover:text-indigo-900"
-                                  onClick={() => {
-                                    handlePayOffLoan(loan.id)
-                                  }}
-                                >
-                                  Pay Off Loan
-                                </button>
+                                {loan.status === LoanStatus.CURRENT && (
+                                  <button
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                    onClick={() => {
+                                      handlePayOffLoan(loan.id)
+                                    }}
+                                  >
+                                    Pay Off Loan
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -146,7 +150,7 @@ function Loans() {
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Loan Type
+                              Type
                             </th>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                               Amount
@@ -174,7 +178,8 @@ function Loans() {
                               }
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                {loan.type}
+                                {/* @ts-ignore */}
+                                {LoanTier[loan.type]}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {formatNumberCommas(loan.amount)}

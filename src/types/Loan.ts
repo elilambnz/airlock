@@ -33,9 +33,10 @@ export type CreateLoanResponse = {
 }
 
 export enum LoanStatus {
-  CURRENT = 'CURRENT',
+  CURRENT = 'Current',
+  PAID_LATE = 'Paid Late',
 }
 
 export enum LoanTier {
-  STARTUP = 'STARTUP',
+  STARTUP = 'Startup',
 }
