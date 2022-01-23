@@ -14,7 +14,7 @@ import { getSystemLocations } from '../../api/routes/systems'
 import { listStructureTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
-import SelectMenu from '../../components/SelectMenu'
+import Select from '../../components/Select'
 import { ListShipsResponse } from '../../types/Ship'
 import {
   ListOwnStructuresResponse,
@@ -156,24 +156,27 @@ function Structures() {
     }
   }
 
-  const locationOptions = availableLocations?.locations
-    .filter((l) => l.allowsConstruction)
-    ?.map((location) => ({
-      value: location.symbol,
-      label: `${location.name} (${location.symbol})`,
-    }))
+  const locationOptions =
+    availableLocations?.locations
+      .filter((l) => l.allowsConstruction)
+      ?.map((location) => ({
+        value: location.symbol,
+        label: `${location.name} (${location.symbol})`,
+      })) ?? []
 
-  const structureTypeOptions = structureTypes?.structures.map((structure) => ({
-    value: structure.type,
-    label: `${structure.type} (${abbreviateNumber(structure.price)})`,
-  }))
+  const structureTypeOptions =
+    structureTypes?.structures.map((structure) => ({
+      value: structure.type,
+      label: `${structure.type} (${abbreviateNumber(structure.price)})`,
+    })) ?? []
 
-  const shipOptions = myShips?.ships.map((ship) => ({
-    value: ship.id,
-    label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
-      ship.maxCargo
-    })`,
-  }))
+  const shipOptions =
+    myShips?.ships.map((ship) => ({
+      value: ship.id,
+      label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
+        ship.maxCargo
+      })`,
+    })) ?? []
 
   return (
     <>
@@ -204,32 +207,30 @@ function Structures() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          {locationOptions && (
-                            <SelectMenu
-                              label="Select Location"
-                              options={locationOptions}
-                              onChange={(value) => {
-                                setNewStructure((prev) => ({
-                                  ...prev,
-                                  location: value,
-                                }))
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Location"
+                            options={locationOptions}
+                            value={newStructure?.location}
+                            onChange={(value) => {
+                              setNewStructure((prev) => ({
+                                ...prev,
+                                location: value,
+                              }))
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2">
-                          {structureTypeOptions && (
-                            <SelectMenu
-                              label="Select Structure Type"
-                              options={structureTypeOptions}
-                              onChange={(value) => {
-                                setNewStructure((prev) => ({
-                                  ...prev,
-                                  type: value,
-                                }))
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Structure Type"
+                            options={structureTypeOptions}
+                            value={newStructure?.type}
+                            onChange={(value) => {
+                              setNewStructure((prev) => ({
+                                ...prev,
+                                type: value,
+                              }))
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button
@@ -523,25 +524,24 @@ function Structures() {
           content={
             <div>
               <div className="sm:col-span-3">
-                {allMyStructures && (
-                  <SelectMenu
-                    label="Good"
-                    options={
-                      allMyStructures.structures
-                        .find((s) => s.id === ownStructureToDeposit.structureId)
-                        ?.consumes.map((g) => ({
-                          label: g,
-                          value: g,
-                        })) ?? []
-                    }
-                    onChange={(value) => {
-                      setOwnStructureToDeposit((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="Good"
+                  options={
+                    allMyStructures?.structures
+                      .find((s) => s.id === ownStructureToDeposit.structureId)
+                      ?.consumes.map((g) => ({
+                        label: g,
+                        value: g,
+                      })) ?? []
+                  }
+                  value={ownStructureToDeposit.good}
+                  onChange={(value) => {
+                    setOwnStructureToDeposit((prev) => ({
+                      ...prev,
+                      good: value,
+                    }))
+                  }}
+                />
               </div>
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -561,18 +561,17 @@ function Structures() {
                 />
               </div>
               <div className="sm:col-span-3">
-                {shipOptions && (
-                  <SelectMenu
-                    label="From Ship"
-                    options={shipOptions}
-                    onChange={(value) => {
-                      setOwnStructureToDeposit((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="From Ship"
+                  options={shipOptions}
+                  value={ownStructureToDeposit.shipId}
+                  onChange={(value) => {
+                    setOwnStructureToDeposit((prev) => ({
+                      ...prev,
+                      shipId: value,
+                    }))
+                  }}
+                />
               </div>
               <button
                 className="m-4"
@@ -612,27 +611,24 @@ function Structures() {
           content={
             <div>
               <div className="sm:col-span-3">
-                {allMyStructures && (
-                  <SelectMenu
-                    label="Good"
-                    options={
-                      allMyStructures.structures
-                        .find(
-                          (s) => s.id === ownStructureToWithdraw.structureId
-                        )
-                        ?.produces.map((g) => ({
-                          label: g,
-                          value: g,
-                        })) ?? []
-                    }
-                    onChange={(value) => {
-                      setOwnStructureToWithdraw((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="Good"
+                  options={
+                    allMyStructures?.structures
+                      .find((s) => s.id === ownStructureToWithdraw.structureId)
+                      ?.produces.map((g) => ({
+                        label: g,
+                        value: g,
+                      })) ?? []
+                  }
+                  value={ownStructureToWithdraw.good}
+                  onChange={(value) => {
+                    setOwnStructureToWithdraw((prev) => ({
+                      ...prev,
+                      good: value,
+                    }))
+                  }}
+                />
               </div>
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -652,18 +648,17 @@ function Structures() {
                 />
               </div>
               <div className="sm:col-span-3">
-                {shipOptions && (
-                  <SelectMenu
-                    label="To Ship"
-                    options={shipOptions}
-                    onChange={(value) => {
-                      setOwnStructureToWithdraw((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="To Ship"
+                  options={shipOptions}
+                  value={ownStructureToWithdraw.shipId}
+                  onChange={(value) => {
+                    setOwnStructureToWithdraw((prev) => ({
+                      ...prev,
+                      shipId: value,
+                    }))
+                  }}
+                />
               </div>
               <button
                 className="m-4"
@@ -705,25 +700,26 @@ function Structures() {
           content={
             <div>
               <div className="sm:col-span-3">
-                {structureInfo && typeof structureInfo === 'object' && (
-                  <SelectMenu
-                    label="Good"
-                    options={
-                      structureInfo.structure.materials.map((g) => ({
-                        label: `${g.good} (${formatNumberCommas(
-                          g.quantity
-                        )}/${formatNumberCommas(g.targetQuantity)})`,
-                        value: g.good,
-                      })) ?? []
-                    }
-                    onChange={(value) => {
-                      setStructureToDeposit((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="Good"
+                  options={
+                    structureInfo && typeof structureInfo === 'object'
+                      ? structureInfo.structure.materials.map((g) => ({
+                          label: `${g.good} (${formatNumberCommas(
+                            g.quantity
+                          )}/${formatNumberCommas(g.targetQuantity)})`,
+                          value: g.good,
+                        })) ?? []
+                      : []
+                  }
+                  value={structureToDeposit.good}
+                  onChange={(value) => {
+                    setStructureToDeposit((prev) => ({
+                      ...prev,
+                      good: value,
+                    }))
+                  }}
+                />
               </div>
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -743,18 +739,17 @@ function Structures() {
                 />
               </div>
               <div className="sm:col-span-3">
-                {shipOptions && (
-                  <SelectMenu
-                    label="From Ship"
-                    options={shipOptions}
-                    onChange={(value) => {
-                      setStructureToDeposit((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                )}
+                <Select
+                  label="From Ship"
+                  options={shipOptions}
+                  value={structureToDeposit.shipId}
+                  onChange={(value) => {
+                    setStructureToDeposit((prev) => ({
+                      ...prev,
+                      shipId: value,
+                    }))
+                  }}
+                />
               </div>
               <button
                 className="m-4"

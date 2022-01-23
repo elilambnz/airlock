@@ -4,7 +4,7 @@ import { getSystemLocations } from '../../api/routes/systems'
 import { listGoodTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
-import SelectMenu from '../../components/SelectMenu'
+import Select from '../../components/Select'
 import useAutomation from '../../hooks/useAutomation'
 import {
   RouteEventType,
@@ -13,7 +13,7 @@ import {
   TradeRouteStatus,
 } from '../../types/Automation'
 import { ListSystemLocationsResponse } from '../../types/System'
-import { ListGoodTypesResponse } from '../../types/Order'
+import { GoodType, ListGoodTypesResponse } from '../../types/Order'
 import { ListShipsResponse } from '../../types/Ship'
 import moment from 'moment'
 import 'moment-duration-format'
@@ -81,24 +81,26 @@ function Automation() {
     init()
   }, [])
 
-  const shipOptions = myShips?.ships
-    .filter(
-      (s) =>
-        !tradeRoutes
-          .reduce(
-            (acc: string[], cur) => [...acc, cur.assignedShips].flat(),
-            []
-          )
-          .includes(s.id)
-    )
-    ?.map((ship) => ({
-      value: ship.id,
-      label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
-        ship.maxCargo
-      }) [${
-        ship.cargo.find((cargo) => cargo.good === 'FUEL')?.quantity ?? 0
-      }] ${ship.location}`,
-    }))
+  const shipOptions =
+    myShips?.ships
+      .filter(
+        (s) =>
+          !tradeRoutes
+            .reduce(
+              (acc: string[], cur) => [...acc, cur.assignedShips].flat(),
+              []
+            )
+            .includes(s.id)
+      )
+      ?.map((ship) => ({
+        value: ship.id,
+        label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
+          ship.maxCargo
+        }) [${
+          ship.cargo.find((cargo) => cargo.good === GoodType.FUEL)?.quantity ??
+          0
+        }] ${ship.location}`,
+      })) ?? []
 
   const knownSystems = useMemo(() => {
     return new Set([
@@ -158,30 +160,32 @@ function Automation() {
     }
   }, [marketplaceLocation])
 
-  const locationOptions = availableLocations?.locations.map((l) => ({
-    value: l.symbol,
-    label: `${l.name} (${l.symbol})`,
-  }))
+  const locationOptions =
+    availableLocations?.locations.map((l) => ({
+      value: l.symbol,
+      label: `${l.name} (${l.symbol})`,
+    })) ?? []
 
-  const goodOptions = goodTypes?.goods.map((g) => {
-    const availableGood = availableGoods?.marketplace.find((m) => {
-      return m.symbol === g.symbol
-    })
-    return {
-      value: g.symbol,
-      label: `${g.name} ${
-        availableGood
-          ? `(${
-              newTradeRouteTrade.type === RouteEventType.BUY
-                ? `Buy: ${availableGood.purchasePricePerUnit}`
-                : RouteEventType.SELL
-                ? `Sell: ${availableGood.sellPricePerUnit}`
-                : 0
-            })`
-          : ''
-      }`,
-    }
-  })
+  const goodOptions =
+    goodTypes?.goods.map((g) => {
+      const availableGood = availableGoods?.marketplace.find((m) => {
+        return m.symbol === g.symbol
+      })
+      return {
+        value: g.symbol,
+        label: `${g.name} ${
+          availableGood
+            ? `(${
+                newTradeRouteTrade.type === RouteEventType.BUY
+                  ? `Buy: ${availableGood.purchasePricePerUnit}`
+                  : RouteEventType.SELL
+                  ? `Sell: ${availableGood.sellPricePerUnit}`
+                  : 0
+              })`
+            : ''
+        }`,
+      }
+    }) ?? []
 
   const addGoodToTradeRouteDisabled = !(
     newTradeRoute.events.filter((e) => e.type === RouteEventType.TRAVEL)
@@ -310,7 +314,7 @@ function Automation() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          <SelectMenu
+                          <Select
                             label="Select Destination System"
                             options={knownSystemOptions}
                             value={currentSystem}
@@ -320,18 +324,17 @@ function Automation() {
                           />
                         </div>
                         <div className="sm:col-span-2">
-                          {locationOptions && (
-                            <SelectMenu
-                              label="Select Destination Location"
-                              options={locationOptions}
-                              onChange={(value) => {
-                                setNewTradeRouteLocation((prev) => ({
-                                  ...prev,
-                                  location: value,
-                                }))
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Destination Location"
+                            options={locationOptions}
+                            value={newTradeRouteLocation.location}
+                            onChange={(value) => {
+                              setNewTradeRouteLocation((prev) => ({
+                                ...prev,
+                                location: value,
+                              }))
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button
@@ -357,22 +360,21 @@ function Automation() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          {goodOptions && (
-                            <SelectMenu
-                              label="Select Good"
-                              options={goodOptions}
-                              onChange={(value) => {
-                                setNewTradeRouteTrade((prev) => ({
-                                  ...prev,
-                                  good: {
-                                    ...prev.good,
-                                    good: value,
-                                    quantity: prev.good?.quantity || 1,
-                                  },
-                                }))
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Good"
+                            options={goodOptions}
+                            value={newTradeRouteTrade.good?.good}
+                            onChange={(value) => {
+                              setNewTradeRouteTrade((prev) => ({
+                                ...prev,
+                                good: {
+                                  ...prev.good,
+                                  good: value,
+                                  quantity: prev.good?.quantity || 1,
+                                },
+                              }))
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-1">
                           <label
@@ -399,7 +401,7 @@ function Automation() {
                           />
                         </div>
                         <div className="sm:col-span-1">
-                          <SelectMenu
+                          <Select
                             label="Action"
                             options={[
                               {
@@ -411,6 +413,7 @@ function Automation() {
                                 label: 'Sell',
                               },
                             ]}
+                            value={newTradeRouteTrade?.type}
                             onChange={(value) => {
                               setNewTradeRouteTrade((prev) => ({
                                 ...prev,
@@ -419,7 +422,6 @@ function Automation() {
                                 ],
                               }))
                             }}
-                            defaultValue={RouteEventType.BUY}
                           />
                         </div>
                         <div className="sm:col-span-2 pt-6">
@@ -455,7 +457,7 @@ function Automation() {
                     />
 
                     <div className="mt-4 px-6">
-                      <h4 className="text-md leading-6 font-medium text-gray-900">
+                      <h4 className="text-md leading-6 font-medium text-gray-700">
                         Assign Ships
                       </h4>
                     </div>
@@ -466,9 +468,7 @@ function Automation() {
                           name="autoRefuel"
                           type="checkbox"
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                          defaultChecked={newTradeRoute?.autoRefuel}
                           onChange={(e) => {
-                            e.preventDefault()
                             setNewTradeRoute((prev) => ({
                               ...prev,
                               autoRefuel: e.target.checked,
@@ -486,18 +486,17 @@ function Automation() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          {shipOptions && (
-                            <SelectMenu
-                              label="Select Ship"
-                              options={shipOptions.filter(
-                                (s) =>
-                                  !newTradeRoute.assignedShips.includes(s.value)
-                              )}
-                              onChange={(value) => {
-                                setNewTradeRouteShip(value)
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Ship"
+                            options={shipOptions.filter(
+                              (s) =>
+                                !newTradeRoute.assignedShips.includes(s.value)
+                            )}
+                            value={newTradeRouteShip}
+                            onChange={(value) => {
+                              setNewTradeRouteShip(value)
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button
@@ -614,7 +613,7 @@ function Automation() {
                                     .filter(
                                       (e) => e.type === RouteEventType.TRAVEL
                                     )
-                                    .reduce(
+                                    ?.reduce(
                                       (acc: string[], cur) => [
                                         ...acc,
                                         String(cur.location),
@@ -632,7 +631,7 @@ function Automation() {
                                             e.type === RouteEventType.BUY ||
                                             e.type === RouteEventType.SELL
                                         )
-                                        .reduce(
+                                        ?.reduce(
                                           (acc: string[], cur) => [
                                             ...acc,
                                             String(cur.good?.good),

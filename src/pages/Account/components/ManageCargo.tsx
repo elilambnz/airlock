@@ -1,12 +1,12 @@
 import React from 'react'
 import { CargoManageMode } from '..'
-import SelectMenu from '../../../components/SelectMenu'
+import Select from '../../../components/Select'
 import { Ship, ShipCargo } from '../../../types/Ship'
 import { capitaliseFirstLetter } from '../../../utils/helpers'
 
 interface ManageCargoProps {
   ship?: Ship
-  shipOptions?: { value: string; label: string }[]
+  shipOptions: { value: string; label: string }[]
   cargoToTransfer?: ShipCargo & { toShipId?: string }
   setCargoToTransfer: React.Dispatch<
     React.SetStateAction<
@@ -81,7 +81,7 @@ const ManageCargo = (props: ManageCargoProps) => {
                     className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {capitaliseFirstLetter(cargo.good.toLocaleLowerCase())}
+                      {cargo.good}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {cargo.quantity}
@@ -122,10 +122,7 @@ const ManageCargo = (props: ManageCargoProps) => {
             <div className="pt-8">
               <div>
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Transfer{' '}
-                  {capitaliseFirstLetter(
-                    cargoToTransfer.good.toLocaleLowerCase()
-                  )}
+                  Transfer {cargoToTransfer.good}
                 </h3>
               </div>
               <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -158,21 +155,20 @@ const ManageCargo = (props: ManageCargoProps) => {
                   </div>
                 </div>
                 <div className="sm:col-span-3">
-                  {shipOptions && (
-                    <SelectMenu
-                      label="Select Ship"
-                      options={shipOptions}
-                      onChange={(value) => {
-                        setCargoToTransfer(
-                          (prev) =>
-                            prev && {
-                              ...prev,
-                              toShipId: value,
-                            }
-                        )
-                      }}
-                    />
-                  )}
+                  <Select
+                    label="Select Ship"
+                    options={shipOptions}
+                    value={cargoToTransfer.toShipId}
+                    onChange={(value) => {
+                      setCargoToTransfer(
+                        (prev) =>
+                          prev && {
+                            ...prev,
+                            toShipId: value,
+                          }
+                      )
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -183,10 +179,7 @@ const ManageCargo = (props: ManageCargoProps) => {
             <div className="pt-8">
               <div>
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Jettison{' '}
-                  {capitaliseFirstLetter(
-                    cargoToJettison.good.toLocaleLowerCase()
-                  )}
+                  Jettison {cargoToJettison.good}
                 </h3>
               </div>
               <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">

@@ -186,7 +186,7 @@ const Login = () => {
                       />
                       <label
                         htmlFor="rememberMeRegister"
-                        className="ml-2 block text-sm text-gray-900"
+                        className="ml-2 block text-sm text-gray-700"
                       >
                         Remember me
                       </label>
@@ -309,7 +309,7 @@ const Login = () => {
                     />
                     <label
                       htmlFor="rememberMeLogin"
-                      className="ml-2 block text-sm text-gray-900"
+                      className="ml-2 block text-sm text-gray-700"
                     >
                       Remember me
                     </label>

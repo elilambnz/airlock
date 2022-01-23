@@ -498,14 +498,16 @@ function Account() {
               ship={myShips?.ships.find(
                 (ship) => ship.id === shipToManageCargo
               )}
-              shipOptions={myShips?.ships
-                .filter((s) => !!s.id && s.id !== shipToManageCargo)
-                ?.map((s) => ({
-                  value: s.id!,
-                  label: `${s.type} ${s.maxCargo - s.spaceAvailable} / ${
-                    s.maxCargo
-                  }`,
-                }))}
+              shipOptions={
+                myShips?.ships
+                  .filter((s) => !!s.id && s.id !== shipToManageCargo)
+                  ?.map((s) => ({
+                    value: s.id!,
+                    label: `${s.type} ${s.maxCargo - s.spaceAvailable} / ${
+                      s.maxCargo
+                    }`,
+                  })) ?? []
+              }
               cargoToTransfer={cargoToTransfer}
               setCargoToTransfer={setCargoToTransfer}
               cargoToJettison={cargoToJettison}

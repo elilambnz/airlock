@@ -22,7 +22,6 @@ axiosInstance.interceptors.request.use(
         Authorization: `Bearer ${apiToken}`,
       }
     }
-
     return config
   },
   (error) => Promise.reject(error)
@@ -30,7 +29,16 @@ axiosInstance.interceptors.request.use(
 
 // axios response interceptor
 axiosInstance.interceptors.response.use(
-  async (response) => response,
+  async (response) => {
+    const rateLimitRemaining = parseInt(
+      response.headers['x-ratelimit-remaining']
+    )
+    if (rateLimitRemaining !== undefined) {
+      console.log('Requests remaining:', rateLimitRemaining)
+    }
+
+    return response
+  },
   async (error) => {
     // Handle rate limit errors
     if (error.response.status === 429) {

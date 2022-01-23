@@ -11,7 +11,6 @@ import {
   getSystemLocations,
 } from '../../api/routes/systems'
 import '../../App.css'
-import SelectMenu from '../../components/SelectMenu'
 import { ListShipsResponse, Ship } from '../../types/Ship'
 import {
   ListSystemFlightPlansResponse,
@@ -24,6 +23,8 @@ import LoadingRows from '../../components/Table/LoadingRows'
 import { useAuth } from '../../App'
 import Alert from '../../components/Alert'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
+import Select from '../../components/Select'
+import { GoodType } from '../../types/Order'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -73,15 +74,23 @@ function Systems() {
     init()
   }, [])
 
-  const knownSystems = new Set([
-    STARTER_SYSTEM,
-    ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
-  ])
+  const knownSystems = new Set(
+    [
+      STARTER_SYSTEM,
+      ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
+    ].filter((s) => s)
+  )
+
   const knownSystemOptions: { value: string; label: string }[] = [
     ...knownSystems,
   ].map((s) => ({
     value: s!,
     label: s!,
+    icon: (
+      <div className="flex items-center justify-center w-5 h-5">
+        <span className="text-xs">🌌</span>
+      </div>
+    ),
   }))
 
   useEffect(() => {
@@ -116,17 +125,33 @@ function Systems() {
     }
   }
 
-  const shipOptions = myShips?.ships.map((ship) => ({
-    value: ship.id,
-    label: `${ship.type} (${ship.location}) [${
-      ship.cargo.find((c) => c.good === 'FUEL')?.quantity ?? 0
-    }]`,
-  }))
+  const shipOptions =
+    myShips?.ships
+      .filter((s) => s.location?.split('-')[0] === currentSystem?.system.symbol)
+      ?.map((ship) => ({
+        value: ship.id,
+        label: ship.type,
+        subLabel: `${ship.location} ⛽ ${
+          ship.cargo.find((c) => c.good === GoodType.FUEL)?.quantity ?? 0
+        } 📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+        icon: (
+          <div className="flex items-center justify-center w-5 h-5">
+            <span className="text-xs">🚀</span>
+          </div>
+        ),
+      })) ?? []
 
-  const locationOptions = availableLocations?.locations.map((location) => ({
-    value: location.symbol,
-    label: `${location.name} (${location.symbol})`,
-  }))
+  const locationOptions =
+    availableLocations?.locations.map((location) => ({
+      value: location.symbol,
+      label: location.name,
+      subLabel: location.symbol,
+      icon: (
+        <div className="flex items-center justify-center w-5 h-5">
+          <span className="text-xs">🪐</span>
+        </div>
+      ),
+    })) ?? []
 
   const myActiveFlightPlans = allFlightPlans?.flightPlans.filter(
     (flightPlan) => flightPlan.username === auth.user?.username
@@ -136,7 +161,7 @@ function Systems() {
   const myDockedShips = allDockedShips?.ships
     .filter((s) => s.username === auth.user?.username)
     .map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
-    .filter((s) => !!s) as Ship[]
+    .filter((s) => s?.location) as Ship[]
 
   return (
     <>
@@ -190,16 +215,14 @@ function Systems() {
                 </div>
               </div>
               <div className="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-reverse sm:space-y-0 sm:space-x-3 md:mt-0 md:flex-row md:space-x-3">
-                {knownSystemOptions && (
-                  <SelectMenu
-                    label="Select System"
-                    options={knownSystemOptions}
-                    value={currentSystem?.system.symbol}
-                    onChange={(value) => {
-                      updateCurrentSystem(value)
-                    }}
-                  />
-                )}
+                <Select
+                  label="Select System"
+                  options={knownSystemOptions}
+                  value={currentSystem?.system.symbol}
+                  onChange={(value) => {
+                    updateCurrentSystem(value)
+                  }}
+                />
               </div>
             </div>
 
@@ -282,7 +305,7 @@ function Systems() {
                                 .sort((a, b) => a.x - b.x || a.y - b.y)
                                 .map((location, i) => (
                                   <tr
-                                    key={location.name}
+                                    key={location.symbol}
                                     className={
                                       i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                     }
@@ -325,7 +348,7 @@ function Systems() {
               <h2 className="text-2xl font-bold text-gray-900">Flight Plans</h2>
             </div>
 
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+            <div className="bg-white shadow sm:rounded-lg mb-6">
               <div className="px-4 py-5 sm:px-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Create New Flight Plan
@@ -336,38 +359,38 @@ function Systems() {
                 </p>
               </div>
               <div className="flex flex-col">
-                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="-my-2 sm:-mx-6 lg:-mx-8">
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                     <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          {shipOptions && (
-                            <SelectMenu
-                              label="Select Ship"
-                              options={shipOptions}
-                              onChange={(value) => {
-                                setNewFlightPlan({
-                                  ...newFlightPlan,
-                                  shipId: value,
-                                })
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Ship"
+                            options={shipOptions ?? []}
+                            value={newFlightPlan?.shipId}
+                            onChange={(value) => {
+                              console.log('value', value)
+
+                              setNewFlightPlan({
+                                ...newFlightPlan,
+                                shipId: value,
+                              })
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2">
-                          {locationOptions && (
-                            <SelectMenu
-                              label="Select Location"
-                              options={locationOptions}
-                              onChange={(value) => {
-                                setNewFlightPlan({
-                                  ...newFlightPlan,
-                                  destination: value,
-                                })
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Location"
+                            options={locationOptions}
+                            value={newFlightPlan?.destination}
+                            onChange={(value) => {
+                              setNewFlightPlan({
+                                ...newFlightPlan,
+                                destination: value,
+                              })
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button
@@ -596,18 +619,17 @@ function Systems() {
                     <form className="min-w-full divide-y divide-gray-200">
                       <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-2">
-                          {shipOptions && (
-                            <SelectMenu
-                              label="Select Ship"
-                              options={shipOptions}
-                              onChange={(value) => {
-                                setNewWarpJump({
-                                  ...newWarpJump,
-                                  shipId: value,
-                                })
-                              }}
-                            />
-                          )}
+                          <Select
+                            label="Select Ship"
+                            options={shipOptions}
+                            value={newWarpJump?.shipId}
+                            onChange={(value) => {
+                              setNewWarpJump({
+                                ...newWarpJump,
+                                shipId: value,
+                              })
+                            }}
+                          />
                         </div>
                         <div className="sm:col-span-2 pt-6">
                           <button

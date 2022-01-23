@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../App'
 
@@ -10,6 +10,26 @@ const Navbar = () => {
 
   const location = useLocation()
   const auth = useAuth()
+
+  useEffect(() => {
+    const profileDropdown = document.getElementById('profile-dropdown')
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!profileDropdown?.contains(event.target as Node)) {
+        setShowProfileDropdown(false)
+      }
+    }
+
+    if (showProfileDropdown) {
+      document.addEventListener('click', handleClickOutside)
+    } else {
+      document.removeEventListener('click', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showProfileDropdown])
 
   const links = [
     { path: '/', name: 'Home' },
@@ -125,6 +145,7 @@ const Navbar = () => {
                 */}
                 {showProfileDropdown && (
                   <div
+                    id="profile-dropdown"
                     className="origin-top-right absolute right-0 mt-2 w-74 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none divide-y divide-gray-200"
                     role="menu"
                     aria-orientation="vertical"
