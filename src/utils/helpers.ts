@@ -1,5 +1,10 @@
 import moment, { Moment } from 'moment'
 import clamp from 'lodash/clamp'
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  colors,
+} from 'unique-names-generator'
 
 export const formatNumberCommas = (number: number): string => {
   return String(number).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -37,4 +42,23 @@ export const getProgress = (start: Moment, end: Moment) => {
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export const getCharCodeOfAllStringChars = (str: string) => {
+  return parseInt([...str].map((c) => c.charCodeAt(0)).join(''))
+}
+
+export const getShortName = (seed?: number) => {
+  if (seed && seed > Number.MAX_SAFE_INTEGER) {
+    seed = Number.MAX_SAFE_INTEGER
+    console.warn('Seed is too big, using max safe integer')
+  }
+
+  const customConfig = {
+    dictionaries: [adjectives, colors],
+    separator: '-',
+    length: 2,
+    seed,
+  }
+  return uniqueNamesGenerator(customConfig)
 }

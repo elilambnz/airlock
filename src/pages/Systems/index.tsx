@@ -25,6 +25,8 @@ import Alert from '../../components/Alert'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
+import { getCharCodeOfAllStringChars, getShortName } from '../../utils/helpers'
+import { LocationType } from '../../types/Location'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -125,15 +127,41 @@ function Systems() {
     }
   }
 
+  const getIconForLocationType = (type: LocationType) => {
+    switch (type) {
+      case LocationType.PLANET:
+        return '🪐'
+      case LocationType.MOON:
+        return '🌑'
+      case LocationType.ASTEROID:
+        return '☄️'
+      case LocationType.GAS_GIANT:
+        return '💨'
+      case LocationType.WORMHOLE:
+        return '🕳️'
+      case LocationType.NEBULA:
+        return '🌌'
+      default:
+        return '🪐'
+    }
+  }
+
   const shipOptions =
     myShips?.ships
       .filter((s) => s.location?.split('-')[0] === currentSystem?.system.symbol)
       ?.map((ship) => ({
         value: ship.id,
-        label: ship.type,
-        subLabel: `${ship.location} ⛽ ${
-          ship.cargo.find((c) => c.good === GoodType.FUEL)?.quantity ?? 0
-        } 📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+        label: `${getShortName(
+          getCharCodeOfAllStringChars(ship.id.substring(3, 8))
+        )}
+        `,
+        tags: [ship.type, ship.location],
+        subTags: [
+          `⛽ ${
+            ship.cargo.find((c) => c.good === GoodType.FUEL)?.quantity ?? 0
+          }`,
+          `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+        ],
         icon: (
           <div className="flex items-center justify-center w-5 h-5">
             <span className="text-xs">🚀</span>
@@ -145,10 +173,12 @@ function Systems() {
     availableLocations?.locations.map((location) => ({
       value: location.symbol,
       label: location.name,
-      subLabel: location.symbol,
+      tags: [location.symbol, `(${location.x}, ${location.y})`],
       icon: (
         <div className="flex items-center justify-center w-5 h-5">
-          <span className="text-xs">🪐</span>
+          <span className="text-xs">
+            {getIconForLocationType(location.type)}
+          </span>
         </div>
       ),
     })) ?? []
@@ -158,10 +188,11 @@ function Systems() {
   )
 
   // Might be more efficient to filter myShips, but we have to consider ships in transit
-  const myDockedShips = allDockedShips?.ships
-    .filter((s) => s.username === auth.user?.username)
-    .map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
-    .filter((s) => s?.location) as Ship[]
+  const myDockedShips =
+    (allDockedShips?.ships
+      .filter((s) => s.username === auth.user?.username)
+      ?.map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
+      .filter((s) => s?.location) as Ship[]) ?? []
 
   return (
     <>
@@ -621,7 +652,14 @@ function Systems() {
                         <div className="sm:col-span-2">
                           <Select
                             label="Select Ship"
-                            options={shipOptions}
+                            options={
+                              shipOptions.filter(
+                                (o) =>
+                                  myDockedShips
+                                    .find((s) => s.id === o.value)
+                                    ?.location?.split('-')[1] === 'W'
+                              ) ?? []
+                            }
                             value={newWarpJump?.shipId}
                             onChange={(value) => {
                               setNewWarpJump({

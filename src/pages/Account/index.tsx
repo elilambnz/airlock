@@ -11,10 +11,16 @@ import DangerModal from '../../components/Modal/DangerModal'
 
 import { User } from '../../types/Account'
 import { ListShipsResponse, ShipCargo } from '../../types/Ship'
-import { abbreviateNumber } from '../../utils/helpers'
+import {
+  abbreviateNumber,
+  getCharCodeOfAllStringChars,
+  getShortName,
+} from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 import ActionModal from '../../components/Modal/ActionModal'
 import { useAuth } from '../../App'
+import Tooltip from '../../components/Tooltip'
+import { GoodType } from '../../types/Order'
 
 export enum CargoManageMode {
   TRANSFER,
@@ -243,7 +249,11 @@ function Account() {
                             {ship.type}
                           </h3>
                           <span className="flex-shrink-0 inline-block px-2 py-0.5 text-blue-800 text-xs font-medium bg-blue-100 rounded-full">
-                            {ship.class}
+                            {getShortName(
+                              getCharCodeOfAllStringChars(
+                                ship.id.substring(3, 8)
+                              )
+                            )}
                           </span>
                         </div>
 
@@ -341,10 +351,35 @@ function Account() {
                           >
                             <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
                           </svg>
-                          <p className="ml-1 text-sm truncate text-gray-900">
-                            {ship.maxCargo - ship.spaceAvailable} /{' '}
-                            {ship.maxCargo}
-                          </p>
+                          <Tooltip
+                            title={ship.cargo
+                              .map(
+                                (c) =>
+                                  // @ts-ignore
+                                  `${GoodType[c.good]} ${c.quantity}` +
+                                  (c.quantity !== c.totalVolume
+                                    ? ` (${c.totalVolume})`
+                                    : '')
+                              )
+                              .join(', ')}
+                            className={
+                              ship.spaceAvailable === ship.maxCargo
+                                ? 'display-none'
+                                : ''
+                            }
+                          >
+                            <p
+                              className={
+                                'ml-1 text-sm truncate text-gray-900' +
+                                (ship.spaceAvailable < ship.maxCargo
+                                  ? ' cursor-help'
+                                  : '')
+                              }
+                            >
+                              {ship.maxCargo - ship.spaceAvailable} /{' '}
+                              {ship.maxCargo}
+                            </p>
+                          </Tooltip>
                         </div>
                         <div className="flex items-center mt-1 text-gray-500">
                           <svg

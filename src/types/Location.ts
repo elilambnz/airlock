@@ -13,7 +13,7 @@ export type Location = {
   name: string
   symbol: string
   traits?: string[]
-  type: string
+  type: LocationType
   x: number
   y: number
 }
@@ -24,6 +24,7 @@ export enum LocationType {
   ASTEROID = 'ASTEROID',
   GAS_GIANT = 'GAS_GIANT',
   WORMHOLE = 'WORMHOLE',
+  NEBULA = 'NEBULA',
 }
 
 export type LocationMarketplaceResponse = {

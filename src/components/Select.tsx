@@ -5,7 +5,8 @@ interface SelectProps {
   options: {
     value: string
     label: string
-    subLabel?: string
+    tags?: (string | undefined)[]
+    subTags?: (string | undefined)[]
     icon?: JSX.Element
   }[]
   value?: string
@@ -85,10 +86,14 @@ const Select = (props: SelectProps) => {
               }
             >
               {selectedOption ? selectedOption.label : 'Select'}
-              {selectedOption && selectedOption.subLabel && (
-                <span className="ml-1 text-xs text-gray-500">
-                  {selectedOption.subLabel}
-                </span>
+              {selectedOption?.tags && (
+                <div className="inline-flex text-xs text-gray-500">
+                  {selectedOption.tags.map((tag) => (
+                    <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               )}
             </span>
           </span>
@@ -152,10 +157,23 @@ const Select = (props: SelectProps) => {
                     }
                   >
                     {option.label}
-                    {option.subLabel && (
-                      <span className="ml-1 text-xs text-gray-500">
-                        {option.subLabel}
-                      </span>
+                    {option.tags && (
+                      <div className="inline-flex text-xs text-gray-500">
+                        {option.tags.map((tag) => (
+                          <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {option.subTags && (
+                      <div className="block -ml-1 mt-1">
+                        {option.subTags.map((tag) => (
+                          <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </span>
                 </div>
