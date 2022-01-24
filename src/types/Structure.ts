@@ -82,8 +82,3 @@ export type StructureDepositResponse = {
 export type StructureMaterial = Material & {
   targetQuantity: number
 }
-
-export type WarpJumpResponse = {
-  ship: Ship
-  structure: Structure
-}

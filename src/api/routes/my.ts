@@ -20,7 +20,6 @@ import {
   OwnStructureResponse,
   OwnStructureWithdrawResponse,
   OwnStructureDepositResponse,
-  WarpJumpResponse,
 } from '../../types/Structure'
 import { FlightPlanResponse } from '../../types/FlightPlan'
 import { OrderResponse } from '../../types/Order'
@@ -330,7 +329,7 @@ const createSellOrder = async (
 
 const initiateWarpJump = async (shipId: string) => {
   try {
-    const response: { data: WarpJumpResponse } = await axios.post(
+    const response: { data: FlightPlanResponse } = await axios.post(
       `${BASE_ROUTE}/warp-jumps`,
       {
         shipId,

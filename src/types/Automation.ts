@@ -19,6 +19,7 @@ export enum RouteEventType {
   BUY = 'Buy',
   SELL = 'Sell',
   TRAVEL = 'Travel',
+  WARP_JUMP = 'Warp Jump',
 }
 
 export type RouteEventGood = {

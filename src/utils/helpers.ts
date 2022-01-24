@@ -62,3 +62,7 @@ export const getShortName = (seed?: number) => {
   }
   return uniqueNamesGenerator(customConfig)
 }
+
+export const getShipName = (shipId: string) => {
+  return getShortName(getCharCodeOfAllStringChars(shipId.substring(3, 8)))
+}

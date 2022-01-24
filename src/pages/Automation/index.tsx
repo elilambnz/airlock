@@ -336,7 +336,7 @@ function Automation() {
                             }}
                           />
                         </div>
-                        <div className="sm:col-span-2 pt-6">
+                        <div className="sm:col-span-1 pt-6">
                           <button
                             type="submit"
                             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -349,6 +349,21 @@ function Automation() {
                                 ...prev,
                                 events: [...prev.events, newTradeRouteLocation],
                               }))
+                              if (
+                                newTradeRouteLocation.location?.split(
+                                  '-'
+                                )[1] === 'W'
+                              ) {
+                                setNewTradeRoute((prev) => ({
+                                  ...prev,
+                                  events: [
+                                    ...prev.events,
+                                    {
+                                      type: RouteEventType.WARP_JUMP,
+                                    },
+                                  ],
+                                }))
+                              }
                             }}
                           >
                             Add
@@ -417,9 +432,7 @@ function Automation() {
                             onChange={(value) => {
                               setNewTradeRouteTrade((prev) => ({
                                 ...prev,
-                                type: RouteEventType[
-                                  value.toUpperCase() as keyof typeof RouteEventType
-                                ],
+                                type: value as RouteEventType,
                               }))
                             }}
                           />

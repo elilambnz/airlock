@@ -10,6 +10,7 @@ import {
   createSellOrder,
   getFlightPlanInfo,
   getShipInfo,
+  initiateWarpJump,
 } from '../api/routes/my'
 import { useAuth } from '../App'
 import { useUpdateUser } from '../hooks/useUpdateUser'
@@ -157,17 +158,17 @@ export const AutomationProvider = (props: any) => {
                       // The ship is already traveling to another location in the route
                       // So we don't need to move the ship
                       console.warn(
-                        'Ship is already traveling to another location in the route. Updating startFromStep',
+                        'Ship is already traveling to another location in the route',
                         nextTravelEventIndex
                       )
-                      setTradeRoutes((prev) => [
-                        ...prev.slice(0, taskIndex),
-                        {
-                          ...prev[taskIndex],
-                          startFromStep: nextTravelEventIndex,
-                        },
-                        ...prev.slice(taskIndex + 1),
-                      ])
+                      // setTradeRoutes((prev) => [
+                      //   ...prev.slice(0, taskIndex),
+                      //   {
+                      //     ...prev[taskIndex],
+                      //     startFromStep: nextTravelEventIndex,
+                      //   },
+                      //   ...prev.slice(taskIndex + 1),
+                      // ])
                       break
                     }
                     throw new Error(
@@ -213,6 +214,22 @@ export const AutomationProvider = (props: any) => {
                 }
               }
               // Wait for all ships to arrive at event.location
+              const maxTime = Math.max(...timeRemaining) * 1000
+              addTradeRouteLog(
+                taskIndex,
+                tradeRoute.id,
+                `Waiting for ${maxTime}ms`
+              )
+              await sleep(maxTime)
+            } else if (event.type === RouteEventType.WARP_JUMP) {
+              addTradeRouteLog(taskIndex, tradeRoute.id, `Warp jump`)
+              // Initiate warp jump for each ship
+              let timeRemaining = [0]
+              for await (const shipId of tradeRoute.assignedShips) {
+                const result = await initiateWarpJump(shipId)
+                timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+              }
+              // Wait for all ships to complete warp jump
               const maxTime = Math.max(...timeRemaining) * 1000
               addTradeRouteLog(
                 taskIndex,
