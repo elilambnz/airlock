@@ -21,6 +21,7 @@ import {
 } from '../types/Automation'
 import { GoodType } from '../types/Order'
 import { sleep } from '../utils/helpers'
+import { refuel } from '../utils/mechanics'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -190,15 +191,11 @@ export const AutomationProvider = (props: any) => {
                   } catch (error: any) {
                     if (error.code === 3001 && tradeRoute.autoRefuel) {
                       // Insufficient fuel, auto refuel
-                      const fuelRequired = parseInt(
-                        error.message.match(/\d+/g)[0]
+                      const { credits } = await refuel(
+                        parseInt(error.message.match(/\d+/g)[0]),
+                        ship.ship
                       )
-                      const purchaseResult = await createPurchaseOrder(
-                        ship.ship.id,
-                        GoodType.FUEL,
-                        fuelRequired
-                      )
-                      updateUser({ credits: purchaseResult.credits })
+                      updateUser({ credits })
                       // Retry create new flight plan
                       const result = await createNewFlightPlan(
                         shipId,

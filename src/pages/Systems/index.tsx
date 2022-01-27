@@ -38,6 +38,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Scatter } from 'react-chartjs-2'
+import { refuel } from '../../utils/mechanics'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -132,13 +133,15 @@ function Systems() {
     } catch (error: any) {
       if (error.code === 3001 && autoRefuel) {
         // Insufficient fuel, auto refuel
-        const fuelRequired = parseInt(error.message.match(/\d+/g)[0])
-        const purchaseResult = await createPurchaseOrder(
-          shipId,
-          GoodType.FUEL,
-          fuelRequired
+        const ship = myShips?.ships.find((s) => s.id === shipId)
+        if (!ship) {
+          throw new Error('Ship not found')
+        }
+        const { credits } = await refuel(
+          parseInt(error.message.match(/\d+/g)[0]),
+          ship
         )
-        updateUser({ credits: purchaseResult.credits })
+        updateUser({ credits })
         // Retry create new flight plan
         handleCreateFlightPlan(shipId, destination)
       } else {

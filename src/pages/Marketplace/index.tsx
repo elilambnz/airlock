@@ -64,6 +64,15 @@ function Marketplace() {
   // console.log('goodTypes', goodTypes)
   // console.log('shipTypes', shipTypes)
 
+  const allGoods = [...marketplace.entries()]
+    .map(([, m]) => m.marketplace.flat())
+    .flat()
+
+  const filteredGoodDetails = useMemo(() => {
+    if (!filteredGood) return
+    return allGoods.find((g) => g.symbol === filteredGood)
+  }, [filteredGood, allGoods])
+
   const shipOptions =
     myShips?.ships.map((ship) => ({
       value: ship.id,
@@ -174,8 +183,10 @@ function Marketplace() {
           .map((m) => m[1].marketplace)
           .flat()
           .filter((m) => m.symbol === filteredGood)
-          ?.reduce((a, b) => (a.sellPricePerUnit < b.sellPricePerUnit ? a : b))
-          .purchasePricePerUnit,
+          ?.reduce(
+            (a, b) => (a.sellPricePerUnit < b.sellPricePerUnit ? a : b),
+            {} as LocationMarketplace
+          ).purchasePricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
 
@@ -188,8 +199,10 @@ function Marketplace() {
           .map((m) => m[1].marketplace)
           .flat()
           .filter((m) => m.symbol === filteredGood)
-          ?.reduce((a, b) => (a.sellPricePerUnit > b.sellPricePerUnit ? a : b))
-          .sellPricePerUnit,
+          ?.reduce(
+            (a, b) => (a.sellPricePerUnit > b.sellPricePerUnit ? a : b),
+            {} as LocationMarketplace
+          ).sellPricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
 
@@ -236,7 +249,7 @@ function Marketplace() {
                     />
                   </div>
                   {filteredGood && (
-                    <div className="sm:col-span-2">
+                    <div className="sm:col-span-3">
                       <h3 className="text-sm font-medium text-gray-700">
                         Best Profit Margin
                       </h3>
@@ -250,6 +263,45 @@ function Marketplace() {
                         {formatNumberCommas(
                           highestSellPriceOfFilteredGood -
                             lowestBuyPriceOfFilteredGood
+                        )}{' '}
+                        {filteredGoodDetails &&
+                        filteredGoodDetails.volumePerUnit > 1 ? (
+                          <>
+                            <span className="ml-2 text-gray-900">
+                              Per volume
+                            </span>{' '}
+                            {formatNumberCommas(
+                              Math.floor(
+                                (highestSellPriceOfFilteredGood -
+                                  lowestBuyPriceOfFilteredGood) /
+                                  filteredGoodDetails.volumePerUnit
+                              )
+                            )}
+                            <span className="ml-2 text-gray-900">
+                              Per 80 units
+                            </span>{' '}
+                            {formatNumberCommas(
+                              Math.floor(
+                                ((highestSellPriceOfFilteredGood -
+                                  lowestBuyPriceOfFilteredGood) *
+                                  80) /
+                                  filteredGoodDetails.volumePerUnit
+                              )
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <span className="ml-2 text-gray-900">
+                              Per 80 units
+                            </span>{' '}
+                            {formatNumberCommas(
+                              Math.floor(
+                                (highestSellPriceOfFilteredGood -
+                                  lowestBuyPriceOfFilteredGood) *
+                                  80
+                              )
+                            )}
+                          </>
                         )}
                       </p>
                     </div>
@@ -316,8 +368,9 @@ function Marketplace() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {marketplace &&
-                            [...marketplace.entries()].map(
-                              ([location, market]) => (
+                            [...marketplace.entries()]
+                              .sort((a, b) => a[0].localeCompare(b[0]))
+                              .map(([location, market]) => (
                                 <>
                                   <tr key={location} className="bg-gray-100">
                                     <td
@@ -456,8 +509,7 @@ function Marketplace() {
                                     )}
                                   </>
                                 </>
-                              )
-                            )}
+                              ))}
                           {/* No markets available. You must have at least one
                                     ship docked at a location to buy or sell goods. */}
                         </tbody>
@@ -513,6 +565,12 @@ function Marketplace() {
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
+                              Restricted Goods
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Price
                             </th>
                             <th
@@ -549,7 +607,7 @@ function Marketplace() {
                                   <tr key={system} className="bg-gray-100">
                                     <td
                                       className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
-                                      colSpan={9}
+                                      colSpan={10}
                                     >
                                       {system}
                                     </td>
@@ -577,10 +635,23 @@ function Marketplace() {
                                           <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                             {ship.manufacturer}
                                           </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                          <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                             {ship.purchaseLocations
                                               .map((pl) => pl.location)
                                               .join(', ')}
+                                          </td>
+                                          <td
+                                            className={
+                                              'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                              (ship.restrictedGoods
+                                                ? ' text-red-500'
+                                                : '')
+                                            }
+                                          >
+                                            {ship.restrictedGoods
+                                              // @ts-ignore
+                                              ?.map((good) => GoodType[good])
+                                              .join(', ') ?? 'None'}
                                           </td>
                                           <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                             {!ship.purchaseLocations
@@ -638,7 +709,7 @@ function Marketplace() {
                                         </tr>
                                       ))
                                   ) : (
-                                    <LoadingRows cols={9} />
+                                    <LoadingRows cols={10} />
                                   )}
                                 </>
                               )

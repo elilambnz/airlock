@@ -27,6 +27,7 @@ export type Ship = {
   manufacturer: string
   maxCargo: number
   plating: number
+  restrictedGoods?: GoodType[]
   spaceAvailable: number
   speed: number
   type: string
