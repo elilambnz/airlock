@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface LoadingRowsProps {
   cols: number
   rows?: number

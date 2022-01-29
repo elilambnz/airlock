@@ -1,9 +1,9 @@
-import React from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import { TradeRoute } from '../../../types/Automation'
 
 interface AssignedShipsProps {
   tradeRoute: TradeRoute
-  setTradeRoute?: React.Dispatch<React.SetStateAction<TradeRoute>>
+  setTradeRoute?: Dispatch<SetStateAction<TradeRoute>>
 }
 
 const AssignedShips = (props: AssignedShipsProps) => {

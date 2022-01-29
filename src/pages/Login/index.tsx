@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { generateToken } from '../../api/routes/users'
-import { useAuth } from '../../App'
 import '../../App.css'
 import Alert from '../../components/Alert'
 import SimpleModal from '../../components/Modal/SimpleModal'
+import { useAuth } from '../../hooks/useAuth'
 import {
   getValue,
   setValue,
@@ -13,20 +13,20 @@ import {
 } from '../../utils/browserStorage'
 
 const Login = () => {
-  const [randomBackgroundIndex, setRandomBackgroundIndex] = React.useState(0)
-  const [registerForm, setRegisterForm] = React.useState({
+  const [randomBackgroundIndex, setRandomBackgroundIndex] = useState(0)
+  const [registerForm, setRegisterForm] = useState({
     username: '',
     rememberMe: false,
   })
-  const [loginForm, setLoginForm] = React.useState({
+  const [loginForm, setLoginForm] = useState({
     apiToken: '',
     rememberMe: false,
   })
-  const [loading, setLoading] = React.useState(false)
-  const [registrationError, setRegistrationError] = React.useState<string>()
-  const [loginError, setLoginError] = React.useState<string>()
-  const [useExistingToken, setUseExistingToken] = React.useState(false)
-  const [attemptingLogin, setAttemptingLogin] = React.useState(false)
+  const [loading, setLoading] = useState(false)
+  const [registrationError, setRegistrationError] = useState<string>()
+  const [loginError, setLoginError] = useState<string>()
+  const [useExistingToken, setUseExistingToken] = useState(false)
+  const [attemptingLogin, setAttemptingLogin] = useState(false)
 
   const auth = useAuth()
   const { state }: any = useLocation()

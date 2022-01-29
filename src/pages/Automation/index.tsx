@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { listMyShips } from '../../api/routes/my'
 import { getSystemLocations } from '../../api/routes/systems'
 import { listGoodTypes } from '../../api/routes/types'
@@ -71,6 +71,7 @@ function Automation() {
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
+    state,
   } = useAutomation()
 
   useEffect(() => {
@@ -276,6 +277,11 @@ function Automation() {
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
                       {moment.duration(runTime, 'seconds').format('HH:mm:ss')}
                     </dd>
+                    <p>Worker: {state}</p>
+                    <p>
+                      Drift:{' '}
+                      <span className="text-red-600">{state - runTime}</span>
+                    </p>
                   </div>
                 </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getLocationMarketplace } from '../../api/routes/locations'
 import {
   buyShip,

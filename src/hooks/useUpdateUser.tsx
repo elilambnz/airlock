@@ -1,6 +1,5 @@
-import React from 'react'
-import { useAuth } from '../App'
-import { User } from '../types/User'
+import { useAuth } from './useAuth'
+import { User } from '../types/Account'
 
 export const useUpdateUser = () => {
   const { setUser } = useAuth()

@@ -1,7 +1,7 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 interface ToolTipProps {
-  children: React.ReactNode
+  children: ReactNode
   title: string
   className?: string
 }

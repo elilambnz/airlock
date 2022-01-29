@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
-import { useAuth } from '../../App'
 import '../../App.css'
 import LoadingRows from '../../components/Table/LoadingRows'
+import { useAuth } from '../../hooks/useAuth'
 import {
   StatusResponse,
   LeaderboardNetWorthResponse,

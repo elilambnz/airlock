@@ -1,9 +1,9 @@
-import React from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
 
 interface RouteStepsProps {
   tradeRoute: TradeRoute
-  setTradeRoute?: React.Dispatch<React.SetStateAction<TradeRoute>>
+  setTradeRoute?: Dispatch<SetStateAction<TradeRoute>>
   notActive?: boolean
   handleResume?: (index: number) => void
 }

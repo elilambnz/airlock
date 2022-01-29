@@ -1,5 +1,5 @@
 import moment from 'moment'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
 import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'

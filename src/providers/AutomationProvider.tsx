@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import { useState, useEffect, createContext } from 'react'
 import {
   getTradingRoutes,
   createTradingRoute,
@@ -12,7 +12,7 @@ import {
   getShipInfo,
   initiateWarpJump,
 } from '../api/routes/my'
-import { useAuth } from '../App'
+import { useAuth } from '../hooks/useAuth'
 import { useUpdateUser } from '../hooks/useUpdateUser'
 import {
   RouteEventType,
@@ -22,6 +22,8 @@ import {
 import { GoodType } from '../types/Order'
 import { sleep } from '../utils/helpers'
 import { refuel } from '../utils/mechanics'
+
+import { proxy, Remote, wrap } from 'comlink'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -37,6 +39,7 @@ export const AutomationContext = createContext({
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
   pauseTradeRoute: (id: string) => {},
   resumeTradeRoute: (id: string, step?: number) => {},
+  state: 0,
 })
 
 export const AutomationProvider = (props: any) => {
@@ -87,6 +90,21 @@ export const AutomationProvider = (props: any) => {
     console.info('Automation: Stopped')
     setStatus(AutomationStatus.Stopped)
   }
+
+  // worker test
+  const [state, setState] = useState(0)
+  useEffect(() => {
+    const init = async () => {
+      const worker = new Worker(
+        new URL('../workers/my-worker', import.meta.url)
+      )
+      const obj: Remote<{
+        start: (tick: (value: number) => void) => void
+      }> = wrap(worker)
+      await obj.start(proxy((value) => setState(value)))
+    }
+    init()
+  }, [])
 
   // Start automation tasks
   useEffect(() => {
@@ -437,57 +455,7 @@ export const AutomationProvider = (props: any) => {
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
+    state,
   }
   return <AutomationContext.Provider value={value} {...props} />
 }
-
-// [
-//   {
-//     id: 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-//     events: [
-//       {
-//         type: RouteEventType.TRAVEL,
-//         location: 'OE-NY',
-//       },
-//       {
-//         type: RouteEventType.SELL,
-//         good: {
-//           good: 'EXPLOSIVES',
-//           quantity: 80,
-//         },
-//       },
-//       {
-//         type: RouteEventType.BUY,
-//         good: {
-//           good: 'METALS',
-//           quantity: 80,
-//         },
-//       },
-//       {
-//         type: RouteEventType.TRAVEL,
-//         location: 'OE-KO',
-//       },
-//       {
-//         type: RouteEventType.SELL,
-//         good: {
-//           good: 'METALS',
-//           quantity: 80,
-//         },
-//       },
-//       {
-//         type: RouteEventType.BUY,
-//         good: {
-//           good: 'EXPLOSIVES',
-//           quantity: 80,
-//         },
-//       },
-//     ],
-//     assignedShips: [
-//       'cky9jeni243821ds6whazjp3h',
-//       'ckycupbrd9743615s6bz6shroc',
-//       'ckybzkpt530735515s69wlbsfif',
-//     ],
-//     autoRefuel: true,
-//     status: TradeRouteStatus.ACTIVE,
-//   },
-// ]

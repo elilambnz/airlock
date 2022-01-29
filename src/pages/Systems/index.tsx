@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   createNewFlightPlan,
   listMyShips,
@@ -21,7 +21,6 @@ import {
 } from '../../types/System'
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
-import { useAuth } from '../../App'
 import Alert from '../../components/Alert'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
@@ -39,6 +38,7 @@ import {
 } from 'chart.js'
 import { Scatter } from 'react-chartjs-2'
 import { refuel } from '../../utils/mechanics'
+import { useAuth } from '../../hooks/useAuth'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 

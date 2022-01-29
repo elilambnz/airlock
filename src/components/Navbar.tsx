@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../App'
+import { useAuth } from '../hooks/useAuth'
 
 import { abbreviateNumber } from '../utils/helpers'
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   listMyShips,
@@ -14,9 +14,9 @@ import { ListShipsResponse, ShipCargo } from '../../types/Ship'
 import { abbreviateNumber, getShipName } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 import ActionModal from '../../components/Modal/ActionModal'
-import { useAuth } from '../../App'
 import Tooltip from '../../components/Tooltip'
 import { GoodType } from '../../types/Order'
+import { useAuth } from '../../hooks/useAuth'
 
 export enum CargoManageMode {
   TRANSFER,

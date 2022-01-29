@@ -1,15 +1,14 @@
-import React from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import { CargoManageMode } from '..'
 import Select from '../../../components/Select'
 import { Ship, ShipCargo } from '../../../types/Ship'
-import { capitaliseFirstLetter } from '../../../utils/helpers'
 
 interface ManageCargoProps {
   ship?: Ship
   shipOptions: { value: string; label: string }[]
   cargoToTransfer?: ShipCargo & { toShipId?: string }
-  setCargoToTransfer: React.Dispatch<
-    React.SetStateAction<
+  setCargoToTransfer: Dispatch<
+    SetStateAction<
       | (ShipCargo & {
           shipId?: string | undefined
           toShipId?: string | undefined
@@ -18,17 +17,15 @@ interface ManageCargoProps {
     >
   >
   cargoToJettison?: ShipCargo
-  setCargoToJettison: React.Dispatch<
-    React.SetStateAction<
+  setCargoToJettison: Dispatch<
+    SetStateAction<
       | (ShipCargo & {
           shipId?: string | undefined
         })
       | undefined
     >
   >
-  setCargoManageMode: React.Dispatch<
-    React.SetStateAction<CargoManageMode | undefined>
-  >
+  setCargoManageMode: Dispatch<SetStateAction<CargoManageMode | undefined>>
 }
 
 const ManageCargo = (props: ManageCargoProps) => {
