@@ -627,7 +627,7 @@ function Automation() {
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                <td className="px-6 py-4 text-sm leading-5 font-medium text-gray-900">
                                   {route.events
                                     .filter(
                                       (e) => e.type === RouteEventType.TRAVEL

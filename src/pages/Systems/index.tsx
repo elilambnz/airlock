@@ -3,7 +3,6 @@ import {
   createNewFlightPlan,
   listMyShips,
   initiateWarpJump,
-  createPurchaseOrder,
 } from '../../api/routes/my'
 import {
   getSystemDockedShips,
@@ -26,7 +25,7 @@ import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
 import { getShipName } from '../../utils/helpers'
-import { LocationTrait, LocationType } from '../../types/Location'
+import { LocationTrait, LocationType, System } from '../../types/Location'
 import { useUpdateUser } from '../../hooks/useUpdateUser'
 import {
   Chart as ChartJS,
@@ -41,8 +40,6 @@ import { refuel } from '../../utils/mechanics'
 import { useAuth } from '../../hooks/useAuth'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
-
-const STARTER_SYSTEM = 'OE'
 
 function Systems() {
   const [loading, setLoading] = useState(false)
@@ -93,22 +90,27 @@ function Systems() {
 
   const knownSystems = new Set(
     [
-      STARTER_SYSTEM,
+      System[0],
       ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
     ].filter((s) => s)
   )
 
   const knownSystemOptions: { value: string; label: string }[] = [
     ...knownSystems,
-  ].map((s) => ({
-    value: s!,
-    label: s!,
-    icon: (
-      <div className="flex items-center justify-center w-5 h-5">
-        <span className="text-xs">🌌</span>
-      </div>
-    ),
-  }))
+  ]
+    .sort(
+      (a, b) =>
+        Object.keys(System).indexOf(a!) - Object.keys(System).indexOf(b!)
+    )
+    .map((s) => ({
+      value: s!,
+      label: s!,
+      icon: (
+        <div className="flex items-center justify-center w-5 h-5">
+          <span className="text-xs">🌌</span>
+        </div>
+      ),
+    }))
 
   useEffect(() => {
     if (!currentSystem && knownSystemOptions.length > 0) {

@@ -117,7 +117,7 @@ const Select = (props: SelectProps) => {
         {isOpen && options.length > 0 && (
           <ul
             id="listbox"
-            className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+            className="absolute z-10 mt-1 w-full min-w-fit bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
             role="listbox"
             aria-labelledby="listbox-label"
             aria-activedescendant="listbox-option-3"

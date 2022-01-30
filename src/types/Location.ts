@@ -69,3 +69,10 @@ export type LocationShipResponse = {
 export type LocationStructuresResponse = {
   structures: Structure[]
 }
+
+export enum System {
+  'OE',
+  'XV',
+  'ZY1',
+  'NA7',
+}
