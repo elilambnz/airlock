@@ -1,11 +1,7 @@
+import moment, { Moment } from 'moment'
 import { useState, useEffect, useMemo } from 'react'
 import { getLocationMarketplace } from '../../api/routes/locations'
-import {
-  buyShip,
-  createPurchaseOrder,
-  createSellOrder,
-  listMyShips,
-} from '../../api/routes/my'
+import { buyShip, listMyShips } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
 import { listGoodTypes, listShipTypes } from '../../api/routes/types'
 import '../../App.css'
@@ -13,10 +9,7 @@ import SimpleModal from '../../components/Modal/SimpleModal'
 import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { useUpdateUser } from '../../hooks/useUpdateUser'
-import {
-  LocationMarketplace,
-  LocationMarketplaceResponse,
-} from '../../types/Location'
+import { MarketplaceGood } from '../../types/Location'
 import { GoodType, ListGoodTypesResponse } from '../../types/Order'
 import {
   ListShipListingsResponse,
@@ -24,11 +17,16 @@ import {
   ListShipTypesResponse,
   ShipListing,
 } from '../../types/Ship'
-import { abbreviateNumber, formatNumberCommas } from '../../utils/helpers'
+import {
+  abbreviateNumber,
+  formatNumberCommas,
+  getShipName,
+} from '../../utils/helpers'
+import { purchase, sell } from '../../utils/mechanics'
 
 const STARTER_SYSTEM = 'OE'
 
-interface GoodToProcess extends LocationMarketplace {
+interface GoodToProcess extends MarketplaceGood {
   shipId?: string
   quantity?: number
 }
@@ -36,7 +34,7 @@ interface GoodToProcess extends LocationMarketplace {
 function Marketplace() {
   const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [marketplace, setMarketplace] = useState<
-    Map<string, LocationMarketplaceResponse>
+    Map<string, { goods: MarketplaceGood[]; lastUpdated: Moment }>
   >(new Map())
   const [availableShips, setAvailableShips] =
     useState<Map<string, ListShipListingsResponse>>()
@@ -65,7 +63,7 @@ function Marketplace() {
   // console.log('shipTypes', shipTypes)
 
   const allGoods = [...marketplace.entries()]
-    .map(([, m]) => m.marketplace.flat())
+    .map(([, m]) => m.goods.flat())
     .flat()
 
   const filteredGoodDetails = useMemo(() => {
@@ -76,11 +74,23 @@ function Marketplace() {
   const shipOptions =
     myShips?.ships.map((ship) => ({
       value: ship.id,
-      label: `${ship.type} (${ship.maxCargo - ship.spaceAvailable}/${
-        ship.maxCargo
-      }) [${
-        ship.cargo.find((cargo) => cargo.good === GoodType.FUEL)?.quantity ?? 0
-      }] ${ship.location}`,
+      label: `${getShipName(ship.id)}
+      `,
+      tags: [
+        ship.type,
+        ship.location,
+        `⛽ ${
+          // @ts-expect-error
+          ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
+            ?.quantity ?? 0
+        }`,
+        `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+      ],
+      icon: (
+        <div className="flex items-center justify-center w-5 h-5">
+          <span className="text-xs">🚀</span>
+        </div>
+      ),
     })) ?? []
 
   const dockedLocations = useMemo(
@@ -95,9 +105,16 @@ function Marketplace() {
   useEffect(() => {
     if (dockedLocations) {
       const updateMarketplace = async () => {
-        const marketplaces = new Map<string, LocationMarketplaceResponse>()
+        const marketplaces = new Map<
+          string,
+          { goods: MarketplaceGood[]; lastUpdated: Moment }
+        >()
         dockedLocations.forEach(async (location) => {
-          marketplaces.set(location, await getLocationMarketplace(location))
+          const goods = (await getLocationMarketplace(location)).marketplace
+          marketplaces.set(location, {
+            goods,
+            lastUpdated: moment(),
+          })
         })
         setMarketplace(marketplaces)
       }
@@ -135,13 +152,16 @@ function Marketplace() {
       return
     }
     try {
-      const result = await createPurchaseOrder(
-        goodToProcess.shipId,
+      const ship = myShips?.ships.find((s) => s.id === goodToProcess.shipId)
+      if (!ship) {
+        throw new Error('Ship not found')
+      }
+      const { credits } = await purchase(
+        ship,
         goodToProcess.symbol,
         goodToProcess.quantity
       )
-      updateUser({ credits: result.credits })
-      console.log(result)
+      updateUser({ credits })
     } catch (error) {
       console.error(error)
     }
@@ -152,13 +172,16 @@ function Marketplace() {
       return
     }
     try {
-      const result = await createSellOrder(
-        goodToProcess.shipId,
+      const ship = myShips?.ships.find((s) => s.id === goodToProcess.shipId)
+      if (!ship) {
+        throw new Error('Ship not found')
+      }
+      const { credits } = await sell(
+        ship,
         goodToProcess.symbol,
         goodToProcess.quantity
       )
-      updateUser({ credits: result.credits })
-      console.log(result)
+      updateUser({ credits })
     } catch (error) {
       console.error(error)
     }
@@ -180,12 +203,12 @@ function Marketplace() {
         marketplace &&
         filteredGood &&
         [...marketplace.entries()]
-          .map((m) => m[1].marketplace)
+          .map((m) => m[1].goods)
           .flat()
           .filter((m) => m.symbol === filteredGood)
           ?.reduce(
             (a, b) => (a.sellPricePerUnit < b.sellPricePerUnit ? a : b),
-            {} as LocationMarketplace
+            {} as MarketplaceGood
           ).purchasePricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
@@ -196,12 +219,12 @@ function Marketplace() {
         marketplace &&
         filteredGood &&
         [...marketplace.entries()]
-          .map((m) => m[1].marketplace)
+          .map((m) => m[1].goods)
           .flat()
           .filter((m) => m.symbol === filteredGood)
           ?.reduce(
             (a, b) => (a.sellPricePerUnit > b.sellPricePerUnit ? a : b),
-            {} as LocationMarketplace
+            {} as MarketplaceGood
           ).sellPricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
@@ -232,9 +255,7 @@ function Marketplace() {
                       options={[
                         ...new Set(
                           [...marketplace.entries()]
-                            .map(([, m]) =>
-                              m.marketplace.map((g) => g.symbol).flat()
-                            )
+                            .map(([, m]) => m.goods.map((g) => g.symbol).flat())
                             .flat()
                         ),
                       ].map((symbol) => ({
@@ -377,12 +398,20 @@ function Marketplace() {
                                       className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
                                       colSpan={9}
                                     >
-                                      {location}
+                                      <div className="flex justify-between">
+                                        <span>{location}</span>
+                                        <span>
+                                          Last updated:{' '}
+                                          {market.lastUpdated.format(
+                                            'DD/MM/YYYY hh:mm:ss a'
+                                          )}
+                                        </span>
+                                      </div>
                                     </td>
                                   </tr>
                                   <>
                                     {market ? (
-                                      market.marketplace
+                                      market.goods
                                         .filter((g) =>
                                           filteredGood
                                             ? g.symbol === filteredGood
@@ -427,7 +456,7 @@ function Marketplace() {
                                               className={
                                                 'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
                                                 ([...marketplace.entries()]
-                                                  .map((m) => m[1].marketplace)
+                                                  .map((m) => m[1].goods)
                                                   .flat()
                                                   .filter(
                                                     (m) =>
@@ -453,7 +482,7 @@ function Marketplace() {
                                               className={
                                                 'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
                                                 ([...marketplace.entries()]
-                                                  .map((m) => m[1].marketplace)
+                                                  .map((m) => m[1].goods)
                                                   .flat()
                                                   .filter(
                                                     (m) =>

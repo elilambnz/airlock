@@ -40,9 +40,9 @@ export type Material = {
 }
 
 export enum StructureCategory {
-  FARM = 'FARM',
-  SHIPYARD = 'SHIPYARD',
-  TRADING_POST = 'TRADING_POST',
+  FARM = 'Farm',
+  SHIPYARD = 'Shipyard',
+  TRADING_POST = 'Trading Post',
 }
 
 export type CreateStructureResponse = {

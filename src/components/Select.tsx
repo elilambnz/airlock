@@ -6,17 +6,17 @@ interface SelectProps {
     value: string
     label: string
     tags?: (string | undefined)[]
-    subTags?: (string | undefined)[]
     icon?: JSX.Element
   }[]
   value?: string
+  disabled?: boolean
   onChange: (value: string) => void
 }
 
 const Select = (props: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const { label, options, value, onChange } = props
+  const { label, options, value, disabled, onChange } = props
 
   useEffect(() => {
     const listboxButton = document.getElementById('listbox-button')
@@ -44,6 +44,8 @@ const Select = (props: SelectProps) => {
 
   const selectedOption = options.find((option) => option.value === value)
 
+  const selectDisabled = disabled || !(options.length > 0)
+
   return (
     <div>
       <label
@@ -58,12 +60,12 @@ const Select = (props: SelectProps) => {
           type="button"
           className={
             'relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hover:cursor-pointer' +
-            (!(options.length > 0) ? ' opacity-50 cursor-not-allowed' : '')
+            (selectDisabled ? ' opacity-50 cursor-not-allowed' : '')
           }
           aria-haspopup="listbox"
           aria-expanded="true"
           aria-labelledby="listbox-label"
-          disabled={!(options.length > 0)}
+          disabled={selectDisabled}
           onClick={() => setIsOpen((prev) => !prev)}
         >
           <span className="flex items-center">
@@ -88,7 +90,7 @@ const Select = (props: SelectProps) => {
               {selectedOption ? selectedOption.label : 'Select'}
               {selectedOption?.tags && (
                 <div className="inline-flex text-xs text-gray-500">
-                  {selectedOption.tags.map((tag) => (
+                  {selectedOption.tags.slice(0, 2).map((tag) => (
                     <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
                       {tag}
                     </span>
@@ -160,16 +162,7 @@ const Select = (props: SelectProps) => {
                     {option.tags && (
                       <div className="inline-flex text-xs text-gray-500">
                         {option.tags.map((tag) => (
-                          <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {option.subTags && (
-                      <div className="block -ml-1 mt-1">
-                        {option.subTags.map((tag) => (
-                          <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
+                          <span className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100">
                             {tag}
                           </span>
                         ))}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   createNewFlightPlan,
   listMyShips,
@@ -59,6 +60,8 @@ function Systems() {
 
   const auth = useAuth()
   const updateUser = useUpdateUser()
+  const navigate = useNavigate()
+  const params = useParams()
 
   const updateCurrentSystem = async (systemSymbol: string) => {
     if (loading) {
@@ -113,11 +116,18 @@ function Systems() {
     }))
 
   useEffect(() => {
-    if (!currentSystem && knownSystemOptions.length > 0) {
-      updateCurrentSystem(knownSystemOptions[0].value)
+    if (!params.systemSymbol && knownSystemOptions.length > 0) {
+      navigate(`/systems/${knownSystemOptions[0].value}`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSystem, knownSystemOptions])
+  }, [params.systemSymbol, knownSystemOptions])
+
+  useEffect(() => {
+    if (params.systemSymbol) {
+      updateCurrentSystem(params.systemSymbol)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.systemSymbol])
 
   const handleCreateFlightPlan = async (
     shipId: string,
@@ -140,8 +150,8 @@ function Systems() {
           throw new Error('Ship not found')
         }
         const { credits } = await refuel(
-          parseInt(error.message.match(/\d+/g)[0]),
-          ship
+          ship,
+          parseInt(error.message.match(/\d+/g)[0])
         )
         updateUser({ credits })
         // Retry create new flight plan
@@ -192,10 +202,13 @@ function Systems() {
         value: ship.id,
         label: `${getShipName(ship.id)}
         `,
-        tags: [ship.type, ship.location],
-        subTags: [
+        tags: [
+          ship.type,
+          ship.location,
           `⛽ ${
-            ship.cargo.find((c) => c.good === GoodType.FUEL)?.quantity ?? 0
+            // @ts-expect-error
+            ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
+              ?.quantity ?? 0
           }`,
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
@@ -290,8 +303,9 @@ function Systems() {
                   label="Select System"
                   options={knownSystemOptions}
                   value={currentSystem?.system.symbol}
+                  disabled={loading}
                   onChange={(value) => {
-                    updateCurrentSystem(value)
+                    navigate(`/systems/${value}`)
                   }}
                 />
               </div>
@@ -681,7 +695,7 @@ function Systems() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={6}
+                                colSpan={7}
                               >
                                 You have no active flight plans.
                               </td>
@@ -758,7 +772,7 @@ function Systems() {
                             <tr className="bg-white text-center">
                               <td
                                 className="px-6 py-4 text-gray-500"
-                                colSpan={2}
+                                colSpan={3}
                               >
                                 You have no docked ships.
                               </td>

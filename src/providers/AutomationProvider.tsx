@@ -6,8 +6,6 @@ import {
 } from '../api/routes/auxiliary'
 import {
   createNewFlightPlan,
-  createPurchaseOrder,
-  createSellOrder,
   getFlightPlanInfo,
   getShipInfo,
   initiateWarpJump,
@@ -21,7 +19,7 @@ import {
 } from '../types/Automation'
 import { GoodType } from '../types/Order'
 import { sleep } from '../utils/helpers'
-import { refuel } from '../utils/mechanics'
+import { purchase, refuel, sell } from '../utils/mechanics'
 
 import { proxy, Remote, wrap } from 'comlink'
 
@@ -210,8 +208,8 @@ export const AutomationProvider = (props: any) => {
                     if (error.code === 3001 && tradeRoute.autoRefuel) {
                       // Insufficient fuel, auto refuel
                       const { credits } = await refuel(
-                        parseInt(error.message.match(/\d+/g)[0]),
-                        ship.ship
+                        ship.ship,
+                        parseInt(error.message.match(/\d+/g)[0])
                       )
                       updateUser({ credits })
                       // Retry create new flight plan
@@ -267,12 +265,12 @@ export const AutomationProvider = (props: any) => {
               for await (const shipId of tradeRoute.assignedShips) {
                 const ship = await getShipInfo(shipId)
                 if (ship.ship.spaceAvailable >= event.good!.quantity) {
-                  const purchaseResult = await createPurchaseOrder(
-                    shipId,
-                    event.good!.good,
+                  const { credits } = await purchase(
+                    ship.ship,
+                    GoodType[event.good!.good as keyof typeof GoodType],
                     event.good!.quantity
                   )
-                  updateUser({ credits: purchaseResult.credits })
+                  updateUser({ credits })
                 } else {
                   if (
                     ship.ship.cargo.find(
@@ -310,12 +308,12 @@ export const AutomationProvider = (props: any) => {
                     ?.quantity ??
                   0 >= event.good!.quantity
                 ) {
-                  const sellResult = await createSellOrder(
-                    shipId,
-                    event.good!.good,
+                  const { credits } = await sell(
+                    ship.ship,
+                    GoodType[event.good!.good as keyof typeof GoodType],
                     event.good!.quantity
                   )
-                  updateUser({ credits: sellResult.credits })
+                  updateUser({ credits })
                 } else {
                   // Not throwing an error here because it's possible that the ship has no goods to sell if it's the first event in the route
                   console.warn(

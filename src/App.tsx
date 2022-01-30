@@ -46,7 +46,7 @@ function App() {
       ),
     },
     {
-      path: '/account',
+      path: 'account',
       element: (
         <RequireAuth>
           <Account />
@@ -54,7 +54,7 @@ function App() {
       ),
     },
     {
-      path: '/marketplace',
+      path: 'marketplace',
       element: (
         <RequireAuth>
           <Marketplace />
@@ -62,7 +62,7 @@ function App() {
       ),
     },
     {
-      path: '/systems',
+      path: 'systems',
       element: (
         <RequireAuth>
           <Systems />
@@ -70,7 +70,15 @@ function App() {
       ),
     },
     {
-      path: '/structures',
+      path: 'systems/:systemSymbol',
+      element: (
+        <RequireAuth>
+          <Systems />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: 'structures',
       element: (
         <RequireAuth>
           <Structures />
@@ -78,7 +86,7 @@ function App() {
       ),
     },
     {
-      path: '/automation',
+      path: 'automation',
       element: (
         <RequireAuth>
           <Automation />
@@ -86,7 +94,7 @@ function App() {
       ),
     },
     {
-      path: '/loans',
+      path: 'loans',
       element: (
         <RequireAuth>
           <Loans />
@@ -106,7 +114,7 @@ function App() {
               ))}
             </Route>
             <Route element={<AuthLayout />}>
-              <Route path="/login" element={<Login />} />
+              <Route path="login" element={<Login />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

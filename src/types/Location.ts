@@ -49,10 +49,10 @@ export enum LocationTrait {
 }
 
 export type LocationMarketplaceResponse = {
-  marketplace: LocationMarketplace[]
+  marketplace: MarketplaceGood[]
 }
 
-export type LocationMarketplace = {
+export type MarketplaceGood = {
   pricePerUnit: number
   purchasePricePerUnit: number
   quantityAvailable: number
