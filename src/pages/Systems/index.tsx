@@ -108,11 +108,6 @@ function Systems() {
     .map((s) => ({
       value: s!,
       label: s!,
-      icon: (
-        <div className="flex items-center justify-center w-5 h-5">
-          <span className="text-xs">🌌</span>
-        </div>
-      ),
     }))
 
   useEffect(() => {
@@ -228,7 +223,7 @@ function Systems() {
         <div className="flex items-center justify-center w-5 h-5">
           <span className="text-xs">
             {getIconForLocationType(
-              // @ts-ignore
+              // @ts-expect-error
               LocationType[location.type]
             )}
           </span>
@@ -457,13 +452,13 @@ function Systems() {
                                       {location.symbol}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {/* @ts-ignore */}
+                                      {/* @ts-expect-error */}
                                       {LocationType[location.type] ??
                                         location.type}
                                     </td>
                                     <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                       {location.traits
-                                        // @ts-ignore
+                                        // @ts-expect-error
                                         ?.map((t) => LocationTrait[t] ?? t)
                                         .join(', ')}
                                     </td>

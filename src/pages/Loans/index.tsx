@@ -86,7 +86,7 @@ function Loans() {
                               }
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {/* @ts-ignore */}
+                                {/* @ts-expect-error */}
                                 {LoanTier[loan.type]}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
@@ -104,7 +104,7 @@ function Loans() {
                                       : ' bg-yellow-100 text-yellow-800')
                                   }
                                 >
-                                  {/* @ts-ignore */}
+                                  {/* @ts-expect-error */}
                                   {LoanStatus[loan.status]}
                                 </span>
                               </td>
@@ -178,7 +178,7 @@ function Loans() {
                               }
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                {/* @ts-ignore */}
+                                {/* @ts-expect-error */}
                                 {LoanTier[loan.type]}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">

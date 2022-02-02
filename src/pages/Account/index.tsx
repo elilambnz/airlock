@@ -354,7 +354,7 @@ function Account() {
                                 title={ship.cargo
                                   .map(
                                     (c) =>
-                                      // @ts-ignore
+                                      // @ts-expect-error
                                       `${GoodType[c.good]} ${c.quantity}` +
                                       (c.quantity !== c.totalVolume
                                         ? ` (${c.totalVolume})`

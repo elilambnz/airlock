@@ -678,7 +678,7 @@ function Marketplace() {
                                             }
                                           >
                                             {ship.restrictedGoods
-                                              // @ts-ignore
+                                              // @ts-expect-error
                                               ?.map((good) => GoodType[good])
                                               .join(', ') ?? 'None'}
                                           </td>
