@@ -118,6 +118,7 @@ export default function Select(props: SelectProps) {
                   ...styles.popper,
                   // @ts-expect-error
                   minWidth: targetElement?.scrollWidth,
+                  maxWidth: 'calc(100vw - 16px)',
                 }}
                 {...attributes.popper}
               >
@@ -132,7 +133,7 @@ export default function Select(props: SelectProps) {
                 >
                   <Listbox.Options
                     static
-                    className="bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                    className="bg-white shadow-lg max-h-60 max-w-full rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
                   >
                     {options.map((option) => (
                       <Listbox.Option

@@ -298,7 +298,7 @@ function Systems() {
                   </p>
                 </div>
               </div>
-              <div className="mt-6 flex flex-col-reverse items-center justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-reverse sm:space-y-0 sm:space-x-3 md:mt-0 md:flex-row md:space-x-3">
+              <div className="mt-4 md:mt-0">
                 <Select
                   label="Select System"
                   options={knownSystemOptions}
