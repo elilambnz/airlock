@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Listbox, Portal, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
 import { usePopper } from 'react-popper'
@@ -26,6 +26,12 @@ export default function Select(props: SelectProps) {
   const { label, options, value, disabled, onChange } = props
 
   const [selected, setSelected] = useState<SelectOption>()
+
+  useEffect(() => {
+    if (value) {
+      setSelected(options.find((option) => option.value === value))
+    }
+  }, [value])
 
   const popperElRef = useRef(null)
   const [targetElement, setTargetElement] = useState(null)
