@@ -1,13 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from 'react-query'
 import { getGameStatus, getLeaderboardNetWorth } from '../../api/routes/game'
+import { getMyAccount } from '../../api/routes/my'
 import '../../App.css'
 import LoadingRows from '../../components/Table/LoadingRows'
-import { useAuth } from '../../hooks/useAuth'
-import {
-  StatusResponse,
-  LeaderboardNetWorthResponse,
-  NetWorth,
-} from '../../types/Game'
+import { NetWorth } from '../../types/Game'
 import {
   abbreviateNumber,
   capitaliseFirstLetter,
@@ -15,21 +11,18 @@ import {
 } from '../../utils/helpers'
 
 function Home() {
-  const [gameStatus, setGameStatus] = useState<StatusResponse['status']>()
-  const [leaderboard, setLeaderboard] = useState<LeaderboardNetWorthResponse>()
+  const gameStatus = useQuery('gameStatus', getGameStatus)
+  const leaderboardNetWorth = useQuery(
+    'leaderboardNetWorth',
+    getLeaderboardNetWorth
+  )
+  const user = useQuery('user', getMyAccount)
 
-  const auth = useAuth()
-
-  useEffect(() => {
-    const init = async () => {
-      setGameStatus(await getGameStatus())
-      setLeaderboard(await getLeaderboardNetWorth())
-    }
-    init()
-  }, [])
-
-  const combinedLeaderboard = (leaderboard &&
-    [...leaderboard.netWorth, ...[leaderboard.userNetWorth]]
+  const combinedLeaderboard = (leaderboardNetWorth.data &&
+    [
+      ...leaderboardNetWorth.data.netWorth,
+      ...[leaderboardNetWorth.data.userNetWorth],
+    ]
       .filter((u) => !!u)
       ?.sort((a, b) => a!.rank - b!.rank)) as NetWorth[]
 
@@ -53,7 +46,9 @@ function Home() {
                 Status
               </h2>
               <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                {gameStatus ? capitaliseFirstLetter(gameStatus) : 'Loading...'}
+                {!gameStatus.isLoading
+                  ? capitaliseFirstLetter(gameStatus.data?.status ?? '')
+                  : 'Loading...'}
               </p>
             </div>
 
@@ -94,8 +89,8 @@ function Home() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {combinedLeaderboard ? (
-                            combinedLeaderboard.map((user, i) => (
+                          {!leaderboardNetWorth.isLoading && !user.isLoading ? (
+                            combinedLeaderboard.map((leaderboardUser, i) => (
                               <tr
                                 key={i}
                                 className={
@@ -106,36 +101,39 @@ function Home() {
                                   <div
                                     className={
                                       'text-sm text-gray-900' +
-                                      (user.username === auth.user?.username
+                                      (leaderboardUser.username ===
+                                      user.data?.user.username
                                         ? ' font-bold'
                                         : 'font-medium')
                                     }
                                   >
-                                    {formatNumberCommas(user.rank)}
+                                    {formatNumberCommas(leaderboardUser.rank)}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   <div
                                     className={
                                       'text-sm text-gray-900' +
-                                      (user.username === auth.user?.username
+                                      (leaderboardUser.username ===
+                                      user.data?.user.username
                                         ? ' font-bold'
                                         : 'font-medium')
                                     }
                                   >
-                                    {user.username}
+                                    {leaderboardUser.username}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   <div
                                     className={
                                       'text-sm text-gray-900' +
-                                      (user.username === auth.user?.username
+                                      (leaderboardUser.username ===
+                                      user.data?.user.username
                                         ? ' font-bold'
                                         : 'font-medium')
                                     }
                                   >
-                                    {abbreviateNumber(user.netWorth)}
+                                    {abbreviateNumber(leaderboardUser.netWorth)}
                                   </div>
                                 </td>
                               </tr>

@@ -25,6 +25,8 @@ import { AutomationProvider } from './providers/AutomationProvider'
 import AuthProvider from './providers/AuthProvider'
 import { useAuth } from './hooks/useAuth'
 
+import { QueryClient, QueryClientProvider } from 'react-query'
+
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
     domain: process.env.REACT_APP_DOMAIN,
@@ -34,6 +36,8 @@ const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
 enableAutoPageviews()
 // Track all existing and future outbound links
 enableAutoOutboundTracking()
+
+const queryClient = new QueryClient()
 
 function App() {
   const routes = [
@@ -105,21 +109,23 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AuthProvider trackEvent={trackEvent}>
-        <AutomationProvider>
-          <Routes>
-            <Route element={<AppLayout />}>
-              {routes.map(({ path, element }) => (
-                <Route key={path} path={path} element={element} />
-              ))}
-            </Route>
-            <Route element={<AuthLayout />}>
-              <Route path="login" element={<Login />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </AutomationProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider trackEvent={trackEvent}>
+          <AutomationProvider>
+            <Routes>
+              <Route element={<AppLayout />}>
+                {routes.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
+              </Route>
+              <Route element={<AuthLayout />}>
+                <Route path="login" element={<Login />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </AutomationProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   )
 }

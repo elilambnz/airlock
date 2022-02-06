@@ -34,7 +34,7 @@ axiosInstance.interceptors.response.use(
       response.headers['x-ratelimit-remaining']
     )
     if (rateLimitRemaining !== undefined) {
-      console.log('Requests remaining:', rateLimitRemaining)
+      console.debug('Requests remaining:', rateLimitRemaining)
     }
 
     return response

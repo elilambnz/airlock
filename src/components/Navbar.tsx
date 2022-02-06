@@ -1,7 +1,9 @@
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { CreditCardIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 import { Fragment } from 'react'
+import { useQuery } from 'react-query'
 import { Link, useLocation } from 'react-router-dom'
+import { getMyAccount } from '../api/routes/my'
 import { useAuth } from '../hooks/useAuth'
 
 import { abbreviateNumber } from '../utils/helpers'
@@ -9,6 +11,7 @@ import { abbreviateNumber } from '../utils/helpers'
 const Navbar = () => {
   const location = useLocation()
   const auth = useAuth()
+  const user = useQuery('user', getMyAccount)
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
@@ -78,7 +81,7 @@ const Navbar = () => {
                       <CreditCardIcon className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                      {abbreviateNumber(auth.user?.credits ?? 0)}
+                      {abbreviateNumber(user.data?.user.credits ?? 0)}
                     </span>
                   </Link>
 
@@ -106,7 +109,7 @@ const Navbar = () => {
                           <Menu.Item>
                             {() => (
                               <span className="block px-4 py-2 text-sm text-gray-700 font-medium">
-                                {auth.user?.username}
+                                {user.data?.user.username}
                               </span>
                             )}
                           </Menu.Item>
@@ -186,7 +189,7 @@ const Navbar = () => {
                     </span>
                   </div>
                   <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
-                    {auth.user?.username}
+                    {user.data?.user.username}
                   </span>
                   <Link to="/account" className="flex items-center">
                     <span className="bg-gray-800 p-1 rounded-full text-gray-400">
@@ -194,7 +197,7 @@ const Navbar = () => {
                       <CreditCardIcon className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                      {abbreviateNumber(auth.user?.credits ?? 0)}
+                      {abbreviateNumber(user.data?.user.credits ?? 0)}
                     </span>
                   </Link>
                 </div>

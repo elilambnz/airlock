@@ -1,28 +1,23 @@
-import moment, { Moment } from 'moment'
 import { useState, useEffect, useMemo } from 'react'
+import { useQueries, useQuery, useQueryClient } from 'react-query'
 import { getLocationMarketplace } from '../../api/routes/locations'
 import { buyShip, listMyShips } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
-import { listGoodTypes, listShipTypes } from '../../api/routes/types'
+import { listGoodTypes } from '../../api/routes/types'
 import '../../App.css'
 import SimpleModal from '../../components/Modal/SimpleModal'
 import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
-import { useUpdateUser } from '../../hooks/useUpdateUser'
 import { MarketplaceGood } from '../../types/Location'
-import { GoodType, ListGoodTypesResponse } from '../../types/Order'
-import {
-  ListShipListingsResponse,
-  ListShipsResponse,
-  ListShipTypesResponse,
-  ShipListing,
-} from '../../types/Ship'
+import { GoodType } from '../../types/Order'
+import { ListShipListingsResponse, ShipListing } from '../../types/Ship'
 import {
   abbreviateNumber,
   formatNumberCommas,
   getShipName,
 } from '../../utils/helpers'
 import { purchase, sell } from '../../utils/mechanics'
+import moment from 'moment'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -32,47 +27,48 @@ interface GoodToProcess extends MarketplaceGood {
 }
 
 function Marketplace() {
-  const [myShips, setMyShips] = useState<ListShipsResponse>()
-  const [marketplace, setMarketplace] = useState<
-    Map<string, { goods: MarketplaceGood[]; lastUpdated: Moment }>
-  >(new Map())
   const [availableShips, setAvailableShips] =
     useState<Map<string, ListShipListingsResponse>>()
 
   const [filteredGood, setFilteredGood] = useState<GoodType>()
 
-  const [goodTypes, setGoodTypes] = useState<ListGoodTypesResponse>()
-  const [shipTypes, setShipTypes] = useState<ListShipTypesResponse>()
-
   const [goodToBuy, setGoodToBuy] = useState<GoodToProcess | null>(null)
   const [goodToSell, setGoodToSell] = useState<GoodToProcess | null>(null)
   const [shipToBuy, setShipToBuy] = useState<ShipListing | null>(null)
 
-  const updateUser = useUpdateUser()
+  const queryClient = useQueryClient()
+  const myShips = useQuery('myShips', listMyShips)
 
-  useEffect(() => {
-    const init = async () => {
-      setMyShips(await listMyShips())
-      setGoodTypes(await listGoodTypes())
-      setShipTypes(await listShipTypes())
-    }
-    init()
-  }, [])
+  const dockedLocations = useMemo(
+    () => [
+      ...new Set(
+        myShips.data?.ships
+          .map((ship) => ship.location)
+          .filter((l) => l) as string[]
+      ),
+    ],
+    [myShips]
+  )
 
-  // console.log('goodTypes', goodTypes)
-  // console.log('shipTypes', shipTypes)
+  const marketplace = useQueries(
+    dockedLocations.map((location) => ({
+      queryKey: ['locationMarketplace', location],
+      queryFn: () => getLocationMarketplace(location),
+    }))
+  )
 
-  const allGoods = [...marketplace.entries()]
-    .map(([, m]) => m.goods.flat())
-    .flat()
+  // const value = res.data.reduce((m, d) => m + d.value, 0)
+
+  const goodTypes = useQuery('goodTypes', listGoodTypes)
+  // const shipTypes = useQuery('shipTypes', listShipTypes)
 
   const filteredGoodDetails = useMemo(() => {
     if (!filteredGood) return
-    return allGoods.find((g) => g.symbol === filteredGood)
-  }, [filteredGood, allGoods])
+    return goodTypes.data?.goods.find((g) => g.symbol === filteredGood)
+  }, [filteredGood, goodTypes])
 
   const shipOptions =
-    myShips?.ships.map((ship) => ({
+    myShips.data?.ships.map((ship) => ({
       value: ship.id,
       label: `${getShipName(ship.id)}
       `,
@@ -93,45 +89,16 @@ function Marketplace() {
       ),
     })) ?? []
 
-  const dockedLocations = useMemo(
-    () => [
-      ...new Set(
-        myShips?.ships.map((ship) => ship.location).filter((l) => l) as string[]
-      ),
-    ],
-    [myShips]
-  )
-
-  useEffect(() => {
-    if (dockedLocations) {
-      const updateMarketplace = async () => {
-        const marketplaces = new Map<
-          string,
-          { goods: MarketplaceGood[]; lastUpdated: Moment }
-        >()
-        dockedLocations.forEach(async (location) => {
-          const goods = (await getLocationMarketplace(location)).marketplace
-          marketplaces.set(location, {
-            goods,
-            lastUpdated: moment(),
-          })
-        })
-        setMarketplace(marketplaces)
-      }
-      updateMarketplace()
-    }
-  }, [dockedLocations])
-
   const knownSystems = useMemo(
     () => [
       ...new Set(
         [
           STARTER_SYSTEM,
-          ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
+          ...(myShips.data?.ships.map((s) => s.location?.split('-')[0]) ?? []),
         ].filter((s) => s) as string[]
       ),
     ],
-    [myShips?.ships]
+    [myShips.data?.ships]
   )
 
   useEffect(() => {
@@ -152,16 +119,14 @@ function Marketplace() {
       return
     }
     try {
-      const ship = myShips?.ships.find((s) => s.id === goodToProcess.shipId)
+      const ship = myShips.data?.ships.find(
+        (s) => s.id === goodToProcess.shipId
+      )
       if (!ship) {
         throw new Error('Ship not found')
       }
-      const { credits } = await purchase(
-        ship,
-        goodToProcess.symbol,
-        goodToProcess.quantity
-      )
-      updateUser({ credits })
+      await purchase(ship, goodToProcess.symbol, goodToProcess.quantity)
+      queryClient.invalidateQueries('user')
     } catch (error) {
       console.error(error)
     }
@@ -172,16 +137,14 @@ function Marketplace() {
       return
     }
     try {
-      const ship = myShips?.ships.find((s) => s.id === goodToProcess.shipId)
+      const ship = myShips.data?.ships.find(
+        (s) => s.id === goodToProcess.shipId
+      )
       if (!ship) {
         throw new Error('Ship not found')
       }
-      const { credits } = await sell(
-        ship,
-        goodToProcess.symbol,
-        goodToProcess.quantity
-      )
-      updateUser({ credits })
+      await sell(ship, goodToProcess.symbol, goodToProcess.quantity)
+      queryClient.invalidateQueries('user')
     } catch (error) {
       console.error(error)
     }
@@ -190,7 +153,8 @@ function Marketplace() {
   const handleBuyShip = async (location: string, type: string) => {
     try {
       const result = await buyShip(location, type)
-      updateUser({ credits: result.credits })
+      queryClient.invalidateQueries('user')
+      queryClient.invalidateQueries('myShips')
       console.log(result)
     } catch (error) {
       console.error(error)
@@ -202,14 +166,14 @@ function Marketplace() {
       () =>
         marketplace &&
         filteredGood &&
-        [...marketplace.entries()]
-          .map((m) => m[1].goods)
-          .flat()
-          .filter((m) => m.symbol === filteredGood)
+        marketplace
+          .flatMap((m) => m.data?.marketplace)
+          .filter((m) => m && m.symbol === filteredGood)
           ?.reduce(
-            (a, b) => (a.sellPricePerUnit < b.sellPricePerUnit ? a : b),
+            (a, b) =>
+              a!.purchasePricePerUnit < b!.purchasePricePerUnit ? a : b,
             {} as MarketplaceGood
-          ).purchasePricePerUnit,
+          )?.purchasePricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
 
@@ -218,14 +182,13 @@ function Marketplace() {
       () =>
         marketplace &&
         filteredGood &&
-        [...marketplace.entries()]
-          .map((m) => m[1].goods)
-          .flat()
-          .filter((m) => m.symbol === filteredGood)
+        marketplace
+          .flatMap((m) => m.data?.marketplace)
+          .filter((m) => m && m.symbol === filteredGood)
           ?.reduce(
-            (a, b) => (a.sellPricePerUnit > b.sellPricePerUnit ? a : b),
+            (a, b) => (a!.sellPricePerUnit > b!.sellPricePerUnit ? a : b),
             {} as MarketplaceGood
-          ).sellPricePerUnit,
+          )?.sellPricePerUnit,
       [marketplace, filteredGood]
     ) ?? 0
 
@@ -252,17 +215,12 @@ function Marketplace() {
                   <div className="sm:col-span-2">
                     <Select
                       label="Filter by Good"
-                      options={[
-                        ...new Set(
-                          [...marketplace.entries()]
-                            .map(([, m]) => m.goods.map((g) => g.symbol).flat())
-                            .flat()
-                        ),
-                      ].map((symbol) => ({
-                        value: symbol,
-                        // @ts-expect-error
-                        label: GoodType[symbol] ?? symbol,
-                      }))}
+                      options={
+                        goodTypes.data?.goods.map((g) => ({
+                          label: g.name,
+                          value: g.symbol,
+                        })) ?? []
+                      }
                       value={filteredGood}
                       onChange={(value) => {
                         setFilteredGood(value as GoodType)
@@ -388,157 +346,162 @@ function Marketplace() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {marketplace &&
-                            [...marketplace.entries()]
-                              .sort((a, b) => a[0].localeCompare(b[0]))
-                              .map(([location, market]) => (
+                          {marketplace
+                            // .sort((a, b) => a[0].localeCompare(b[0]))
+                            .map((m, i) => (
+                              <>
+                                <tr key={i} className="bg-gray-100">
+                                  <td
+                                    className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
+                                    colSpan={9}
+                                  >
+                                    <div className="flex justify-between">
+                                      {/* Location */}
+                                      <span>
+                                        {i} {m.status}
+                                      </span>
+                                      <span>
+                                        Last updated:{' '}
+                                        {moment(m.dataUpdatedAt).format(
+                                          'DD/MM/YYYY hh:mm:ss a'
+                                        )}
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
                                 <>
-                                  <tr key={location} className="bg-gray-100">
-                                    <td
-                                      className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
-                                      colSpan={9}
-                                    >
-                                      <div className="flex justify-between">
-                                        <span>{location}</span>
-                                        <span>
-                                          Last updated:{' '}
-                                          {market.lastUpdated.format(
-                                            'DD/MM/YYYY hh:mm:ss a'
-                                          )}
-                                        </span>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <>
-                                    {market ? (
-                                      market.goods
-                                        .filter((g) =>
-                                          filteredGood
-                                            ? g.symbol === filteredGood
-                                            : true
-                                        )
-                                        ?.sort((a, b) =>
-                                          a.symbol.localeCompare(b.symbol)
-                                        )
-                                        .map((locationMarketplace, i) => (
-                                          <tr
-                                            key={`${location}-${locationMarketplace.symbol}`}
+                                  {
+                                    m.data?.marketplace
+                                      .filter((g) =>
+                                        filteredGood
+                                          ? g.symbol === filteredGood
+                                          : true
+                                      )
+                                      ?.sort((a, b) =>
+                                        a.symbol.localeCompare(b.symbol)
+                                      )
+                                      .map((locationMarketplace, i) => (
+                                        <tr
+                                          key={`${i}-${locationMarketplace.symbol}`}
+                                          className={
+                                            i % 2 === 0
+                                              ? 'bg-white'
+                                              : 'bg-gray-50'
+                                          }
+                                        >
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                            {
+                                              GoodType[
+                                                // @ts-expect-error
+                                                locationMarketplace.symbol
+                                              ]
+                                            }
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                            {abbreviateNumber(
+                                              locationMarketplace.quantityAvailable
+                                            )}
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                            {formatNumberCommas(
+                                              locationMarketplace.volumePerUnit
+                                            )}
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                            {abbreviateNumber(
+                                              locationMarketplace.pricePerUnit
+                                            )}
+                                          </td>
+                                          <td
                                             className={
-                                              i % 2 === 0
-                                                ? 'bg-white'
-                                                : 'bg-gray-50'
+                                              'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                              ''
+                                              // ([...marketplace.entries()]
+                                              //   .map((m) => m[1].goods)
+                                              //   .flat()
+                                              //   .filter(
+                                              //     (m) =>
+                                              //       m.symbol ===
+                                              //       locationMarketplace.symbol
+                                              //   )
+                                              //   ?.reduce((a, b) =>
+                                              //     a.purchasePricePerUnit <
+                                              //     b.purchasePricePerUnit
+                                              //       ? a
+                                              //       : b
+                                              //   ).purchasePricePerUnit ===
+                                              // locationMarketplace.purchasePricePerUnit
+                                              //   ? ' text-green-500'
+                                              //   : '')
                                             }
                                           >
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                              {
-                                                GoodType[
-                                                  // @ts-expect-error
-                                                  locationMarketplace.symbol
-                                                ]
-                                              }
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                              {abbreviateNumber(
-                                                locationMarketplace.quantityAvailable
-                                              )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                              {formatNumberCommas(
-                                                locationMarketplace.volumePerUnit
-                                              )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                              {abbreviateNumber(
-                                                locationMarketplace.pricePerUnit
-                                              )}
-                                            </td>
-                                            <td
-                                              className={
-                                                'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                                ([...marketplace.entries()]
-                                                  .map((m) => m[1].goods)
-                                                  .flat()
-                                                  .filter(
-                                                    (m) =>
-                                                      m.symbol ===
-                                                      locationMarketplace.symbol
-                                                  )
-                                                  ?.reduce((a, b) =>
-                                                    a.purchasePricePerUnit <
-                                                    b.purchasePricePerUnit
-                                                      ? a
-                                                      : b
-                                                  ).purchasePricePerUnit ===
-                                                locationMarketplace.purchasePricePerUnit
-                                                  ? ' text-green-500'
-                                                  : '')
-                                              }
+                                            {abbreviateNumber(
+                                              locationMarketplace.purchasePricePerUnit
+                                            )}
+                                          </td>
+                                          <td
+                                            className={
+                                              'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                              ''
+                                              // ([...marketplace.entries()]
+                                              //   .map((m) => m[1].goods)
+                                              //   .flat()
+                                              //   .filter(
+                                              //     (m) =>
+                                              //       m.symbol ===
+                                              //       locationMarketplace.symbol
+                                              //   )
+                                              //   ?.reduce((a, b) =>
+                                              //     a.sellPricePerUnit >
+                                              //     b.sellPricePerUnit
+                                              //       ? a
+                                              //       : b
+                                              //   ).sellPricePerUnit ===
+                                              // locationMarketplace.sellPricePerUnit
+                                              //   ? ' text-green-500'
+                                              //   : '')
+                                            }
+                                          >
+                                            {abbreviateNumber(
+                                              locationMarketplace.sellPricePerUnit
+                                            )}
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                            {formatNumberCommas(
+                                              locationMarketplace.spread
+                                            )}
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button
+                                              className="text-indigo-600 hover:text-indigo-900"
+                                              onClick={() => {
+                                                setGoodToBuy(
+                                                  locationMarketplace
+                                                )
+                                              }}
                                             >
-                                              {abbreviateNumber(
-                                                locationMarketplace.purchasePricePerUnit
-                                              )}
-                                            </td>
-                                            <td
-                                              className={
-                                                'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                                ([...marketplace.entries()]
-                                                  .map((m) => m[1].goods)
-                                                  .flat()
-                                                  .filter(
-                                                    (m) =>
-                                                      m.symbol ===
-                                                      locationMarketplace.symbol
-                                                  )
-                                                  ?.reduce((a, b) =>
-                                                    a.sellPricePerUnit >
-                                                    b.sellPricePerUnit
-                                                      ? a
-                                                      : b
-                                                  ).sellPricePerUnit ===
-                                                locationMarketplace.sellPricePerUnit
-                                                  ? ' text-green-500'
-                                                  : '')
-                                              }
+                                              Buy
+                                            </button>
+                                            <button
+                                              className="ml-4 text-emerald-600 hover:text-emerald-900"
+                                              onClick={() => {
+                                                setGoodToSell(
+                                                  locationMarketplace
+                                                )
+                                              }}
                                             >
-                                              {abbreviateNumber(
-                                                locationMarketplace.sellPricePerUnit
-                                              )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                              {formatNumberCommas(
-                                                locationMarketplace.spread
-                                              )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                              <button
-                                                className="text-indigo-600 hover:text-indigo-900"
-                                                onClick={() => {
-                                                  setGoodToBuy(
-                                                    locationMarketplace
-                                                  )
-                                                }}
-                                              >
-                                                Buy
-                                              </button>
-                                              <button
-                                                className="ml-4 text-emerald-600 hover:text-emerald-900"
-                                                onClick={() => {
-                                                  setGoodToSell(
-                                                    locationMarketplace
-                                                  )
-                                                }}
-                                              >
-                                                Sell
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        ))
-                                    ) : (
-                                      <LoadingRows cols={8} rows={3} />
-                                    )}
-                                  </>
+                                              Sell
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))
+                                    // ) : (
+                                    //   <LoadingRows cols={8} rows={3} />
+                                    // )}
+                                  }
                                 </>
-                              ))}
+                              </>
+                            ))}
                           {/* No markets available. You must have at least one
                                     ship docked at a location to buy or sell goods. */}
                         </tbody>
@@ -788,7 +751,7 @@ function Marketplace() {
                   min={1}
                   max={goodToBuy.quantityAvailable}
                   defaultValue={
-                    myShips?.ships.find((s) => s.id === goodToBuy.shipId)
+                    myShips.data?.ships.find((s) => s.id === goodToBuy.shipId)
                       ?.spaceAvailable
                   }
                   onChange={(e) =>
@@ -851,10 +814,10 @@ function Marketplace() {
                   }}
                 />
               </div>
-              {myShips?.ships.find((s) => s.id === goodToSell.shipId) && (
+              {myShips.data?.ships.find((s) => s.id === goodToSell.shipId) && (
                 <span className="block text-sm font-medium text-gray-700">
                   Ship has{' '}
-                  {myShips?.ships
+                  {myShips.data?.ships
                     .find((s) => s.id === goodToSell.shipId)
                     ?.cargo?.find((c) => c.good === goodToSell.symbol)
                     ?.quantity ?? 0}{' '}

@@ -4,7 +4,7 @@ const obj = {
   start(tick: (value: number) => void) {
     let counter = 0
     setInterval(() => {
-      console.log('tick...')
+      console.debug('tick...')
       counter++
       tick(counter)
     }, 1000)

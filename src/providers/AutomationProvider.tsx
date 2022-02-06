@@ -7,11 +7,11 @@ import {
 import {
   createNewFlightPlan,
   getFlightPlanInfo,
+  getMyAccount,
   getShipInfo,
   initiateWarpJump,
 } from '../api/routes/my'
 import { useAuth } from '../hooks/useAuth'
-import { useUpdateUser } from '../hooks/useUpdateUser'
 import {
   RouteEventType,
   TradeRoute,
@@ -22,6 +22,7 @@ import { sleep } from '../utils/helpers'
 import { purchase, refuel, sell } from '../utils/mechanics'
 
 import { proxy, Remote, wrap } from 'comlink'
+import { useQuery, useQueryClient } from 'react-query'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -47,8 +48,8 @@ export const AutomationProvider = (props: any) => {
   const [tradeRouteLog, setTradeRouteLog] =
     useState<{ [id: string]: string[] }>()
 
-  const { user, apiToken } = useAuth()
-  const updateUser = useUpdateUser()
+  const { apiToken } = useAuth()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (apiToken) {
@@ -106,7 +107,7 @@ export const AutomationProvider = (props: any) => {
 
   // Start automation tasks
   useEffect(() => {
-    if (user && tradeRoutes.length > 0) {
+    if (tradeRoutes.length > 0) {
       start()
       console.info(`Automation: Trade routes: ${tradeRoutes.length}`)
       tradeRoutes.forEach((tradeRoute, i) => {
@@ -121,7 +122,7 @@ export const AutomationProvider = (props: any) => {
       stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, tradeRoutes])
+  }, [tradeRoutes])
 
   // FIXME: Pausing and resuming trade routes is not working
   const automateTradeRoute = async (
@@ -207,11 +208,11 @@ export const AutomationProvider = (props: any) => {
                   } catch (error: any) {
                     if (error.code === 3001 && tradeRoute.autoRefuel) {
                       // Insufficient fuel, auto refuel
-                      const { credits } = await refuel(
+                      await refuel(
                         ship.ship,
                         parseInt(error.message.match(/\d+/g)[0])
                       )
-                      updateUser({ credits })
+                      queryClient.invalidateQueries('user')
                       // Retry create new flight plan
                       const result = await createNewFlightPlan(
                         shipId,
@@ -265,12 +266,12 @@ export const AutomationProvider = (props: any) => {
               for await (const shipId of tradeRoute.assignedShips) {
                 const ship = await getShipInfo(shipId)
                 if (ship.ship.spaceAvailable >= event.good!.quantity) {
-                  const { credits } = await purchase(
+                  await purchase(
                     ship.ship,
                     GoodType[event.good!.good as keyof typeof GoodType],
                     event.good!.quantity
                   )
-                  updateUser({ credits })
+                  queryClient.invalidateQueries('user')
                 } else {
                   if (
                     ship.ship.cargo.find(
@@ -308,12 +309,12 @@ export const AutomationProvider = (props: any) => {
                     ?.quantity ??
                   0 >= event.good!.quantity
                 ) {
-                  const { credits } = await sell(
+                  await sell(
                     ship.ship,
                     GoodType[event.good!.good as keyof typeof GoodType],
                     event.good!.quantity
                   )
-                  updateUser({ credits })
+                  queryClient.invalidateQueries('user')
                 } else {
                   // Not throwing an error here because it's possible that the ship has no goods to sell if it's the first event in the route
                   console.warn(

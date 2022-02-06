@@ -4,6 +4,7 @@ import {
   createNewFlightPlan,
   listMyShips,
   initiateWarpJump,
+  getMyAccount,
 } from '../../api/routes/my'
 import {
   getSystemDockedShips,
@@ -27,7 +28,6 @@ import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
 import { getShipName } from '../../utils/helpers'
 import { LocationTrait, LocationType, System } from '../../types/Location'
-import { useUpdateUser } from '../../hooks/useUpdateUser'
 import {
   Chart as ChartJS,
   LinearScale,
@@ -38,7 +38,7 @@ import {
 } from 'chart.js'
 import { Scatter } from 'react-chartjs-2'
 import { refuel } from '../../utils/mechanics'
-import { useAuth } from '../../hooks/useAuth'
+import { useQuery, useQueryClient } from 'react-query'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -58,10 +58,10 @@ function Systems() {
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
   const [showMap, setShowMap] = useState(false)
 
-  const auth = useAuth()
-  const updateUser = useUpdateUser()
   const navigate = useNavigate()
   const params = useParams()
+  const queryClient = useQueryClient()
+  const user = useQuery('user', getMyAccount)
 
   const updateCurrentSystem = async (systemSymbol: string) => {
     if (loading) {
@@ -83,13 +83,6 @@ function Systems() {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    const init = async () => {
-      setMyShips(await listMyShips())
-    }
-    init()
-  }, [])
 
   const knownSystems = new Set(
     [
@@ -116,11 +109,15 @@ function Systems() {
     }))
 
   useEffect(() => {
-    if (!params.systemSymbol && knownSystemOptions.length > 0) {
-      navigate(`/systems/${knownSystemOptions[0].value}`)
+    const init = async () => {
+      setMyShips(await listMyShips())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.systemSymbol, knownSystemOptions])
+    init()
+
+    if (!params.systemSymbol && knownSystemOptions.length > 0) {
+      navigate(`/systems/${knownSystemOptions[0].value}`, { replace: true })
+    }
+  }, [])
 
   useEffect(() => {
     if (params.systemSymbol) {
@@ -149,11 +146,8 @@ function Systems() {
         if (!ship) {
           throw new Error('Ship not found')
         }
-        const { credits } = await refuel(
-          ship,
-          parseInt(error.message.match(/\d+/g)[0])
-        )
-        updateUser({ credits })
+        await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
+        queryClient.invalidateQueries('user')
         // Retry create new flight plan
         handleCreateFlightPlan(shipId, destination)
       } else {
@@ -237,13 +231,13 @@ function Systems() {
     })) ?? []
 
   const myActiveFlightPlans = allFlightPlans?.flightPlans.filter(
-    (flightPlan) => flightPlan.username === auth.user?.username
+    (flightPlan) => flightPlan.username === user.data?.user.username
   )
 
   // Might be more efficient to filter myShips, but we have to consider ships in transit
   const myDockedShips =
     (allDockedShips?.ships
-      .filter((s) => s.username === auth.user?.username)
+      .filter((s) => s.username === user.data?.user.username)
       ?.map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
       .filter((s) => s?.location) as Ship[]) ?? []
 

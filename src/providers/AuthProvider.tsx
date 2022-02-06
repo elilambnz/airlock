@@ -1,8 +1,13 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
+import { useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
-import { getMyAccount } from '../api/routes/my'
+import {
+  getMyAccount,
+  listMyLoans,
+  listMyShips,
+  listMyStructures,
+} from '../api/routes/my'
 import AuthContext from '../contexts/AuthContext'
-import { User } from '../types/Account'
 import { API_TOKEN_KEY, removeValue } from '../utils/browserStorage'
 
 interface AuthProviderProps {
@@ -13,9 +18,19 @@ interface AuthProviderProps {
 function AuthProvider(props: AuthProviderProps) {
   const { trackEvent, children } = props
 
-  const [user, setUser] = useState<User>()
   const [apiToken, setApiToken] = useState<string>()
   const [loading, setLoading] = useState(false)
+
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (apiToken) {
+      queryClient.prefetchQuery('user', getMyAccount)
+      queryClient.prefetchQuery('myShips', listMyShips)
+      queryClient.prefetchQuery('myLoans', listMyLoans)
+      queryClient.prefetchQuery('myStructures', listMyStructures)
+    }
+  }, [apiToken])
 
   const navigate = useNavigate()
 
@@ -26,11 +41,10 @@ function AuthProvider(props: AuthProviderProps) {
     try {
       setLoading(true)
       setApiToken(token)
-      const user = await getMyAccount()
+      const user = await queryClient.fetchQuery('user', getMyAccount)
       if (!user) {
         throw new Error('User not found')
       }
-      setUser(user.user)
       // Send them back to the page they tried to visit when they were
       // redirected to the login page. Use { replace: true } so we don't create
       // another entry in the history stack for the login page.  This means that
@@ -58,13 +72,13 @@ function AuthProvider(props: AuthProviderProps) {
   }
 
   const signout = () => {
-    setUser(undefined)
+    queryClient.removeQueries()
     removeValue(API_TOKEN_KEY, true)
     removeValue(API_TOKEN_KEY)
     window.location.reload()
   }
 
-  const value = { user, setUser, apiToken, signin, signout }
+  const value = { apiToken, signin, signout }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

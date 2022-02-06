@@ -1,9 +1,9 @@
 import moment from 'moment'
 import { useState, useEffect } from 'react'
+import { useQueryClient } from 'react-query'
 import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
 import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'
-import { useUpdateUser } from '../../hooks/useUpdateUser'
 import {
   ListLoansResponse,
   ListLoanTypesResponse,
@@ -16,7 +16,7 @@ function Loans() {
   const [loans, setLoans] = useState<ListLoansResponse>()
   const [availableLoans, setAvailableLoans] = useState<ListLoanTypesResponse>()
 
-  const updateUser = useUpdateUser()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     const init = async () => {
@@ -27,14 +27,14 @@ function Loans() {
   }, [])
 
   const handleTakeOutLoan = async (type: string) => {
-    const result = await takeOutLoan(type)
-    updateUser({ credits: result.credits })
+    await takeOutLoan(type)
+    queryClient.invalidateQueries('user')
     setLoans(await listMyLoans())
   }
 
   const handlePayOffLoan = async (id: string) => {
-    const result = await payOffLoan(id)
-    updateUser({ credits: result.credits })
+    await payOffLoan(id)
+    queryClient.invalidateQueries('user')
     setLoans(await listMyLoans())
   }
 

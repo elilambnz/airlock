@@ -8,7 +8,7 @@ const getGameStatus = async () => {
     const response: { data: StatusResponse } = await axios.get(
       `${BASE_ROUTE}/status`
     )
-    return response.data?.status
+    return response.data
   } catch (error: any) {
     console.error(error)
     throw error.response?.data?.error

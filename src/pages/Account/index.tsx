@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   listMyShips,
   jettisonShipCargo,
   scrapShip,
   transferShipCargo,
+  getMyAccount,
 } from '../../api/routes/my'
 import '../../App.css'
 import DangerModal from '../../components/Modal/DangerModal'
 
-import { User } from '../../types/Account'
-import { ListShipsResponse, ShipCargo } from '../../types/Ship'
+import { ShipCargo } from '../../types/Ship'
 import { abbreviateNumber, getShipName } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 import ActionModal from '../../components/Modal/ActionModal'
 import Tooltip from '../../components/Tooltip'
 import { GoodType } from '../../types/Order'
-import { useAuth } from '../../hooks/useAuth'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 
 export enum CargoManageMode {
   TRANSFER,
@@ -24,9 +24,6 @@ export enum CargoManageMode {
 }
 
 function Account() {
-  const [user, setUser] = useState<User>()
-  const [myShips, setMyShips] = useState<ListShipsResponse>()
-
   const [shipToManageCargo, setShipToManageCargo] = useState<string>()
   const [cargoManageMode, setCargoManageMode] = useState<CargoManageMode>()
   const [cargoToTransfer, setCargoToTransfer] = useState<
@@ -37,20 +34,28 @@ function Account() {
   >()
   const [shipToScrap, setShipToScrap] = useState<string>()
 
-  const auth = useAuth()
+  const queryClient = useQueryClient()
+  const user = useQuery('user', getMyAccount)
+  const myShips = useQuery('myShips', listMyShips)
 
-  useEffect(() => {
-    const init = async () => {
-      setMyShips(await listMyShips())
+  const transferShipCargoMutation = useMutation(
+    ({
+      id,
+      toShipId,
+      good,
+      quantity,
+    }: {
+      id: string
+      toShipId: string
+      good: string
+      quantity: number
+    }) => transferShipCargo(id, toShipId, good, quantity),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('myShips')
+      },
     }
-    init()
-  }, [])
-
-  useEffect(() => {
-    if (auth.user) {
-      setUser(auth.user)
-    }
-  }, [auth.user])
+  )
 
   const handleTransferCargo = async (
     cargoToTransfer: ShipCargo & { shipId?: string; toShipId?: string }
@@ -60,17 +65,11 @@ function Account() {
       return
     }
     try {
-      const response = await transferShipCargo(shipId, toShipId, good, quantity)
-      console.log(response)
-      if (!response) {
-        return
-      }
-      const { fromShip, toShip } = response
-      setMyShips({
-        ships: [
-          ...(myShips?.ships.filter((ship) => ship.id !== fromShip.id) ?? []),
-          toShip,
-        ],
+      await transferShipCargoMutation.mutateAsync({
+        id: shipId,
+        toShipId,
+        good,
+        quantity,
       })
     } catch (error) {
       console.error(error)
@@ -103,7 +102,7 @@ function Account() {
     }
   }
 
-  if (!user) {
+  if (!user.data) {
     return null
   }
 
@@ -119,7 +118,7 @@ function Account() {
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">
-                {user.username}
+                {user.data.user.username}
               </h3>
               <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -128,7 +127,7 @@ function Account() {
                       Ships
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {user.shipCount}
+                      {user.data.user.shipCount}
                     </dd>
                   </div>
                   <div className="bg-gray-50 px-4 py-4 sm:px-6">
@@ -162,7 +161,7 @@ function Account() {
                       Structures
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {user.structureCount}
+                      {user.data.user.structureCount}
                     </dd>
                   </div>
                   <div className="bg-gray-50 px-4 py-4 sm:px-6">
@@ -196,7 +195,7 @@ function Account() {
                       Credits
                     </dt>
                     <dd className="flex items-baseline mt-1 text-3xl font-semibold text-gray-900">
-                      {abbreviateNumber(user.credits)}
+                      {abbreviateNumber(user.data.user.credits)}
                     </dd>
                   </div>
                   <div className="bg-gray-50 px-4 py-4 sm:px-6">
@@ -231,10 +230,10 @@ function Account() {
               <h2 className="text-2xl font-bold text-gray-900">Ships</h2>
             </div>
 
-            {user.shipCount > 0 ? (
+            {user.data.user.shipCount > 0 ? (
               <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {myShips && myShips.ships.length > 0 ? (
-                  myShips.ships
+                {!myShips.isLoading ? (
+                  myShips.data?.ships
                     .sort(
                       (a, b) =>
                         a.type.localeCompare(b.type) ||
@@ -589,11 +588,11 @@ function Account() {
           }
           content={
             <ManageCargo
-              ship={myShips?.ships.find(
+              ship={myShips.data?.ships.find(
                 (ship) => ship.id === shipToManageCargo
               )}
               shipOptions={
-                myShips?.ships
+                myShips.data?.ships
                   .filter((s) => !!s.id && s.id !== shipToManageCargo)
                   .map((ship) => ({
                     value: ship.id,
