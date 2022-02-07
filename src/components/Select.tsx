@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Listbox, Portal, Transition } from '@headlessui/react'
-import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
+import { CheckIcon, SelectorIcon, XIcon } from '@heroicons/react/solid'
 import { usePopper } from 'react-popper'
 
 interface SelectOption {
@@ -16,6 +16,7 @@ interface SelectProps {
   value?: string
   disabled?: boolean
   onChange: (value: string) => void
+  onClear?: () => void
 }
 
 function classNames(...classes: string[]) {
@@ -23,7 +24,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Select(props: SelectProps) {
-  const { label, options, value, disabled, onChange } = props
+  const { label, options, value, disabled, onChange, onClear } = props
 
   const [selected, setSelected] = useState<SelectOption>()
 
@@ -71,7 +72,8 @@ export default function Select(props: SelectProps) {
               ref={setTargetElement as any}
               className={
                 'bg-white relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm' +
-                (selectDisabled ? ' opacity-50 cursor-not-allowed' : '')
+                (selectDisabled ? ' opacity-50 cursor-not-allowed' : '') +
+                (onClear && selected ? ' pr-12' : '')
               }
             >
               <span className="flex items-center">
@@ -103,6 +105,24 @@ export default function Select(props: SelectProps) {
                   )}
                 </span>
               </span>{' '}
+              {onClear && selected && (
+                <>
+                  <button
+                    className="absolute inset-y-0 right-6 flex items-center pr-2"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelected(undefined)
+                      onClear()
+                    }}
+                  >
+                    <XIcon
+                      className="h-4 w-4 text-indigo-600 hover:text-indigo-900"
+                      aria-hidden="true"
+                    />
+                  </button>{' '}
+                </>
+              )}
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <SelectorIcon
                   className="h-5 w-5 text-gray-400"
