@@ -3,7 +3,8 @@ import { listMyShips } from '../../api/routes/my'
 import { getSystemLocations } from '../../api/routes/systems'
 import { listGoodTypes } from '../../api/routes/types'
 import '../../App.css'
-import SimpleModal from '../../components/Modal/SimpleModal'
+import AlertModal from '../../components/Modal/AlertModal'
+import Modal from '../../components/Modal/index'
 import Select from '../../components/Select'
 import useAutomation from '../../hooks/useAutomation'
 import {
@@ -23,6 +24,7 @@ import AssignedShips from './components/AssignedShips'
 import Alert from '../../components/Alert'
 import { getLocationMarketplace } from '../../api/routes/locations'
 import { LocationMarketplaceResponse } from '../../types/Location'
+import { InformationCircleIcon } from '@heroicons/react/solid'
 
 const STARTER_SYSTEM = 'OE'
 
@@ -307,6 +309,9 @@ function Automation() {
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Create New Route
                 </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Plan automated trade routes for your fleet.
+                </p>
               </div>
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -727,90 +732,102 @@ function Automation() {
           </div>
         </div>
       </main>
-      {showInfo && (
-        <SimpleModal
-          title="Info"
-          content="Automation rules are saved to a secondary database. This means that you can leave the game and come back later and still have the rules you set."
-          handleClose={() => setShowInfo(false)}
-        />
-      )}
-      {routeToManage && (
-        <SimpleModal
-          title="Manage Route"
-          content={
-            <div>
-              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
-                TradeRouteStatus.ERROR && (
-                <Alert message={routeToManage.errorMessage} />
-              )}
-              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
-                TradeRouteStatus.ACTIVE && (
-                <button
-                  className="mt-4 text-red-600 hover:text-red-900"
-                  onClick={() => {
-                    pauseTradeRoute(routeToManage.id)
-                  }}
-                >
-                  Pause
-                </button>
-              )}
-              {tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
-                TradeRouteStatus.ACTIVE && (
-                <button
-                  className="mt-4 text-green-600 hover:text-green-900"
-                  onClick={() => {
-                    resumeTradeRoute(routeToManage.id)
-                  }}
-                >
-                  Resume from start
-                </button>
-              )}
-              <div className="mt-4">
-                <h4 className="text-md leading-6 font-medium text-gray-900">
-                  Steps
-                </h4>
-              </div>
-              <RouteSteps
-                tradeRoute={routeToManage}
-                notActive={
-                  tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
-                  TradeRouteStatus.ACTIVE
-                }
-                handleResume={(step: number) => {
-                  resumeTradeRoute(routeToManage.id, step)
-                }}
-              />
-              <div className="mt-4">
-                <h4 className="text-md leading-6 font-medium text-gray-900">
-                  Assigned Ships
-                </h4>
-              </div>
-              <div className="mt-4">
-                Auto Refuel: {routeToManage.autoRefuel ? 'Yes' : 'No'}
-              </div>
-              <AssignedShips tradeRoute={routeToManage} />
-              <details>
-                <summary className="text-md leading-6 font-medium text-gray-900 hover:cursor-pointer">
-                  Show log
-                </summary>
-                <div
-                  className="bg-gray-900 p-4 rounded-md text-white overflow-auto"
-                  style={{ height: '200px' }}
-                >
-                  <pre className="text-xs">
-                    {tradeRouteLog[routeToManage.id]?.map(
-                      (l: string, i: number) => (
-                        <p key={i}>{l}</p>
-                      )
-                    )}
-                  </pre>
+      <AlertModal
+        icon={
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+            <InformationCircleIcon
+              className="h-6 w-6 text-indigo-600"
+              aria-hidden="true"
+            />
+          </div>
+        }
+        open={showInfo}
+        title="About automation"
+        message={`Automation routes are saved to a secondary database. This means that you can leave the game and when you return, the routes you set will be saved. This browser tab must remain open to run automation routes, but does not have to be focused.\n\nThis feature is not part of, nor endorsed by the official Spacetraders API. To opt out of this feature, you can simply choose to not create any automation routes.`}
+        onClose={() => setShowInfo(false)}
+        className="w-full md:max-w-xl"
+      />
+      <Modal
+        open={!!routeToManage}
+        title="Manage Route"
+        content={
+          <>
+            {routeToManage && (
+              <div>
+                {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
+                  TradeRouteStatus.ERROR && (
+                  <Alert message={routeToManage.errorMessage} />
+                )}
+                {tradeRoutes.find((r) => r.id === routeToManage.id)?.status ===
+                  TradeRouteStatus.ACTIVE && (
+                  <button
+                    className="mt-4 text-red-600 hover:text-red-900"
+                    onClick={() => {
+                      pauseTradeRoute(routeToManage.id)
+                    }}
+                  >
+                    Pause
+                  </button>
+                )}
+                {tradeRoutes.find((r) => r.id === routeToManage.id)?.status !==
+                  TradeRouteStatus.ACTIVE && (
+                  <button
+                    className="mt-4 text-green-600 hover:text-green-900"
+                    onClick={() => {
+                      resumeTradeRoute(routeToManage.id)
+                    }}
+                  >
+                    Resume from start
+                  </button>
+                )}
+                <div className="mt-4">
+                  <h4 className="text-md leading-6 font-medium text-gray-900">
+                    Steps
+                  </h4>
                 </div>
-              </details>
-            </div>
-          }
-          handleClose={() => setRouteToManage(undefined)}
-        />
-      )}
+                <RouteSteps
+                  tradeRoute={routeToManage}
+                  notActive={
+                    tradeRoutes.find((r) => r.id === routeToManage.id)
+                      ?.status !== TradeRouteStatus.ACTIVE
+                  }
+                  handleResume={(step: number) => {
+                    resumeTradeRoute(routeToManage.id, step)
+                  }}
+                />
+                <div className="mt-4">
+                  <h4 className="text-md leading-6 font-medium text-gray-900">
+                    Assigned Ships
+                  </h4>
+                </div>
+                <div className="mt-4">
+                  Auto Refuel: {routeToManage.autoRefuel ? 'Yes' : 'No'}
+                </div>
+                <AssignedShips tradeRoute={routeToManage} />
+                <details>
+                  <summary className="text-md leading-6 font-medium text-gray-900 hover:cursor-pointer">
+                    Show log
+                  </summary>
+                  <div
+                    className="bg-gray-900 p-4 rounded-md text-white overflow-auto"
+                    style={{ height: '200px' }}
+                  >
+                    <pre className="text-xs">
+                      {tradeRouteLog[routeToManage.id]?.map(
+                        (l: string, i: number) => (
+                          <p key={i}>{l}</p>
+                        )
+                      )}
+                    </pre>
+                  </div>
+                </details>
+              </div>
+            )}
+          </>
+        }
+        closeText="Close"
+        onClose={() => setRouteToManage(undefined)}
+      />
     </>
   )
 }

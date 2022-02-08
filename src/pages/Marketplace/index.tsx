@@ -5,7 +5,7 @@ import { buyShip, listMyShips } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
 import { listGoodTypes } from '../../api/routes/types'
 import '../../App.css'
-import SimpleModal from '../../components/Modal/SimpleModal'
+import Modal from '../../components/Modal/index'
 import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { MarketplaceGood, System } from '../../types/Location'
@@ -18,11 +18,20 @@ import {
 } from '../../utils/helpers'
 import { purchase, sell } from '../../utils/mechanics'
 import moment from 'moment'
-import { CubeIcon, TrendingUpIcon } from '@heroicons/react/solid'
-
-const STARTER_SYSTEM = 'OE'
+import {
+  CreditCardIcon,
+  CubeIcon,
+  FireIcon,
+  HeartIcon,
+  LightningBoltIcon,
+  OfficeBuildingIcon,
+  ShoppingBagIcon,
+  TrendingUpIcon,
+  TruckIcon,
+} from '@heroicons/react/solid'
 
 interface GoodToProcess extends MarketplaceGood {
+  location?: string
   shipId?: string
   quantity?: number
 }
@@ -61,7 +70,7 @@ function Marketplace() {
     () => [
       ...new Set(
         [
-          STARTER_SYSTEM,
+          System[0],
           ...(myShips.data?.ships.map((s) => s.location?.split('-')[0]) ?? []),
         ]
           .filter(Boolean)
@@ -90,26 +99,40 @@ function Marketplace() {
   }, [filteredGood, goodTypes])
 
   const shipOptions =
-    myShips.data?.ships.map((ship) => ({
-      value: ship.id,
-      label: `${getShipName(ship.id)}
+    myShips.data?.ships
+      .filter(
+        (s) =>
+          !!s.location &&
+          (s.location === goodToBuy?.location ||
+            s.location === goodToSell?.location ||
+            (shipToBuy?.purchaseLocations &&
+              (myShips.data?.ships.length === 0
+                ? // If there are no ships, return an array with a single item to allow buying the first ship
+                  [null]
+                : shipToBuy?.purchaseLocations
+                    .map((pl) => pl.location)
+                    .includes(s.location))))
+      )
+      ?.map((ship) => ({
+        value: ship.id,
+        label: `${getShipName(ship.id)}
       `,
-      tags: [
-        ship.type,
-        ship.location,
-        `⛽ ${
-          // @ts-expect-error
-          ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
-            ?.quantity ?? 0
-        }`,
-        `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
-      ],
-      icon: (
-        <div className="flex items-center justify-center w-5 h-5">
-          <span className="text-xs">🚀</span>
-        </div>
-      ),
-    })) ?? []
+        tags: [
+          ship.type,
+          ship.location,
+          `⛽ ${
+            // @ts-expect-error
+            ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
+              ?.quantity ?? 0
+          }`,
+          `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+        ],
+        icon: (
+          <div className="flex items-center justify-center w-5 h-5">
+            <span className="text-xs">🚀</span>
+          </div>
+        ),
+      })) ?? []
 
   const handleBuyGood = async (goodToProcess: GoodToProcess) => {
     if (!goodToProcess.shipId || !goodToProcess.quantity) {
@@ -208,6 +231,10 @@ function Marketplace() {
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Trade Goods
                 </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Generate profit by trading goods or buying resources for your
+                  structures.
+                </p>
                 <div className="py-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                   <div className="sm:col-span-2">
                     <Select
@@ -287,238 +314,241 @@ function Marketplace() {
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                      {myShips.isLoading || marketplace.length > 0 ? (
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Symbol
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Quantity Available
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Volume/Unit
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Price/Unit
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Purchase Price/Unit
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Sell Price/Unit
-                              </th>
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                    {myShips.isLoading || marketplace.length > 0 ? (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Symbol
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Quantity Available
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Volume/Unit
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Price/Unit
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Purchase Price/Unit
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Sell Price/Unit
+                            </th>
 
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Spread
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {myShips.isLoading && (
+                            <LoadingRows cols={8} rows={3} />
+                          )}
+                          {marketplace.map((m, i) => (
+                            <>
+                              <tr
+                                key={dockedLocations[i]}
+                                className="bg-gray-100"
                               >
-                                Spread
-                              </th>
-                              <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                              >
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {myShips.isLoading && (
-                              <LoadingRows cols={8} rows={3} />
-                            )}
-                            {marketplace.map((m, i) => (
+                                <td
+                                  className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
+                                  colSpan={9}
+                                >
+                                  <div className="flex justify-between items-baseline">
+                                    <span>{dockedLocations[i]}</span>
+                                    <span className="text-xs">
+                                      Last updated:{' '}
+                                      {moment(m.dataUpdatedAt).format(
+                                        'DD/MM/YY hh:mm:ss a'
+                                      )}
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
                               <>
-                                <tr key={i} className="bg-gray-100">
-                                  <td
-                                    className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
-                                    colSpan={9}
-                                  >
-                                    <div className="flex justify-between items-baseline">
-                                      <span>{dockedLocations[i]}</span>
-                                      <span className="text-xs">
-                                        Last updated:{' '}
-                                        {moment(m.dataUpdatedAt).format(
-                                          'DD/MM/YYYY hh:mm:ss a'
-                                        )}
-                                      </span>
-                                    </div>
-                                  </td>
-                                </tr>
-                                <>
-                                  {!m.isLoading ? (
-                                    m.data?.marketplace
-                                      .filter((g) =>
-                                        filteredGood
-                                          ? g.symbol === filteredGood
-                                          : true
-                                      )
-                                      ?.sort((a, b) =>
-                                        a.symbol.localeCompare(b.symbol)
-                                      )
-                                      .map((locationMarketplace, i) => (
-                                        <tr
-                                          key={`${i}-${locationMarketplace.symbol}`}
+                                {!m.isLoading ? (
+                                  m.data?.marketplace
+                                    .filter((g) =>
+                                      filteredGood
+                                        ? g.symbol === filteredGood
+                                        : true
+                                    )
+                                    ?.sort((a, b) =>
+                                      a.symbol.localeCompare(b.symbol)
+                                    )
+                                    .map((locationMarketplace, i) => (
+                                      <tr
+                                        key={`${dockedLocations[i]}-${locationMarketplace.symbol}`}
+                                        className={
+                                          i % 2 === 0
+                                            ? 'bg-white'
+                                            : 'bg-gray-50'
+                                        }
+                                      >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                          {
+                                            GoodType[
+                                              // @ts-expect-error
+                                              locationMarketplace.symbol
+                                            ]
+                                          }
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                          {abbreviateNumber(
+                                            locationMarketplace.quantityAvailable
+                                          )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                          {formatNumberCommas(
+                                            locationMarketplace.volumePerUnit
+                                          )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                          {abbreviateNumber(
+                                            locationMarketplace.pricePerUnit
+                                          )}
+                                        </td>
+                                        <td
                                           className={
-                                            i % 2 === 0
-                                              ? 'bg-white'
-                                              : 'bg-gray-50'
+                                            'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                            (marketplace
+                                              .filter((m) => !!m.data)
+                                              ?.flatMap(
+                                                (m) => m.data!.marketplace
+                                              )
+                                              .filter(
+                                                (g) =>
+                                                  g.symbol ===
+                                                  locationMarketplace.symbol
+                                              )
+                                              ?.reduce((a, b) =>
+                                                a.purchasePricePerUnit <
+                                                b.purchasePricePerUnit
+                                                  ? a
+                                                  : b
+                                              ).purchasePricePerUnit ===
+                                            locationMarketplace.purchasePricePerUnit
+                                              ? ' text-green-500'
+                                              : '')
                                           }
                                         >
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                            {
-                                              GoodType[
-                                                // @ts-expect-error
-                                                locationMarketplace.symbol
-                                              ]
-                                            }
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                            {abbreviateNumber(
-                                              locationMarketplace.quantityAvailable
-                                            )}
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                            {formatNumberCommas(
-                                              locationMarketplace.volumePerUnit
-                                            )}
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                            {abbreviateNumber(
-                                              locationMarketplace.pricePerUnit
-                                            )}
-                                          </td>
-                                          <td
-                                            className={
-                                              'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                              (marketplace
-                                                .filter((m) => !!m.data)
-                                                ?.flatMap(
-                                                  (m) => m.data!.marketplace
-                                                )
-                                                .filter(
-                                                  (g) =>
-                                                    g.symbol ===
-                                                    locationMarketplace.symbol
-                                                )
-                                                ?.reduce((a, b) =>
-                                                  a.purchasePricePerUnit <
-                                                  b.purchasePricePerUnit
-                                                    ? a
-                                                    : b
-                                                ).purchasePricePerUnit ===
-                                              locationMarketplace.purchasePricePerUnit
-                                                ? ' text-green-500'
-                                                : '')
-                                            }
+                                          {abbreviateNumber(
+                                            locationMarketplace.purchasePricePerUnit
+                                          )}
+                                        </td>
+                                        <td
+                                          className={
+                                            'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                            (marketplace
+                                              .filter((m) => !!m.data)
+                                              ?.flatMap(
+                                                (m) => m.data!.marketplace
+                                              )
+                                              .filter(
+                                                (g) =>
+                                                  g.symbol ===
+                                                  locationMarketplace.symbol
+                                              )
+                                              ?.reduce((a, b) =>
+                                                a.sellPricePerUnit >
+                                                b.sellPricePerUnit
+                                                  ? a
+                                                  : b
+                                              ).sellPricePerUnit ===
+                                            locationMarketplace.sellPricePerUnit
+                                              ? ' text-green-500'
+                                              : '')
+                                          }
+                                        >
+                                          {abbreviateNumber(
+                                            locationMarketplace.sellPricePerUnit
+                                          )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                          {formatNumberCommas(
+                                            locationMarketplace.spread
+                                          )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                          <button
+                                            className="text-indigo-600 hover:text-indigo-900"
+                                            onClick={() => {
+                                              setGoodToBuy({
+                                                ...locationMarketplace,
+                                                location: dockedLocations[i],
+                                              })
+                                            }}
                                           >
-                                            {abbreviateNumber(
-                                              locationMarketplace.purchasePricePerUnit
-                                            )}
-                                          </td>
-                                          <td
-                                            className={
-                                              'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                              (marketplace
-                                                .filter((m) => !!m.data)
-                                                ?.flatMap(
-                                                  (m) => m.data!.marketplace
-                                                )
-                                                .filter(
-                                                  (g) =>
-                                                    g.symbol ===
-                                                    locationMarketplace.symbol
-                                                )
-                                                ?.reduce((a, b) =>
-                                                  a.sellPricePerUnit >
-                                                  b.sellPricePerUnit
-                                                    ? a
-                                                    : b
-                                                ).sellPricePerUnit ===
-                                              locationMarketplace.sellPricePerUnit
-                                                ? ' text-green-500'
-                                                : '')
-                                            }
+                                            Buy
+                                          </button>
+                                          <button
+                                            className="ml-4 text-emerald-600 hover:text-emerald-900"
+                                            onClick={() => {
+                                              setGoodToSell({
+                                                ...locationMarketplace,
+                                                location: dockedLocations[i],
+                                              })
+                                            }}
                                           >
-                                            {abbreviateNumber(
-                                              locationMarketplace.sellPricePerUnit
-                                            )}
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                            {formatNumberCommas(
-                                              locationMarketplace.spread
-                                            )}
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button
-                                              className="text-indigo-600 hover:text-indigo-900"
-                                              onClick={() => {
-                                                setGoodToBuy(
-                                                  locationMarketplace
-                                                )
-                                              }}
-                                            >
-                                              Buy
-                                            </button>
-                                            <button
-                                              className="ml-4 text-emerald-600 hover:text-emerald-900"
-                                              onClick={() => {
-                                                setGoodToSell(
-                                                  locationMarketplace
-                                                )
-                                              }}
-                                            >
-                                              Sell
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      ))
-                                  ) : (
-                                    <LoadingRows cols={8} rows={3} />
-                                  )}
-                                </>
+                                            Sell
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                ) : (
+                                  <LoadingRows cols={8} rows={3} />
+                                )}
                               </>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <div className="flex justify-center">
-                          <div className="w-full">
-                            <div className="bg-white py-8 px-4 shadow rounded-lg">
-                              <div className="text-center mb-4">
-                                <h1 className="text-2xl font-bold">
-                                  No markets available!
-                                </h1>
-                                <p className="text-gray-600">
-                                  You must have at least one ship docked at a
-                                  location to buy or sell goods.
-                                </p>
-                              </div>
-                            </div>
+                            </>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div className="flex justify-center">
+                        <div className="w-full py-8 px-4">
+                          <div className="flex flex-col items-center text-center mb-4">
+                            <ShoppingBagIcon className="w-12 h-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">
+                              No markets available!
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              You must have at least one ship docked at a
+                              location to buy or sell goods.{' '}
+                            </p>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -533,6 +563,9 @@ function Marketplace() {
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Buy Ships
                 </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Increase your fleet size by buying new ships.
+                </p>
               </div>
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -607,7 +640,10 @@ function Marketplace() {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {availableShips.map((listings, i) => (
                               <>
-                                <tr key={i} className="bg-gray-100">
+                                <tr
+                                  key={knownSystems[i]}
+                                  className="bg-gray-100"
+                                >
                                   <td
                                     className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
                                     colSpan={10}
@@ -617,7 +653,7 @@ function Marketplace() {
                                       <span className="text-xs">
                                         Last updated:{' '}
                                         {moment(listings.dataUpdatedAt).format(
-                                          'DD/MM/YYYY hh:mm:ss a'
+                                          'DD/MM/YY hh:mm:ss a'
                                         )}
                                       </span>
                                     </div>
@@ -630,7 +666,7 @@ function Marketplace() {
                                     )
                                     .map((ship, j) => (
                                       <tr
-                                        key={`${j}-${knownSystems[i]}-${ship.type}`}
+                                        key={ship.type}
                                         className={
                                           j % 2 === 0
                                             ? 'bg-white'
@@ -745,194 +781,356 @@ function Marketplace() {
           </div>
         </div>
       </main>
-      {goodToBuy && (
-        <SimpleModal
-          title="Buy Goods"
-          content={
-            <div>
-              <p>
-                You are buying <strong>{goodToBuy.symbol}</strong>
-              </p>
-              <p>
-                <strong>{goodToBuy.purchasePricePerUnit}</strong> credits per
-                unit
-              </p>
-              <div className="sm:col-span-3">
-                <Select
-                  label="Select Ship"
-                  options={shipOptions}
-                  value={goodToBuy.shipId}
-                  onChange={(value) => {
-                    setGoodToBuy({
-                      ...goodToBuy,
-                      shipId: value,
-                    })
-                  }}
-                />
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Quantity
-                </label>
-                <input
-                  className="mt-1 form-input w-full"
-                  type="number"
-                  min={1}
-                  max={goodToBuy.quantityAvailable}
-                  defaultValue={
-                    myShips.data?.ships.find((s) => s.id === goodToBuy.shipId)
-                      ?.spaceAvailable
-                  }
-                  onChange={(e) =>
-                    setGoodToBuy({
-                      ...goodToBuy,
-                      quantity: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              {goodToBuy.quantity && (
-                <p className="mt-4">
-                  Total cost{' '}
-                  <strong>
-                    {formatNumberCommas(
-                      goodToBuy.quantity * goodToBuy.purchasePricePerUnit
-                    )}
-                  </strong>{' '}
-                  credits
-                </p>
-              )}
-              <button className="m-4" onClick={() => setGoodToBuy(null)}>
-                Cancel
-              </button>
-              <button
-                className="m-4"
-                onClick={() => {
-                  handleBuyGood(goodToBuy)
-                }}
-              >
-                Buy
-              </button>
-            </div>
-          }
-          handleClose={() => setGoodToBuy(null)}
-        />
-      )}
-      {goodToSell && (
-        <SimpleModal
-          title="Sell Goods"
-          content={
-            <div>
-              <p>
-                You are selling <strong>{goodToSell.symbol}</strong>
-              </p>
-              <p>
-                <strong>{goodToSell.sellPricePerUnit}</strong> credits per unit
-              </p>
-
-              <div className="sm:col-span-3">
-                <Select
-                  label="Select Ship"
-                  options={shipOptions}
-                  value={goodToSell.shipId}
-                  onChange={(value) => {
-                    setGoodToSell({
-                      ...goodToSell,
-                      shipId: value,
-                    })
-                  }}
-                />
-              </div>
-              {myShips.data?.ships.find((s) => s.id === goodToSell.shipId) && (
-                <span className="block text-sm font-medium text-gray-700">
-                  Ship has{' '}
-                  {myShips.data?.ships
-                    .find((s) => s.id === goodToSell.shipId)
-                    ?.cargo?.find((c) => c.good === goodToSell.symbol)
-                    ?.quantity ?? 0}{' '}
-                  {goodToSell.symbol}
-                </span>
-              )}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Quantity
-                </label>
-                <input
-                  className="mt-1 form-input w-full"
-                  type="number"
-                  min={1}
-                  onChange={(e) =>
-                    setGoodToSell({
-                      ...goodToSell,
-                      quantity: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              {goodToSell.quantity && (
-                <p className="mt-4">
-                  Total sale{' '}
-                  <strong>
-                    {formatNumberCommas(
-                      goodToSell.quantity * goodToSell.sellPricePerUnit
-                    )}
-                  </strong>{' '}
-                  credits
-                </p>
-              )}
-              <button className="m-4" onClick={() => setGoodToSell(null)}>
-                Cancel
-              </button>
-              <button
-                className="m-4"
-                onClick={() => {
-                  handleSellGood(goodToSell)
-                }}
-              >
-                Sell
-              </button>
-            </div>
-          }
-          handleClose={() => setGoodToSell(null)}
-        />
-      )}
-      {shipToBuy && (
-        <SimpleModal
-          title="Buy Ship"
-          content={
-            <div>
-              <p>
-                You are buying <strong>{shipToBuy.type}</strong>
-              </p>
-              {shipToBuy.purchaseLocations.map((pl) => (
-                <div key={pl.location} className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {pl.location}
-                  </label>
-                  <div className="mt-1">
-                    <p>
-                      <strong>{pl.price}</strong> credits
-                    </p>
-                    <button
-                      className="m-4"
-                      onClick={() => {
-                        handleBuyShip(pl.location, shipToBuy.type)
-                      }}
-                    >
-                      Buy
-                    </button>
+      <Modal
+        open={!!goodToBuy}
+        title="Buy Goods"
+        content={
+          <>
+            {goodToBuy && (
+              <div className="mt-4 px-4 py-2">
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      {/* @ts-expect-error */}
+                      Buy {GoodType[goodToBuy.symbol]}
+                    </h3>
                   </div>
-                </div>
-              ))}
-
-              <button className="m-4" onClick={() => setShipToBuy(null)}>
-                Cancel
-              </button>
-            </div>
-          }
-          handleClose={() => setShipToBuy(null)}
-        />
-      )}
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Purchase price per unit</span>
+                      <CreditCardIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {formatNumberCommas(goodToBuy.purchasePricePerUnit)}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Volume per unit</span>
+                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {formatNumberCommas(goodToBuy.volumePerUnit)}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-3">
+                        <Select
+                          label="Select Ship"
+                          options={shipOptions}
+                          value={goodToBuy.shipId}
+                          onChange={(value) => {
+                            setGoodToBuy({
+                              ...goodToBuy,
+                              shipId: value,
+                            })
+                          }}
+                        />
+                      </div>
+                      <div className="sm:col-span-1">
+                        <label
+                          htmlFor="quantity"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Quantity
+                        </label>
+                        <div className="mt-1">
+                          <input
+                            type="number"
+                            name="quantity"
+                            id="quantity"
+                            min={1}
+                            max={goodToBuy.quantityAvailable}
+                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            onChange={(e) => {
+                              const quantity = !isNaN(parseInt(e.target.value))
+                                ? parseInt(e.target.value)
+                                : 0
+                              setGoodToBuy({
+                                ...goodToBuy,
+                                quantity,
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="pt-6 sm:col-span-2">
+                        <button
+                          type="submit"
+                          className={
+                            'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                            (goodToBuy.quantity === 0 || !goodToBuy.shipId
+                              ? ' opacity-50 cursor-not-allowed'
+                              : '')
+                          }
+                          disabled={
+                            goodToBuy.quantity === 0 || !goodToBuy.shipId
+                          }
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleBuyGood(goodToBuy)
+                          }}
+                        >
+                          Buy
+                          {!!goodToBuy.quantity &&
+                            goodToBuy.quantity > 0 &&
+                            `
+                            ${formatNumberCommas(goodToBuy.quantity)} 
+                            for ${formatNumberCommas(
+                              goodToBuy.quantity *
+                                goodToBuy.purchasePricePerUnit
+                            )}`}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships available to buy goods.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Ships must be docked in this location to buy goods.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </div>
+            )}
+          </>
+        }
+        onClose={() => setGoodToBuy(null)}
+        className="w-full md:max-w-xl"
+      />
+      <Modal
+        open={!!goodToSell}
+        title="Sell Goods"
+        content={
+          <>
+            {goodToSell && (
+              <div className="mt-4 px-4 py-2">
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      {/* @ts-expect-error */}
+                      Sell {GoodType[goodToSell.symbol]}
+                    </h3>
+                  </div>
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Sell price per unit</span>
+                      <CreditCardIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {formatNumberCommas(goodToSell.sellPricePerUnit)}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Volume per unit</span>
+                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {formatNumberCommas(goodToSell.volumePerUnit)}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-3">
+                        <Select
+                          label="Select Ship"
+                          options={shipOptions}
+                          value={goodToSell.shipId}
+                          onChange={(value) => {
+                            setGoodToSell({
+                              ...goodToSell,
+                              shipId: value,
+                            })
+                          }}
+                        />
+                      </div>
+                      <div className="sm:col-span-1">
+                        <label
+                          htmlFor="quantity"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Quantity
+                        </label>
+                        <div className="mt-1">
+                          <input
+                            type="number"
+                            name="quantity"
+                            id="quantity"
+                            min={1}
+                            max={goodToSell.quantityAvailable}
+                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            onChange={(e) => {
+                              const quantity = !isNaN(parseInt(e.target.value))
+                                ? parseInt(e.target.value)
+                                : 0
+                              setGoodToSell({
+                                ...goodToSell,
+                                quantity,
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="pt-6 sm:col-span-2">
+                        <button
+                          type="submit"
+                          className={
+                            'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                            (goodToSell.quantity === 0 || !goodToSell.shipId
+                              ? ' opacity-50 cursor-not-allowed'
+                              : '')
+                          }
+                          disabled={
+                            goodToSell.quantity === 0 || !goodToSell.shipId
+                          }
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleSellGood(goodToSell)
+                          }}
+                        >
+                          Sell
+                          {!!goodToSell.quantity &&
+                            goodToSell.quantity > 0 &&
+                            `
+                            ${formatNumberCommas(goodToSell.quantity)} 
+                            for ${formatNumberCommas(
+                              goodToSell.quantity *
+                                goodToSell.purchasePricePerUnit
+                            )}`}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships available to sell goods.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Ships must be docked in this location to sell goods.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </div>
+            )}
+          </>
+        }
+        onClose={() => setGoodToSell(null)}
+        className="w-full md:max-w-xl"
+      />
+      <Modal
+        open={!!shipToBuy}
+        title="Buy Ship"
+        content={
+          <>
+            {shipToBuy && (
+              <div className="mt-4 px-4 py-2">
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      Buy {shipToBuy.type}
+                    </h3>
+                  </div>
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Manufacturer</span>
+                      <OfficeBuildingIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.manufacturer}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Speed</span>
+                      <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.speed}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Weapons</span>
+                      <FireIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.weapons}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Plating</span>
+                      <HeartIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.plating}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Loading speed</span>
+                      <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.loadingSpeed}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Max cargo</span>
+                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.maxCargo}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <div className="mt-4">
+                      {shipToBuy.purchaseLocations
+                        .filter((pl) =>
+                          myShips.data?.ships.find(
+                            (s) => s.location === pl.location
+                          )
+                        )
+                        .map((pl) => (
+                          <div
+                            key={pl.location}
+                            className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6"
+                          >
+                            <div className="sm:col-span-3">
+                              <label
+                                htmlFor="location"
+                                className="block text-sm font-medium text-gray-700"
+                              >
+                                Location
+                              </label>
+                              <p
+                                id="location"
+                                className="text-sm font-medium text-gray-900"
+                              >
+                                {pl.location}
+                              </p>
+                            </div>
+                            <div className="sm:col-span-3">
+                              <button
+                                type="submit"
+                                className="truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handleBuyShip(pl.location, shipToBuy.type)
+                                }}
+                              >
+                                Buy{' '}
+                                {`${shipToBuy.type} for ${formatNumberCommas(
+                                  pl.price
+                                )}`}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships docked in a purchase location.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            A ship must be docked in one of the purchase
+                            locations in order to buy a new ship.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </div>
+            )}
+          </>
+        }
+        onClose={() => setShipToBuy(null)}
+      />
     </>
   )
 }

@@ -18,13 +18,13 @@ const Navbar = () => {
   }
 
   const links = [
-    { path: '/', name: 'Home' },
-    { path: '/account', name: 'Account' },
-    { path: '/marketplace', name: 'Marketplace' },
-    { path: '/systems', name: 'Systems' },
-    { path: '/structures', name: 'Structures' },
-    { path: '/automation', name: 'Automation' },
-    { path: '/loans', name: 'Loans' },
+    { path: '', name: 'Home' },
+    { path: 'account', name: 'Account' },
+    { path: 'marketplace', name: 'Marketplace' },
+    { path: 'systems', name: 'Systems' },
+    { path: 'structures', name: 'Structures' },
+    { path: 'automation', name: 'Automation' },
+    { path: 'loans', name: 'Loans' },
   ]
 
   return (
@@ -62,7 +62,7 @@ const Navbar = () => {
                         key={link.name}
                         to={link.path}
                         className={
-                          link.path === location.pathname
+                          link.path === location.pathname.split('/')[1]
                             ? 'bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium'
                             : 'text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
                         }

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { generateToken } from '../../api/routes/users'
 import '../../App.css'
 import Alert from '../../components/Alert'
-import SimpleModal from '../../components/Modal/SimpleModal'
+import Modal from '../../components/Modal/index'
 import { useAuth } from '../../hooks/useAuth'
 import {
   getValue,
@@ -53,6 +53,7 @@ const Login = () => {
     if (storedToken) {
       attemptLogin(storedToken)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth, state])
 
   const handleRegister = async (username: string, rememberMe: boolean) => {
@@ -132,7 +133,7 @@ const Login = () => {
                 >
                   SpaceTraders API
                 </a>{' '}
-                web app written in React by{' '}
+                web app made with React by{' '}
                 <a
                   href="https://github.com/elilambnz"
                   rel="noopener noreferrer"
@@ -177,7 +178,7 @@ const Login = () => {
                       onChange={(e) =>
                         setRegisterForm((prev) => ({
                           ...prev,
-                          username: e.target.value,
+                          username: e.target.value.trim(),
                         }))
                       }
                     />
@@ -275,116 +276,116 @@ const Login = () => {
           )}
         </div>
       </div>
-      {useExistingToken && (
-        <SimpleModal
-          title="Use existing credentials"
-          content={
-            <div className="mt-6">
-              <form className="space-y-6">
-                <div>
+      <Modal
+        open={useExistingToken}
+        title="Use existing credentials"
+        content={
+          <div className="mt-4 px-4 py-2">
+            <form className="space-y-6">
+              <div>
+                <label
+                  htmlFor="apiToken"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  API Token
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="apiToken"
+                    name="apiToken"
+                    type="text"
+                    autoComplete="off"
+                    autoFocus
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    onChange={(e) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        apiToken: e.target.value.trim(),
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="rememberMeLogin"
+                    name="rememberMeLogin"
+                    type="checkbox"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    onChange={(e) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        rememberMe: e.target.checked,
+                      }))
+                    }
+                  />
                   <label
-                    htmlFor="apiToken"
-                    className="block text-sm font-medium text-gray-700"
+                    htmlFor="rememberMeLogin"
+                    className="ml-2 block text-sm text-gray-700"
                   >
-                    API Token
+                    Remember me
                   </label>
-                  <div className="mt-1">
-                    <input
-                      id="apiToken"
-                      name="apiToken"
-                      type="text"
-                      autoComplete="off"
-                      autoFocus
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      onChange={(e) =>
-                        setLoginForm((prev) => ({
-                          ...prev,
-                          apiToken: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
                 </div>
+              </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="rememberMeLogin"
-                      name="rememberMeLogin"
-                      type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      onChange={(e) =>
-                        setLoginForm((prev) => ({
-                          ...prev,
-                          rememberMe: e.target.checked,
-                        }))
-                      }
-                    />
-                    <label
-                      htmlFor="rememberMeLogin"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      Remember me
-                    </label>
-                  </div>
+              <div>
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (!loginForm.apiToken) {
+                      return
+                    }
+                    handleLogin(loginForm.apiToken, loginForm.rememberMe)
+                  }}
+                >
+                  {!loading ? (
+                    <>Login</>
+                  ) : (
+                    <>
+                      Authenticating
+                      <svg
+                        className="animate-spin ml-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {loginError && (
+                <div className="mt-6 max-w-4xl">
+                  <Alert message={loginError} />
                 </div>
-
-                <div>
-                  <button
-                    type="submit"
-                    className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      if (!loginForm.apiToken) {
-                        return
-                      }
-                      handleLogin(loginForm.apiToken, loginForm.rememberMe)
-                    }}
-                  >
-                    {!loading ? (
-                      <>Login</>
-                    ) : (
-                      <>
-                        Authenticating
-                        <svg
-                          className="animate-spin ml-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {loginError && (
-                  <div className="mt-6 max-w-4xl">
-                    <Alert message={loginError} />
-                  </div>
-                )}
-              </form>
-            </div>
-          }
-          handleClose={() => {
-            setUseExistingToken(false)
-            setLoginError(undefined)
-          }}
-        />
-      )}
+              )}
+            </form>
+          </div>
+        }
+        closeText="Close"
+        onClose={() => {
+          setUseExistingToken(false)
+          setLoginError(undefined)
+        }}
+      />
     </>
   )
 }

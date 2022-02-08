@@ -8,6 +8,7 @@ interface SelectOption {
   label: string
   tags?: (string | undefined)[]
   icon?: JSX.Element
+  disabled?: boolean
 }
 
 interface SelectProps {
@@ -29,10 +30,10 @@ export default function Select(props: SelectProps) {
   const [selected, setSelected] = useState<SelectOption>()
 
   useEffect(() => {
-    if (value) {
-      setSelected(options.find((option) => option.value === value))
-    }
-  }, [value])
+    setSelected(
+      value ? options.find((option) => option.value === value) : undefined
+    )
+  }, [value, options])
 
   const popperElRef = useRef(null)
   const [targetElement, setTargetElement] = useState(null)
@@ -167,9 +168,17 @@ export default function Select(props: SelectProps) {
                           )
                         }
                         value={option}
+                        disabled={option.disabled}
                       >
                         {({ selected, active }) => (
-                          <div className="flex items-center">
+                          <div
+                            className={
+                              'flex items-center' +
+                              (option.disabled
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                          >
                             {option.icon && (
                               <div className="flex-shrink-0">
                                 <div className="relative">

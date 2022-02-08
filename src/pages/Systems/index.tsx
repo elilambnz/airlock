@@ -13,13 +13,7 @@ import {
   getSystemLocations,
 } from '../../api/routes/systems'
 import '../../App.css'
-import { ListShipsResponse, Ship } from '../../types/Ship'
-import {
-  ListSystemFlightPlansResponse,
-  ListSystemLocationsResponse,
-  SystemDockedShipsResponse,
-  SystemsResponse,
-} from '../../types/System'
+import { Ship } from '../../types/Ship'
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import Alert from '../../components/Alert'
@@ -39,20 +33,11 @@ import {
 import { Scatter } from 'react-chartjs-2'
 import { refuel } from '../../utils/mechanics'
 import { useQuery, useQueryClient } from 'react-query'
+import { PaperAirplaneIcon } from '@heroicons/react/solid'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
 function Systems() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState()
-  const [currentSystem, setCurrentSystem] = useState<SystemsResponse>()
-  const [availableLocations, setAvailableLocations] =
-    useState<ListSystemLocationsResponse>()
-  const [allFlightPlans, setAllFlightPlans] =
-    useState<ListSystemFlightPlansResponse>()
-  const [allDockedShips, setAllDockedShips] =
-    useState<SystemDockedShipsResponse>()
-  const [myShips, setMyShips] = useState<ListShipsResponse>()
   const [newFlightPlan, setNewFlightPlan] =
     useState<{ shipId?: string; destination?: string; autoRefuel?: boolean }>()
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
@@ -62,66 +47,63 @@ function Systems() {
   const params = useParams()
   const queryClient = useQueryClient()
   const user = useQuery('user', getMyAccount)
-
-  const updateCurrentSystem = async (systemSymbol: string) => {
-    if (loading) {
-      return
+  const myShips = useQuery('myShips', listMyShips)
+  const system = useQuery(
+    ['system', params.systemSymbol],
+    () => getSystemInfo(params.systemSymbol ?? ''),
+    {
+      enabled: !!params.systemSymbol,
     }
-    try {
-      setLoading(true)
-      setError(undefined)
-      setCurrentSystem(await getSystemInfo(systemSymbol))
-      setAvailableLocations(await getSystemLocations(systemSymbol))
-      setAllFlightPlans(await getSystemFlightPlans(systemSymbol))
-      setAllDockedShips(await getSystemDockedShips(systemSymbol))
-    } catch (error: any) {
-      console.error(error)
-      if (error.code && error.code !== 400) {
-        setError(error.message ?? 'Unknown error')
-      }
-    } finally {
-      setLoading(false)
+  )
+  const systemLocations = useQuery(
+    ['systemLocations', params.systemSymbol],
+    () => getSystemLocations(params.systemSymbol ?? ''),
+    {
+      enabled: !!params.systemSymbol,
     }
-  }
+  )
+  const systemFlightPlans = useQuery(
+    ['systemFlightPlans', params.systemSymbol],
+    () => getSystemFlightPlans(params.systemSymbol ?? ''),
+    {
+      enabled: !!params.systemSymbol,
+    }
+  )
+  const systemDockedShips = useQuery(
+    ['systemDockedShips', params.systemSymbol],
+    () => getSystemDockedShips(params.systemSymbol ?? ''),
+    {
+      enabled: !!params.systemSymbol,
+    }
+  )
 
   const knownSystems = new Set(
     [
       System[0],
-      ...(myShips?.ships.map((s) => s.location?.split('-')[0]) ?? []),
-    ].filter((s) => s)
+      ...(myShips.data?.ships.map((s) => s.location?.split('-')[0]) ?? []),
+    ]
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          Object.keys(System).indexOf(a!) - Object.keys(System).indexOf(b!)
+      )
   )
 
   const knownSystemOptions: { value: string; label: string }[] = [
     ...knownSystems,
-  ]
-    .sort(
-      (a, b) =>
-        Object.keys(System).indexOf(a!) - Object.keys(System).indexOf(b!)
-    )
-    .map((s) => ({
-      value: s!,
-      label: s!,
-      icon: (
-        <div className="flex items-center justify-center w-5 h-5">
-          <span className="text-xs">🌌</span>
-        </div>
-      ),
-    }))
+  ].map((s) => ({
+    value: s!,
+    label: s!,
+    icon: (
+      <div className="flex items-center justify-center w-5 h-5">
+        <span className="text-xs">🌌</span>
+      </div>
+    ),
+  }))
 
   useEffect(() => {
-    const init = async () => {
-      setMyShips(await listMyShips())
-    }
-    init()
-
-    if (!params.systemSymbol && knownSystemOptions.length > 0) {
-      navigate(`/systems/${knownSystemOptions[0].value}`, { replace: true })
-    }
-  }, [])
-
-  useEffect(() => {
-    if (params.systemSymbol) {
-      updateCurrentSystem(params.systemSymbol)
+    if (!params.systemSymbol) {
+      navigate(`/systems/${System[0]}`, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.systemSymbol])
@@ -135,14 +117,14 @@ function Systems() {
       const result = await createNewFlightPlan(shipId, destination)
       console.log(result)
       setNewFlightPlan((prev) => ({ ...prev, shipId: undefined }))
-      if (!currentSystem) {
+      if (!system.data) {
         throw new Error('No current system')
       }
-      setAllFlightPlans(await getSystemFlightPlans(currentSystem.system.symbol))
+      queryClient.invalidateQueries('systemFlightPlans')
     } catch (error: any) {
       if (error.code === 3001 && autoRefuel) {
         // Insufficient fuel, auto refuel
-        const ship = myShips?.ships.find((s) => s.id === shipId)
+        const ship = myShips.data?.ships.find((s) => s.id === shipId)
         if (!ship) {
           throw new Error('Ship not found')
         }
@@ -161,10 +143,10 @@ function Systems() {
       const result = await initiateWarpJump(shipId)
       console.log(result)
       setNewWarpJump(() => ({ shipId: undefined }))
-      if (!currentSystem) {
+      if (!system.data?.system) {
         throw new Error('No current system')
       }
-      setAllFlightPlans(await getSystemFlightPlans(currentSystem.system.symbol))
+      queryClient.invalidateQueries('systemFlightPlans')
     } catch (error) {
       console.error(error)
     }
@@ -190,8 +172,8 @@ function Systems() {
   }
 
   const shipOptions =
-    myShips?.ships
-      .filter((s) => s.location?.split('-')[0] === currentSystem?.system.symbol)
+    myShips.data?.ships
+      .filter((s) => s.location?.split('-')[0] === system.data?.system.symbol)
       ?.map((ship) => ({
         value: ship.id,
         label: `${getShipName(ship.id)}
@@ -214,7 +196,7 @@ function Systems() {
       })) ?? []
 
   const locationOptions =
-    availableLocations?.locations.map((location) => ({
+    systemLocations.data?.locations.map((location) => ({
       value: location.symbol,
       label: location.name,
       tags: [location.symbol, `(${location.x}, ${location.y})`],
@@ -230,15 +212,16 @@ function Systems() {
       ),
     })) ?? []
 
-  const myActiveFlightPlans = allFlightPlans?.flightPlans.filter(
-    (flightPlan) => flightPlan.username === user.data?.user.username
-  )
+  const myActiveFlightPlans =
+    systemFlightPlans.data?.flightPlans.filter(
+      (flightPlan) => flightPlan.username === user.data?.user.username
+    ) ?? []
 
   // Might be more efficient to filter myShips, but we have to consider ships in transit
   const myDockedShips =
-    (allDockedShips?.ships
+    (systemDockedShips.data?.ships
       .filter((s) => s.username === user.data?.user.username)
-      ?.map((s) => myShips?.ships.find((ms) => ms.id === s.shipId))
+      ?.map((s) => myShips.data?.ships.find((ms) => ms.id === s.shipId))
       .filter((s) => s?.location) as Ship[]) ?? []
 
   return (
@@ -251,11 +234,21 @@ function Systems() {
       <main>
         <div className="bg-gray-100 min-h-screen">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            {error && (
-              <div className="mb-4">
-                <Alert message={error} />
-              </div>
-            )}
+            {system.isError ||
+              systemLocations.isError ||
+              systemFlightPlans.isError ||
+              (systemDockedShips.isError && (
+                <div className="mb-4">
+                  <Alert
+                    message={JSON.stringify(
+                      system.error ||
+                        systemLocations.error ||
+                        systemFlightPlans.error ||
+                        systemDockedShips.error
+                    )}
+                  />
+                </div>
+              ))}
 
             <div className="md:flex md:items-center md:justify-between md:space-x-5">
               <div className="flex items-start space-x-5">
@@ -285,10 +278,10 @@ function Systems() {
                 </div>
                 <div className="pt-1.5">
                   <h1 className="text-2xl font-bold text-gray-900">
-                    {currentSystem?.system.name}
+                    {system.data?.system.name}
                   </h1>
                   <p className="text-sm font-medium text-gray-500">
-                    {currentSystem?.system.symbol}
+                    {system.data?.system.symbol}
                   </p>
                 </div>
               </div>
@@ -296,8 +289,8 @@ function Systems() {
                 <Select
                   label="Select System"
                   options={knownSystemOptions}
-                  value={currentSystem?.system.symbol}
-                  disabled={loading}
+                  value={system.data?.system.symbol}
+                  disabled={system.isLoading}
                   onChange={(value) => {
                     navigate(`/systems/${value}`)
                   }}
@@ -313,7 +306,7 @@ function Systems() {
                       Locations
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {availableLocations?.locations.length}
+                      {systemLocations.data?.locations.length}
                     </dd>
                   </div>
                 </div>
@@ -347,8 +340,10 @@ function Systems() {
                     Locations
                   </h3>
                   <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                    {currentSystem &&
-                      `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                    Last updated:{' '}
+                    {moment(systemLocations.dataUpdatedAt).format(
+                      'DD/MM/YY hh:mm:ss a'
+                    )}
                   </p>
                 </div>
                 <div className="mt-1">
@@ -380,7 +375,7 @@ function Systems() {
                                     callbacks: {
                                       label: function (ctx) {
                                         let label =
-                                          availableLocations?.locations[
+                                          systemLocations.data?.locations[
                                             ctx.dataIndex
                                           ]?.name ?? 'Unknown'
                                         label +=
@@ -398,7 +393,7 @@ function Systems() {
                               data={{
                                 datasets: [
                                   {
-                                    data: availableLocations?.locations.map(
+                                    data: systemLocations.data?.locations.map(
                                       (l) => ({ x: l.x, y: l.y })
                                     ),
                                     backgroundColor: 'rgb(99, 102, 241)',
@@ -434,8 +429,8 @@ function Systems() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {availableLocations ? (
-                              availableLocations.locations
+                            {!systemLocations.isLoading ? (
+                              systemLocations.data?.locations
                                 .sort((a, b) => a.x - b.x || a.y - b.y)
                                 .map((location, i) => (
                                   <tr
@@ -493,8 +488,7 @@ function Systems() {
                   Create New Flight Plan
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {currentSystem &&
-                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                  Select a ship and location to travel to.
                 </p>
               </div>
               <div className="flex flex-col">
@@ -529,7 +523,7 @@ function Systems() {
                             }}
                           />
                         </div>
-                        <div className="flex items-center sm:col-span-1 pt-6">
+                        <div className="flex items-center pt-6 sm:col-span-1 sm:justify-center">
                           <div className="flex items-center">
                             <input
                               id="autoRefuel"
@@ -551,10 +545,20 @@ function Systems() {
                             </label>
                           </div>
                         </div>
-                        <div className="sm:col-span-1 pt-6">
+                        <div className="flex pt-6 sm:col-span-1">
                           <button
                             type="submit"
-                            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className={
+                              'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (!newFlightPlan?.shipId ||
+                              !newFlightPlan.destination
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              !newFlightPlan?.shipId ||
+                              !newFlightPlan.destination
+                            }
                             onClick={(e) => {
                               e.preventDefault()
                               if (
@@ -586,14 +590,18 @@ function Systems() {
                   Active Flight Plans
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {currentSystem &&
-                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                  Last updated:{' '}
+                  {moment(systemFlightPlans.dataUpdatedAt).format(
+                    'DD/MM/YY hh:mm:ss a'
+                  )}
                 </p>
               </div>
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                    {systemFlightPlans.isLoading ||
+                    myActiveFlightPlans.length > 0 ? (
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -642,8 +650,7 @@ function Systems() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {myActiveFlightPlans &&
-                          myActiveFlightPlans.length > 0 ? (
+                          {!systemFlightPlans.isLoading ? (
                             myActiveFlightPlans.map((flightPlan, i) => (
                               <tr
                                 key={flightPlan.id}
@@ -656,7 +663,7 @@ function Systems() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {
-                                    myShips?.ships.find(
+                                    myShips.data?.ships.find(
                                       (s) => s.id === flightPlan.shipId
                                     )?.type
                                   }
@@ -669,12 +676,12 @@ function Systems() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.createdAt).format(
-                                    'DD/MM/YYYY hh:mm:ss a'
+                                    'DD/MM/YY hh:mm:ss a'
                                   )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                   {moment(flightPlan.arrivesAt).format(
-                                    'DD/MM/YYYY hh:mm:ss a'
+                                    'DD/MM/YY hh:mm:ss a'
                                   )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
@@ -686,18 +693,26 @@ function Systems() {
                               </tr>
                             ))
                           ) : (
-                            <tr className="bg-white text-center">
-                              <td
-                                className="px-6 py-4 text-gray-500"
-                                colSpan={7}
-                              >
-                                You have no active flight plans.
-                              </td>
-                            </tr>
+                            <LoadingRows cols={7} rows={3} />
                           )}
                         </tbody>
                       </table>
-                    </div>
+                    ) : (
+                      <div className="flex justify-center">
+                        <div className="w-full py-8 px-4">
+                          <div className="flex flex-col items-center text-center mb-4">
+                            <PaperAirplaneIcon className="w-12 h-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">
+                              No active flight plans!
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              Why stay earthbound when prosperity awaits in the
+                              stars?
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -709,14 +724,17 @@ function Systems() {
                   Docked Ships
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {currentSystem &&
-                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                  Last updated:{' '}
+                  {moment(systemDockedShips.dataUpdatedAt).format(
+                    'DD/MM/YY hh:mm:ss a'
+                  )}
                 </p>
               </div>
               <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                    {systemDockedShips.isLoading || myDockedShips.length > 0 ? (
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -741,7 +759,7 @@ function Systems() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {myDockedShips && myDockedShips.length > 0 ? (
+                          {!systemDockedShips.isLoading ? (
                             myDockedShips.map((ship, i) => (
                               <tr
                                 key={ship.id}
@@ -763,18 +781,25 @@ function Systems() {
                               </tr>
                             ))
                           ) : (
-                            <tr className="bg-white text-center">
-                              <td
-                                className="px-6 py-4 text-gray-500"
-                                colSpan={3}
-                              >
-                                You have no docked ships.
-                              </td>
-                            </tr>
+                            <LoadingRows cols={3} rows={3} />
                           )}
                         </tbody>
                       </table>
-                    </div>
+                    ) : (
+                      <div className="flex justify-center">
+                        <div className="w-full py-8 px-4">
+                          <div className="flex flex-col items-center text-center mb-4">
+                            <PaperAirplaneIcon className="w-12 h-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">
+                              No docked ships!
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              No ships docked in this system.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -786,8 +811,8 @@ function Systems() {
                   Warp Jumps
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  {currentSystem &&
-                    `${currentSystem?.system.symbol} - ${currentSystem?.system.name}`}
+                  Select a ship to initiate a warp jump. The ship must be docked
+                  at a wormhole.
                 </p>
               </div>
               <div className="flex flex-col">

@@ -1,95 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  listMyShips,
-  jettisonShipCargo,
-  scrapShip,
-  transferShipCargo,
-  getMyAccount,
-} from '../../api/routes/my'
+import { listMyShips, scrapShip, getMyAccount } from '../../api/routes/my'
 import '../../App.css'
-import DangerModal from '../../components/Modal/DangerModal'
-
-import { ShipCargo } from '../../types/Ship'
+import AlertModal from '../../components/Modal/AlertModal'
 import { abbreviateNumber, getShipName } from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
-import ActionModal from '../../components/Modal/ActionModal'
+import Modal from '../../components/Modal'
 import Tooltip from '../../components/Tooltip'
 import { GoodType } from '../../types/Order'
-import { useMutation, useQuery, useQueryClient } from 'react-query'
-
-export enum CargoManageMode {
-  TRANSFER,
-  JETTISON,
-}
+import { useQuery } from 'react-query'
+import { CubeIcon, GlobeIcon } from '@heroicons/react/outline'
 
 function Account() {
   const [shipToManageCargo, setShipToManageCargo] = useState<string>()
-  const [cargoManageMode, setCargoManageMode] = useState<CargoManageMode>()
-  const [cargoToTransfer, setCargoToTransfer] = useState<
-    ShipCargo & { shipId?: string; toShipId?: string }
-  >()
-  const [cargoToJettison, setCargoToJettison] = useState<
-    ShipCargo & { shipId?: string }
-  >()
   const [shipToScrap, setShipToScrap] = useState<string>()
 
-  const queryClient = useQueryClient()
   const user = useQuery('user', getMyAccount)
   const myShips = useQuery('myShips', listMyShips)
-
-  const transferShipCargoMutation = useMutation(
-    ({
-      id,
-      toShipId,
-      good,
-      quantity,
-    }: {
-      id: string
-      toShipId: string
-      good: string
-      quantity: number
-    }) => transferShipCargo(id, toShipId, good, quantity),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('myShips')
-      },
-    }
-  )
-
-  const handleTransferCargo = async (
-    cargoToTransfer: ShipCargo & { shipId?: string; toShipId?: string }
-  ) => {
-    const { shipId, toShipId, good, quantity } = cargoToTransfer
-    if (!shipId || !toShipId) {
-      return
-    }
-    try {
-      await transferShipCargoMutation.mutateAsync({
-        id: shipId,
-        toShipId,
-        good,
-        quantity,
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const handleJettisonCargo = async (
-    cargoToJettison: ShipCargo & { shipId?: string }
-  ) => {
-    const { shipId, good, quantity } = cargoToJettison
-    if (!shipId) {
-      return
-    }
-    try {
-      const result = await jettisonShipCargo(shipId, good, quantity)
-      console.log(result)
-    } catch (error) {
-      console.error('Error jettisoning cargo', error)
-    }
-  }
 
   const handleScrapShip = async (shipId: string) => {
     try {
@@ -433,42 +360,16 @@ function Account() {
                                 onClick={() => setShipToManageCargo(ship.id!)}
                                 disabled={ship.spaceAvailable === ship.maxCargo}
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                  />
-                                </svg>
+                                <CubeIcon className="w-6 h-6" />
                                 <span className="ml-3">Manage cargo</span>
                               </button>
                             </div>
                             <div className="-ml-px w-0 flex-1 flex">
                               <Link
-                                to="/systems"
+                                to={`/systems/${ship.location?.split('-')[0]}`}
                                 className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
+                                <GlobeIcon className="h-6 w-6" />
                                 <span className="ml-3">Travel</span>
                               </Link>
                             </div>
@@ -576,85 +477,30 @@ function Account() {
           </div>
         </div>
       </main>
-      {shipToManageCargo && (
-        <ActionModal
-          title="Manage cargo"
-          actionText={
-            cargoManageMode === CargoManageMode.TRANSFER
-              ? 'Transfer'
-              : cargoManageMode === CargoManageMode.JETTISON
-              ? 'Jettison'
-              : ''
-          }
-          content={
-            <ManageCargo
-              ship={myShips.data?.ships.find(
-                (ship) => ship.id === shipToManageCargo
-              )}
-              shipOptions={
-                myShips.data?.ships
-                  .filter((s) => !!s.id && s.id !== shipToManageCargo)
-                  .map((ship) => ({
-                    value: ship.id,
-                    label: `${getShipName(ship.id)}
-                    `,
-                    tags: [
-                      ship.type,
-                      ship.location,
-                      `⛽ ${
-                        ship.cargo.find(
-                          // @ts-expect-error
-                          (c) => GoodType[c.good] === GoodType.FUEL
-                        )?.quantity ?? 0
-                      }`,
-                      `📦 ${ship.maxCargo - ship.spaceAvailable}/${
-                        ship.maxCargo
-                      }`,
-                    ],
-                    icon: (
-                      <div className="flex items-center justify-center w-5 h-5">
-                        <span className="text-xs">🚀</span>
-                      </div>
-                    ),
-                  })) ?? []
-              }
-              cargoToTransfer={cargoToTransfer}
-              setCargoToTransfer={setCargoToTransfer}
-              cargoToJettison={cargoToJettison}
-              setCargoToJettison={setCargoToJettison}
-              setCargoManageMode={setCargoManageMode}
-            />
-          }
-          handleAction={() =>
-            cargoManageMode === CargoManageMode.TRANSFER
-              ? cargoToTransfer && handleTransferCargo(cargoToTransfer)
-              : cargoManageMode === CargoManageMode.JETTISON
-              ? cargoToJettison && handleJettisonCargo(cargoToJettison)
-              : null
-          }
-          actionDanger={cargoManageMode === CargoManageMode.JETTISON}
-          actionDisabled={
-            (cargoManageMode === CargoManageMode.TRANSFER &&
-              !cargoToTransfer) ||
-            (cargoManageMode === CargoManageMode.JETTISON && !cargoToJettison)
-          }
-          handleClose={() => {
-            setShipToManageCargo(undefined)
-            setCargoManageMode(undefined)
-            setCargoToTransfer(undefined)
-            setCargoToJettison(undefined)
-          }}
-        />
-      )}
-      {shipToScrap && (
-        <DangerModal
-          title="Scrap Ship"
-          content="Are you sure you want to scrap this ship for credits?"
-          actionText="Scrap"
-          handleClose={() => setShipToScrap(undefined)}
-          handleConfirm={() => handleScrapShip(shipToScrap)}
-        />
-      )}
+      <Modal
+        open={!!shipToManageCargo}
+        title="Manage cargo"
+        content={
+          <ManageCargo
+            ship={myShips.data?.ships.find(
+              (ship) => ship.id === shipToManageCargo
+            )}
+          />
+        }
+        className="w-full md:max-w-xl"
+        onClose={() => {
+          setShipToManageCargo(undefined)
+        }}
+      />
+      <AlertModal
+        open={!!shipToScrap}
+        title="Scrap Ship"
+        message="Are you sure you want to scrap this ship for credits?"
+        actionText="Scrap"
+        closeText="Cancel"
+        onClose={() => setShipToScrap(undefined)}
+        onAction={() => shipToScrap && handleScrapShip(shipToScrap)}
+      />
     </>
   )
 }
