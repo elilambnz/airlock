@@ -37,7 +37,7 @@ const Login = () => {
 
   useEffect(() => {
     const attemptLogin = async (apiToken: string) => {
-      if (attemptingLogin) {
+      if (attemptingLogin || useExistingToken) {
         return
       }
       try {
@@ -81,12 +81,19 @@ const Login = () => {
       setValue(API_TOKEN_KEY, apiToken, rememberMe)
       await auth.signin(apiToken, '/')
     } catch (error: any) {
-      setLoginError(error.message || 'Error logging in')
+      if (error.code === 40101) {
+        setLoginError('Token was invalid.')
+      } else {
+        setLoginError(error.message || 'Error logging in.')
+      }
       removeValue(API_TOKEN_KEY, rememberMe)
     } finally {
       setLoading(false)
     }
   }
+
+  const registrationLoading = loading && !useExistingToken
+  const loginLoading = loading && useExistingToken
 
   if (attemptingLogin) {
     return (
@@ -213,9 +220,11 @@ const Login = () => {
                     type="submit"
                     className={
                       'w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                      (loading ? ' cursor-not-allowed opacity-50' : '')
+                      (registrationLoading
+                        ? ' cursor-not-allowed opacity-50'
+                        : '')
                     }
-                    disabled={loading}
+                    disabled={registrationLoading}
                     onClick={(e) => {
                       e.preventDefault()
                       if (!registerForm.username) {
@@ -227,7 +236,7 @@ const Login = () => {
                       )
                     }}
                   >
-                    {!loading ? (
+                    {!registrationLoading ? (
                       <>Create account</>
                     ) : (
                       <>
@@ -333,7 +342,11 @@ const Login = () => {
               <div>
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className={
+                    'w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                    (loginLoading ? ' cursor-not-allowed opacity-50' : '')
+                  }
+                  disabled={loginLoading}
                   onClick={(e) => {
                     e.preventDefault()
                     if (!loginForm.apiToken) {
@@ -342,7 +355,7 @@ const Login = () => {
                     handleLogin(loginForm.apiToken, loginForm.rememberMe)
                   }}
                 >
-                  {!loading ? (
+                  {!loginLoading ? (
                     <>Login</>
                   ) : (
                     <>

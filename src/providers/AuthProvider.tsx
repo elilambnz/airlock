@@ -19,18 +19,20 @@ function AuthProvider(props: AuthProviderProps) {
   const { trackEvent, children } = props
 
   const [apiToken, setApiToken] = useState<string>()
+  const [apiTokenValid, setApiTokenValid] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (apiToken) {
+    if (apiTokenValid) {
       queryClient.prefetchQuery('user', getMyAccount)
       queryClient.prefetchQuery('myShips', listMyShips)
       queryClient.prefetchQuery('myLoans', listMyLoans)
       queryClient.prefetchQuery('myStructures', listMyStructures)
     }
-  }, [apiToken])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiTokenValid])
 
   const navigate = useNavigate()
 
@@ -42,9 +44,10 @@ function AuthProvider(props: AuthProviderProps) {
       setLoading(true)
       setApiToken(token)
       const user = await queryClient.fetchQuery('user', getMyAccount)
-      if (!user) {
+      if (!user.user) {
         throw new Error('User not found')
       }
+      setApiTokenValid(true)
       // Send them back to the page they tried to visit when they were
       // redirected to the login page. Use { replace: true } so we don't create
       // another entry in the history stack for the login page.  This means that
@@ -64,7 +67,6 @@ function AuthProvider(props: AuthProviderProps) {
         },
       })
     } catch (error) {
-      console.error(error)
       throw error
     } finally {
       setLoading(false)
@@ -72,6 +74,8 @@ function AuthProvider(props: AuthProviderProps) {
   }
 
   const signout = () => {
+    setApiToken(undefined)
+    setApiTokenValid(false)
     queryClient.removeQueries()
     removeValue(API_TOKEN_KEY, true)
     removeValue(API_TOKEN_KEY)

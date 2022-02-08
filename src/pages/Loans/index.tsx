@@ -1,41 +1,28 @@
-import moment from 'moment'
-import { useState, useEffect } from 'react'
-import { useQueryClient } from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
 import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'
-import {
-  ListLoansResponse,
-  ListLoanTypesResponse,
-  LoanStatus,
-  LoanTier,
-} from '../../types/Loan'
+import { LoanStatus, LoanTier } from '../../types/Loan'
 import { formatNumberCommas } from '../../utils/helpers'
+import moment from 'moment'
+import LoadingRows from '../../components/Table/LoadingRows'
+import { CreditCardIcon } from '@heroicons/react/solid'
 
 function Loans() {
-  const [loans, setLoans] = useState<ListLoansResponse>()
-  const [availableLoans, setAvailableLoans] = useState<ListLoanTypesResponse>()
-
   const queryClient = useQueryClient()
-
-  useEffect(() => {
-    const init = async () => {
-      setLoans(await listMyLoans())
-      setAvailableLoans(await listLoanTypes())
-    }
-    init()
-  }, [])
+  const myLoans = useQuery('myLoans', listMyLoans)
+  const availableLoans = useQuery('availableLoans', listLoanTypes)
 
   const handleTakeOutLoan = async (type: string) => {
     await takeOutLoan(type)
     queryClient.invalidateQueries('user')
-    setLoans(await listMyLoans())
+    queryClient.invalidateQueries('myLoans')
   }
 
   const handlePayOffLoan = async (id: string) => {
     await payOffLoan(id)
     queryClient.invalidateQueries('user')
-    setLoans(await listMyLoans())
+    queryClient.invalidateQueries('myLoans')
   }
 
   return (
@@ -52,84 +39,103 @@ function Loans() {
               <h2 className="text-2xl font-bold text-gray-900">My Loans</h2>
             </div>
 
-            <div className="flex flex-col">
-              <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    {loans && loans.loans.length > 0 ? (
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Repayment Amount
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Loan Due
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {loans.loans.map((loan, i) => (
-                            <tr
-                              key={loan.id}
-                              className={
-                                i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                              }
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {/* @ts-expect-error */}
-                                {LoanTier[loan.type]}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {formatNumberCommas(loan.repaymentAmount)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {moment(loan.due).format('DD/MM/YYYY hh:mm a')}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span
+            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+              <div className="flex flex-col">
+                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                      {myLoans.isLoading ||
+                      (myLoans.data && myLoans.data.loans.length > 0) ? (
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Repayment Amount
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Loan Due
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {!myLoans.isLoading ? (
+                              myLoans.data.loans.map((loan, i) => (
+                                <tr
+                                  key={loan.id}
                                   className={
-                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
-                                    (loan.status === LoanStatus.CURRENT
-                                      ? ' bg-green-100 text-green-800'
-                                      : ' bg-yellow-100 text-yellow-800')
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                   }
                                 >
-                                  {/* @ts-expect-error */}
-                                  {LoanStatus[loan.status]}
-                                </span>
-                              </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {/* @ts-expect-error */}
+                                    {LoanTier[loan.type]}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {formatNumberCommas(loan.repaymentAmount)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {moment(loan.due).format(
+                                      'DD/MM/YYYY hh:mm a'
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                      className={
+                                        'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                        (loan.status === LoanStatus.CURRENT
+                                          ? ' bg-green-100 text-green-800'
+                                          : ' bg-yellow-100 text-yellow-800')
+                                      }
+                                    >
+                                      {/* @ts-expect-error */}
+                                      {LoanStatus[loan.status]}
+                                    </span>
+                                  </td>
 
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {loan.status === LoanStatus.CURRENT && (
-                                  <button
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                    onClick={() => {
-                                      handlePayOffLoan(loan.id)
-                                    }}
-                                  >
-                                    Pay Off Loan
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="px-6 py-4 bg-white text-center">
-                        <p className="text-gray-500">You have no loans</p>
-                      </div>
-                    )}
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {loan.status === LoanStatus.CURRENT && (
+                                      <button
+                                        className="text-indigo-600 hover:text-indigo-900"
+                                        onClick={() => {
+                                          handlePayOffLoan(loan.id)
+                                        }}
+                                      >
+                                        Pay Off Loan
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <LoadingRows cols={5} rows={1} />
+                            )}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="flex justify-center">
+                          <div className="w-full py-8 px-4">
+                            <div className="flex flex-col items-center text-center mb-4">
+                              <CreditCardIcon className="w-12 h-12 text-gray-400" />
+                              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                                You have no loans.
+                              </h3>
+                              <p className="mt-1 text-sm text-gray-500">
+                                Take out a loan to get started.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -141,77 +147,92 @@ function Loans() {
               </h2>
             </div>
 
-            <div className="flex flex-col">
-              <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    {availableLoans && availableLoans.loans.length > 0 ? (
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Amount
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Interest Rate
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Term in Days
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Collateral Required
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {availableLoans.loans.map((loan, i) => (
-                            <tr
-                              key={loan.type}
-                              className={
-                                i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                              }
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                {/* @ts-expect-error */}
-                                {LoanTier[loan.type]}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {formatNumberCommas(loan.amount)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {loan.rate}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {loan.termInDays}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {loan.collateralRequired ? 'Yes' : 'No'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button
-                                  className="text-indigo-600 hover:text-indigo-900"
-                                  onClick={() => {
-                                    handleTakeOutLoan(loan.type)
-                                  }}
-                                >
-                                  Take Out Loan
-                                </button>
-                              </td>
+            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+              <div className="flex flex-col">
+                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                      {availableLoans.isLoading ||
+                      (availableLoans.data &&
+                        availableLoans.data.loans.length > 0) ? (
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Amount
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Interest Rate
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Term in Days
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Collateral Required
+                              </th>
+                              <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="px-6 py-4 bg-white text-center">
-                        <p className="text-gray-500">No loans available</p>
-                      </div>
-                    )}
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {!availableLoans.isLoading ? (
+                              availableLoans.data.loans.map((loan, i) => (
+                                <tr
+                                  key={loan.type}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                    {/* @ts-expect-error */}
+                                    {LoanTier[loan.type]}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {formatNumberCommas(loan.amount)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {loan.rate}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {loan.termInDays}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {loan.collateralRequired ? 'Yes' : 'No'}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button
+                                      className="text-indigo-600 hover:text-indigo-900"
+                                      onClick={() => {
+                                        handleTakeOutLoan(loan.type)
+                                      }}
+                                    >
+                                      Take Out Loan
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <LoadingRows cols={6} rows={1} />
+                            )}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="flex justify-center">
+                          <div className="w-full py-8 px-4">
+                            <div className="flex flex-col items-center text-center mb-4">
+                              <CreditCardIcon className="w-12 h-12 text-gray-400" />
+                              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                                No loans available.
+                              </h3>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
