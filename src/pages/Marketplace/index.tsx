@@ -98,6 +98,10 @@ function Marketplace() {
     return goodTypes.data?.goods.find((g) => g.symbol === filteredGood)
   }, [filteredGood, goodTypes])
 
+  const isFirstShip = useMemo(() => {
+    return shipToBuy?.purchaseLocations && myShips.data?.ships.length === 0
+  }, [shipToBuy, myShips.data?.ships])
+
   const shipOptions =
     myShips.data?.ships
       .filter(
@@ -105,13 +109,9 @@ function Marketplace() {
           !!s.location &&
           (s.location === goodToBuy?.location ||
             s.location === goodToSell?.location ||
-            (shipToBuy?.purchaseLocations &&
-              (myShips.data?.ships.length === 0
-                ? // If there are no ships, return an array with a single item to allow buying the first ship
-                  [null]
-                : shipToBuy?.purchaseLocations
-                    .map((pl) => pl.location)
-                    .includes(s.location))))
+            shipToBuy?.purchaseLocations.find(
+              (pl) => pl.location === s.location
+            ))
       )
       ?.map((ship) => ({
         value: ship.id,
@@ -1064,13 +1064,15 @@ function Marketplace() {
                       {shipToBuy.maxCargo}
                     </span>
                   </div>
-                  {shipOptions.length > 0 ? (
+                  {isFirstShip || shipOptions.length > 0 ? (
                     <div className="mt-4">
                       {shipToBuy.purchaseLocations
                         .filter((pl) =>
-                          myShips.data?.ships.find(
-                            (s) => s.location === pl.location
-                          )
+                          shipOptions.length > 0
+                            ? myShips.data?.ships.find(
+                                (s) => s.location === pl.location
+                              )
+                            : true
                         )
                         .map((pl) => (
                           <div

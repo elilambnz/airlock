@@ -21,7 +21,12 @@ import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
 import { getShipName } from '../../utils/helpers'
-import { LocationTrait, LocationType, System } from '../../types/Location'
+import {
+  getIconForLocationType,
+  LocationTrait,
+  LocationType,
+  System,
+} from '../../types/Location'
 import {
   Chart as ChartJS,
   LinearScale,
@@ -149,25 +154,6 @@ function Systems() {
       queryClient.invalidateQueries('systemFlightPlans')
     } catch (error) {
       console.error(error)
-    }
-  }
-
-  const getIconForLocationType = (type: LocationType) => {
-    switch (type) {
-      case LocationType.PLANET:
-        return '🪐'
-      case LocationType.MOON:
-        return '🌑'
-      case LocationType.ASTEROID:
-        return '☄️'
-      case LocationType.GAS_GIANT:
-        return '💨'
-      case LocationType.WORMHOLE:
-        return '🕳️'
-      case LocationType.NEBULA:
-        return '🌌'
-      default:
-        return '🪐'
     }
   }
 

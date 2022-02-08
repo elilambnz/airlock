@@ -76,3 +76,22 @@ export enum System {
   'ZY1',
   'NA7',
 }
+
+export const getIconForLocationType = (type: LocationType) => {
+  switch (type) {
+    case LocationType.PLANET:
+      return '🪐'
+    case LocationType.MOON:
+      return '🌑'
+    case LocationType.ASTEROID:
+      return '☄️'
+    case LocationType.GAS_GIANT:
+      return '💨'
+    case LocationType.WORMHOLE:
+      return '🕳️'
+    case LocationType.NEBULA:
+      return '🌌'
+    default:
+      return '🪐'
+  }
+}

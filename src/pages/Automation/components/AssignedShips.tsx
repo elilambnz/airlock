@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react'
 import { TradeRoute } from '../../../types/Automation'
+import { getShipName } from '../../../utils/helpers'
 
 interface AssignedShipsProps {
   tradeRoute: TradeRoute
@@ -10,7 +11,7 @@ const AssignedShips = (props: AssignedShipsProps) => {
   const { tradeRoute, setTradeRoute } = props
 
   return (
-    <div className="flow-root p-6 max-w-xl">
+    <div className="flow-root p-6">
       {tradeRoute.assignedShips.length > 0 ? (
         tradeRoute.assignedShips.map((ship, i) => (
           <div key={i}>
@@ -32,7 +33,7 @@ const AssignedShips = (props: AssignedShipsProps) => {
                   </svg>
                 </span>
                 <div className="ml-2">
-                  <p className="text-sm text-gray-900">{ship}</p>
+                  <p className="text-sm text-gray-900">{getShipName(ship)}</p>
                 </div>
               </div>
               {setTradeRoute && (
@@ -57,7 +58,18 @@ const AssignedShips = (props: AssignedShipsProps) => {
           </div>
         ))
       ) : (
-        <p className="text-sm text-gray-500">No ships assigned.</p>
+        <div className="flex justify-center">
+          <div className="w-full py-4">
+            <div className="flex flex-col items-center text-center mb-4">
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No ships assigned.
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Select ships to assign to this trade route.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

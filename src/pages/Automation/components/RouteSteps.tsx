@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
+import { GoodType } from '../../../types/Order'
 
 interface RouteStepsProps {
   tradeRoute: TradeRoute
@@ -78,7 +79,7 @@ const RouteSteps = (props: RouteStepsProps) => {
   }
 
   return (
-    <div className="flow-root p-6 max-w-xl">
+    <div className="flow-root p-6">
       {tradeRoute.events.length > 0 ? (
         <ul className="-mb-8">
           {tradeRoute.events.map((event, i) => (
@@ -111,7 +112,8 @@ const RouteSteps = (props: RouteStepsProps) => {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {event.good?.good}
+                            {/* @ts-expect-error */}
+                            {GoodType[event.good?.good]}
                           </span>
                         </p>
                       ) : event.type === RouteEventType.SELL ? (
@@ -122,7 +124,8 @@ const RouteSteps = (props: RouteStepsProps) => {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {event.good?.good}
+                            {/* @ts-expect-error */}
+                            {GoodType[event.good?.good]}
                           </span>
                         </p>
                       ) : event.type === RouteEventType.TRAVEL ? (
@@ -178,9 +181,18 @@ const RouteSteps = (props: RouteStepsProps) => {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-gray-500">
-          No steps defined. Start by adding either a trade or a travel step.
-        </p>
+        <div className="flex justify-center">
+          <div className="w-full py-4">
+            <div className="flex flex-col items-center text-center mb-4">
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No steps have been added to this route.
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Start by adding either a trade or travel step.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

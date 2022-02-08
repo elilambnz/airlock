@@ -22,7 +22,7 @@ import { sleep } from '../utils/helpers'
 import { purchase, refuel, sell } from '../utils/mechanics'
 
 import { proxy, Remote, wrap } from 'comlink'
-import { useQuery, useQueryClient } from 'react-query'
+import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
 
 export enum AutomationStatus {
   Running = 'Running',
@@ -32,7 +32,7 @@ export enum AutomationStatus {
 export const AutomationContext = createContext({
   status: AutomationStatus.Stopped,
   runTime: 0,
-  tradeRoutes: [] as TradeRoute[],
+  tradeRoutes: {} as UseQueryResult<TradeRoute[], unknown>,
   tradeRouteLog: {} as { [id: string]: string[] },
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
@@ -44,21 +44,15 @@ export const AutomationContext = createContext({
 export const AutomationProvider = (props: any) => {
   const [status, setStatus] = useState(AutomationStatus.Stopped)
   const [runTime, setRunTime] = useState(0)
-  const [tradeRoutes, setTradeRoutes] = useState<TradeRoute[]>([])
   const [tradeRouteLog, setTradeRouteLog] =
     useState<{ [id: string]: string[] }>()
 
   const { apiToken } = useAuth()
   const queryClient = useQueryClient()
 
-  useEffect(() => {
-    if (apiToken) {
-      const init = async () => {
-        setTradeRoutes(await getTradingRoutes())
-      }
-      init()
-    }
-  }, [apiToken])
+  const tradeRoutes = useQuery('tradeRoutes', getTradingRoutes, {
+    enabled: !!apiToken,
+  })
 
   useEffect(() => {
     if (status === AutomationStatus.Running) {
@@ -107,10 +101,10 @@ export const AutomationProvider = (props: any) => {
 
   // Start automation tasks
   useEffect(() => {
-    if (tradeRoutes.length > 0) {
+    if (tradeRoutes.data && tradeRoutes.data.length > 0) {
       start()
-      console.info(`Automation: Trade routes: ${tradeRoutes.length}`)
-      tradeRoutes.forEach((tradeRoute, i) => {
+      console.info(`Automation: Trade routes: ${tradeRoutes.data.length}`)
+      tradeRoutes.data.forEach((tradeRoute, i) => {
         addTradeRouteLog(
           i,
           tradeRoute.id,
@@ -338,8 +332,9 @@ export const AutomationProvider = (props: any) => {
           'Trade route completed. Starting again.'
         )
         // Reset startFromStep
-        setTradeRoutes((prev) =>
-          prev.map((r) =>
+        queryClient.setQueryData(
+          'tradeRoutes',
+          tradeRoutes.data?.map((r) =>
             r.id === tradeRoute.id
               ? {
                   ...r,
@@ -351,8 +346,9 @@ export const AutomationProvider = (props: any) => {
         automateTradeRoute(tradeRoute, taskIndex)
       } catch (error: any) {
         console.error('EXIT LOOP', error)
-        setTradeRoutes((prev) =>
-          prev.map((r) =>
+        queryClient.setQueryData(
+          'tradeRoutes',
+          tradeRoutes.data?.map((r) =>
             r.id === tradeRoute.id
               ? {
                   ...r,
@@ -396,7 +392,7 @@ export const AutomationProvider = (props: any) => {
       console.log('addTradeRoute', response)
 
       const _version = response._version
-      setTradeRoutes([...tradeRoutes, { ...tradeRoute, _version }])
+      queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error creating trade route:', error)
     }
@@ -406,8 +402,7 @@ export const AutomationProvider = (props: any) => {
     try {
       const response = await removeTradingRoute(id, version)
       console.log('removeTradeRoute', response)
-
-      setTradeRoutes((prev) => prev.filter((r) => r.id !== id))
+      queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error removing trade route:', error)
     }
@@ -416,8 +411,16 @@ export const AutomationProvider = (props: any) => {
   const updateTradeRouteStatus = (id: string, status: TradeRouteStatus) => {
     console.log('updateTradeRouteStatus', id, status)
 
-    setTradeRoutes((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status } : r))
+    queryClient.setQueryData(
+      'tradeRoutes',
+      tradeRoutes.data?.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status,
+            }
+          : r
+      )
     )
   }
 
@@ -428,8 +431,9 @@ export const AutomationProvider = (props: any) => {
   const resumeTradeRoute = async (id: string, step?: number) => {
     console.log('resumeTradeRoute', id, step)
 
-    setTradeRoutes((prev) =>
-      prev.map((r) =>
+    queryClient.setQueryData(
+      'tradeRoutes',
+      tradeRoutes.data?.map((r) =>
         r.id === id
           ? {
               ...r,
