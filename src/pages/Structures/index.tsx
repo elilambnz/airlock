@@ -39,6 +39,7 @@ import {
   abbreviateNumber,
   formatNumberCommas,
   getErrorMessage,
+  getShipName,
 } from '../../utils/helpers'
 
 export default function Structures() {
@@ -169,7 +170,9 @@ export default function Structures() {
         )
         push({
           title: 'Goods deposited',
-          message: `${quantity} ${good} deposited to ${
+          message: `${quantity} ${
+            GoodType[good as unknown as keyof typeof GoodType]
+          } deposited to ${
             StructureCategory[
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
@@ -209,7 +212,9 @@ export default function Structures() {
         )
         push({
           title: 'Goods withdrawn',
-          message: `${quantity} ${good} withdrawn from ${
+          message: `${quantity} ${
+            GoodType[good as unknown as keyof typeof GoodType]
+          } withdrawn from ${
             StructureCategory[
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
@@ -249,7 +254,9 @@ export default function Structures() {
         )
         push({
           title: 'Goods deposited',
-          message: `${quantity} ${good} deposited to ${
+          message: `${quantity} ${
+            GoodType[good as unknown as keyof typeof GoodType]
+          } deposited to ${
             StructureCategory[
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
@@ -308,10 +315,29 @@ export default function Structures() {
       }) ?? []
 
   const shipOptions =
-    myShips.data?.ships.map((s) => ({
-      value: s.id,
-      label: `${s.type} (${s.maxCargo - s.spaceAvailable}/${s.maxCargo})`,
-    })) ?? []
+    myShips.data?.ships
+      .filter(
+        (s) =>
+          s.location &&
+          (s.location === ownStructureToDeposit?.location ||
+            s.location === ownStructureToWithdraw?.location ||
+            s.location === structureToDeposit?.location)
+      )
+      ?.map((ship) => ({
+        value: ship.id,
+        label: `${getShipName(ship.id)}
+        `,
+        tags: [
+          ship.type,
+          ship.location,
+          `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+        ],
+        icon: (
+          <div className="flex items-center justify-center w-5 h-5">
+            <span className="text-xs">🚀</span>
+          </div>
+        ),
+      })) ?? []
 
   return (
     <>
@@ -839,7 +865,7 @@ export default function Structures() {
                   {shipOptions.length > 0 ? (
                     <>
                       <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                        <div className="sm:col-span-3">
+                        <div className="sm:col-span-4">
                           <Select
                             label="From Ship"
                             options={shipOptions}
@@ -867,7 +893,10 @@ export default function Structures() {
                             label="Select Good"
                             options={
                               ownStructureToDeposit.consumes.map((g) => ({
-                                label: g,
+                                label:
+                                  GoodType[
+                                    g as unknown as keyof typeof GoodType
+                                  ],
                                 value: g,
                               })) ?? []
                             }
@@ -881,9 +910,7 @@ export default function Structures() {
                                   ...prev,
                                   deposit: {
                                     ...prev.deposit,
-                                    good: GoodType[
-                                      value as keyof typeof GoodType
-                                    ],
+                                    good: value as GoodType,
                                   },
                                 }
                               })
@@ -1079,7 +1106,10 @@ export default function Structures() {
                             label="Select Good"
                             options={
                               ownStructureToWithdraw.produces.map((g) => ({
-                                label: g,
+                                label:
+                                  GoodType[
+                                    g as unknown as keyof typeof GoodType
+                                  ],
                                 value: g,
                               })) ?? []
                             }
@@ -1093,9 +1123,7 @@ export default function Structures() {
                                   ...prev,
                                   withdraw: {
                                     ...prev.withdraw,
-                                    good: GoodType[
-                                      value as keyof typeof GoodType
-                                    ],
+                                    good: value as GoodType,
                                   },
                                 }
                               })
@@ -1299,7 +1327,10 @@ export default function Structures() {
                             label="Select Good"
                             options={
                               structureToDeposit.consumes.map((g) => ({
-                                label: g,
+                                label:
+                                  GoodType[
+                                    g as unknown as keyof typeof GoodType
+                                  ],
                                 value: g,
                               })) ?? []
                             }
@@ -1313,9 +1344,7 @@ export default function Structures() {
                                   ...prev,
                                   deposit: {
                                     ...prev.deposit,
-                                    good: GoodType[
-                                      value as keyof typeof GoodType
-                                    ],
+                                    good: value as GoodType,
                                   },
                                 }
                               })

@@ -133,8 +133,14 @@ export default function Systems() {
     {
       onSuccess: (data, variables) => {
         setNewFlightPlan((prev) => ({ ...prev, shipId: undefined }))
-        queryClient.invalidateQueries('systemFlightPlans')
-        queryClient.invalidateQueries('systemDockedShips')
+        queryClient.invalidateQueries([
+          'systemFlightPlans',
+          params.systemSymbol,
+        ])
+        queryClient.invalidateQueries([
+          'systemDockedShips',
+          params.systemSymbol,
+        ])
         const { shipId, destination } = variables
         push({
           title: 'Flight plan created',
@@ -173,8 +179,14 @@ export default function Systems() {
     ({ shipId }: { shipId: string }) => initiateWarpJump(shipId),
     {
       onSuccess: (data) => {
-        queryClient.invalidateQueries('systemFlightPlans')
-        queryClient.invalidateQueries('systemDockedShips')
+        queryClient.invalidateQueries([
+          'systemFlightPlans',
+          params.systemSymbol,
+        ])
+        queryClient.invalidateQueries([
+          'systemDockedShips',
+          params.systemSymbol,
+        ])
         push({
           title: 'Warp jump initiated',
           message: `Ship ${getShipName(
@@ -322,7 +334,7 @@ export default function Systems() {
                       Locations
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      {systemLocations.data?.locations.length}
+                      {systemLocations.data?.locations.length ?? 0}
                     </dd>
                   </div>
                 </div>
@@ -790,26 +802,28 @@ export default function Systems() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {!systemDockedShips.isLoading ? (
-                            myDockedShips.map((ship, i) => (
-                              <tr
-                                key={ship.id}
-                                className={
-                                  i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                }
-                              >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                  {getShipName(ship.id)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                  {ship.type}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                  {ship.flightPlanId
-                                    ? 'In transit'
-                                    : ship.location}
-                                </td>
-                              </tr>
-                            ))
+                            myDockedShips
+                              .sort((a, b) => a.x! - b.x! || a.y! - b.y!)
+                              .map((ship, i) => (
+                                <tr
+                                  key={ship.id}
+                                  className={
+                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                  }
+                                >
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                    {getShipName(ship.id)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {ship.type}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    {ship.flightPlanId
+                                      ? 'In transit'
+                                      : ship.location}
+                                  </td>
+                                </tr>
+                              ))
                           ) : (
                             <LoadingRows cols={3} rows={3} />
                           )}

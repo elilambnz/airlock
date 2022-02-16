@@ -160,9 +160,9 @@ export default function Marketplace() {
         const { ship, symbol, quantity } = variables
         push({
           title: 'Successfully purchased goods',
-          message: `${getShipName(
-            ship.id
-          )} has purchased ${quantity} ${symbol}`,
+          message: `${getShipName(ship.id)} has purchased ${quantity} ${
+            GoodType[symbol as unknown as keyof typeof GoodType]
+          }`,
           type: NotificationType.Success,
         })
       },
@@ -193,7 +193,9 @@ export default function Marketplace() {
         const { ship, symbol, quantity } = variables
         push({
           title: 'Successfully sold goods',
-          message: `${getShipName(ship.id)} has sold ${quantity} ${symbol}`,
+          message: `${getShipName(ship.id)} has sold ${quantity} ${
+            GoodType[symbol as unknown as keyof typeof GoodType]
+          }`,
           type: NotificationType.Success,
         })
       },
