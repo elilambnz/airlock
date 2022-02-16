@@ -3,7 +3,7 @@ interface LoadingRowsProps {
   rows?: number
 }
 
-const LoadingRows = (props: LoadingRowsProps) => {
+export default function LoadingRows(props: LoadingRowsProps) {
   const { cols, rows } = props
 
   return (
@@ -27,5 +27,3 @@ const LoadingRows = (props: LoadingRowsProps) => {
     </>
   )
 }
-
-export default LoadingRows

@@ -3,15 +3,16 @@ import { GoodType } from '../types/Order'
 import { Ship } from '../types/Ship'
 
 export const refuel = async (ship: Ship, fuelRequired: number) => {
+  let lastResult
   while (fuelRequired > 0) {
-    await createPurchaseOrder(
+    lastResult = await createPurchaseOrder(
       ship.id,
       GoodType.FUEL,
       Math.min(fuelRequired, ship.loadingSpeed)
     )
     fuelRequired -= ship.loadingSpeed
   }
-  return
+  return lastResult
 }
 
 export const purchase = async (
@@ -19,15 +20,16 @@ export const purchase = async (
   goodType: GoodType,
   quantity: number
 ) => {
+  let lastResult
   while (quantity > 0) {
-    await createPurchaseOrder(
+    lastResult = await createPurchaseOrder(
       ship.id,
       goodType,
       Math.min(quantity, ship.loadingSpeed)
     )
     quantity -= ship.loadingSpeed
   }
-  return
+  return lastResult
 }
 
 export const sell = async (
@@ -35,12 +37,14 @@ export const sell = async (
   goodType: GoodType,
   quantity: number
 ) => {
+  let lastResult
   while (quantity > 0) {
-    await createSellOrder(
+    lastResult = await createSellOrder(
       ship.id,
       goodType,
       Math.min(quantity, ship.loadingSpeed)
     )
     quantity -= ship.loadingSpeed
   }
+  return lastResult
 }

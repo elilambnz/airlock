@@ -41,7 +41,7 @@ export const AutomationContext = createContext({
   state: 0,
 })
 
-export const AutomationProvider = (props: any) => {
+export default function AutomationProvider(props: any) {
   const [status, setStatus] = useState(AutomationStatus.Stopped)
   const [runTime, setRunTime] = useState(0)
   const [tradeRouteLog, setTradeRouteLog] =

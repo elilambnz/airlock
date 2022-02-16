@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   createNewFlightPlan,
@@ -20,7 +20,7 @@ import Alert from '../../components/Alert'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
-import { getShipName } from '../../utils/helpers'
+import { getErrorMessage, getShipName } from '../../utils/helpers'
 import {
   getIconForLocationType,
   LocationTrait,
@@ -37,16 +37,23 @@ import {
 } from 'chart.js'
 import { Scatter } from 'react-chartjs-2'
 import { refuel } from '../../utils/mechanics'
-import { useQuery, useQueryClient } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { PaperAirplaneIcon } from '@heroicons/react/solid'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../providers/NotificationProvider'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
-function Systems() {
+export default function Systems() {
   const [newFlightPlan, setNewFlightPlan] =
     useState<{ shipId?: string; destination?: string; autoRefuel?: boolean }>()
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
   const [showMap, setShowMap] = useState(false)
+
+  const { push } = useContext(NotificationContext)
 
   const navigate = useNavigate()
   const params = useParams()
@@ -113,49 +120,83 @@ function Systems() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.systemSymbol])
 
-  const handleCreateFlightPlan = async (
-    shipId: string,
-    destination: string,
-    autoRefuel?: boolean
-  ) => {
-    try {
-      const result = await createNewFlightPlan(shipId, destination)
-      console.log(result)
-      setNewFlightPlan((prev) => ({ ...prev, shipId: undefined }))
-      if (!system.data) {
-        throw new Error('No current system')
-      }
-      queryClient.invalidateQueries('systemFlightPlans')
-    } catch (error: any) {
-      if (error.code === 3001 && autoRefuel) {
-        // Insufficient fuel, auto refuel
-        const ship = myShips.data?.ships.find((s) => s.id === shipId)
-        if (!ship) {
-          throw new Error('Ship not found')
+  const handleCreateFlightPlan = useMutation(
+    ({
+      shipId,
+      destination,
+      autoRefuel,
+    }: {
+      shipId: string
+      destination: string
+      autoRefuel?: boolean
+    }) => createNewFlightPlan(shipId, destination),
+    {
+      onSuccess: (data, variables) => {
+        setNewFlightPlan((prev) => ({ ...prev, shipId: undefined }))
+        queryClient.invalidateQueries('systemFlightPlans')
+        queryClient.invalidateQueries('systemDockedShips')
+        const { shipId, destination } = variables
+        push({
+          title: 'Flight plan created',
+          message: `Ship ${getShipName(
+            shipId
+          )} is now in transit to ${destination} and will arrive ${moment(
+            data.flightPlan.arrivesAt
+          ).fromNow()}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: async (error: any, variables) => {
+        const { shipId, autoRefuel } = variables
+        if (error.code === 3001 && autoRefuel) {
+          // Insufficient fuel, auto refuel
+          const ship = myShips.data?.ships.find((s) => s.id === shipId)
+          if (!ship) {
+            throw new Error('Ship not found')
+          }
+          await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
+          queryClient.invalidateQueries('user')
+          // Retry create new flight plan
+          handleCreateFlightPlan.mutate(variables)
+        } else {
+          push({
+            title: 'Error creating flight plan',
+            message: getErrorMessage(error),
+            type: NotificationType.Error,
+          })
         }
-        await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
-        queryClient.invalidateQueries('user')
-        // Retry create new flight plan
-        handleCreateFlightPlan(shipId, destination)
-      } else {
-        console.error(error)
-      }
+      },
     }
-  }
+  )
 
-  const handleInitiateWarpJump = async (shipId: string) => {
-    try {
-      const result = await initiateWarpJump(shipId)
-      console.log(result)
-      setNewWarpJump(() => ({ shipId: undefined }))
-      if (!system.data?.system) {
-        throw new Error('No current system')
-      }
-      queryClient.invalidateQueries('systemFlightPlans')
-    } catch (error) {
-      console.error(error)
+  const handleInitiateWarpJump = useMutation(
+    ({ shipId }: { shipId: string }) => initiateWarpJump(shipId),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('systemFlightPlans')
+        queryClient.invalidateQueries('systemDockedShips')
+        push({
+          title: 'Warp jump initiated',
+          message: `Ship ${getShipName(
+            data.flightPlan.shipId
+          )} is now in transit to ${
+            data.flightPlan.destination
+          } and will arrive ${moment(data.flightPlan.arrivesAt).fromNow()}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error initiating warp jump',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
+      onSettled: () => {
+        setNewWarpJump(undefined)
+      },
     }
-  }
+  )
 
   const shipOptions =
     myShips.data?.ships
@@ -218,24 +259,13 @@ function Systems() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            {system.isError ||
-              systemLocations.isError ||
-              systemFlightPlans.isError ||
-              (systemDockedShips.isError && (
-                <div className="mb-4">
-                  <Alert
-                    message={JSON.stringify(
-                      system.error ||
-                        systemLocations.error ||
-                        systemFlightPlans.error ||
-                        systemDockedShips.error
-                    )}
-                  />
-                </div>
-              ))}
-
             <div className="md:flex md:items-center md:justify-between md:space-x-5">
               <div className="flex items-start space-x-5">
                 <div className="flex-shrink-0">
@@ -535,32 +565,46 @@ function Systems() {
                           <button
                             type="submit"
                             className={
-                              'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
                               (!newFlightPlan?.shipId ||
-                              !newFlightPlan.destination
+                              !newFlightPlan.destination ||
+                              handleCreateFlightPlan.isLoading
                                 ? ' opacity-50 cursor-not-allowed'
                                 : '')
                             }
                             disabled={
                               !newFlightPlan?.shipId ||
-                              !newFlightPlan.destination
+                              !newFlightPlan.destination ||
+                              handleCreateFlightPlan.isLoading
                             }
                             onClick={(e) => {
                               e.preventDefault()
                               if (
                                 !newFlightPlan?.shipId ||
-                                !newFlightPlan.destination
+                                !newFlightPlan.destination ||
+                                handleCreateFlightPlan.isLoading
                               ) {
                                 return
                               }
-                              handleCreateFlightPlan(
-                                newFlightPlan.shipId,
-                                newFlightPlan.destination,
-                                newFlightPlan.autoRefuel
-                              )
+                              const { shipId, destination, autoRefuel } =
+                                newFlightPlan
+                              handleCreateFlightPlan.mutate({
+                                shipId,
+                                destination,
+                                autoRefuel,
+                              })
                             }}
                           >
-                            Create
+                            {!handleCreateFlightPlan.isLoading ? (
+                              'Create Flight Plan'
+                            ) : (
+                              <>
+                                Creating
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -829,16 +873,33 @@ function Systems() {
                         <div className="sm:col-span-2 pt-6">
                           <button
                             type="submit"
-                            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                            className={
+                              'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500' +
+                              (!newWarpJump?.shipId
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={!newWarpJump?.shipId}
                             onClick={(e) => {
                               e.preventDefault()
                               if (!newWarpJump?.shipId) {
                                 return
                               }
-                              handleInitiateWarpJump(newWarpJump.shipId)
+                              handleInitiateWarpJump.mutate({
+                                shipId: newWarpJump.shipId,
+                              })
                             }}
                           >
-                            Initiate Jump
+                            {!handleInitiateWarpJump.isLoading ? (
+                              'Initiate Jump'
+                            ) : (
+                              <>
+                                Initiating
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -853,5 +914,3 @@ function Systems() {
     </>
   )
 }
-
-export default Systems

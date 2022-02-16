@@ -9,6 +9,7 @@ import {
 import './App.css'
 
 import Navbar from './components/Navbar'
+import Notifications from './components/Notifications'
 
 import Home from './pages/Home'
 import Account from './pages/Account'
@@ -21,11 +22,13 @@ import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
 import Plausible from 'plausible-tracker'
-import { AutomationProvider } from './providers/AutomationProvider'
 import AuthProvider from './providers/AuthProvider'
+import AutomationProvider from './providers/AutomationProvider'
+import NotificationProvider from './providers/NotificationProvider'
 import { useAuth } from './hooks/useAuth'
 
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
@@ -39,7 +42,7 @@ enableAutoOutboundTracking()
 
 const queryClient = new QueryClient()
 
-function App() {
+export default function App() {
   const routes = [
     {
       path: '/',
@@ -111,20 +114,23 @@ function App() {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider trackEvent={trackEvent}>
-          <AutomationProvider>
-            <Routes>
-              <Route element={<AppLayout />}>
-                {routes.map(({ path, element }) => (
-                  <Route key={path} path={path} element={element} />
-                ))}
-              </Route>
-              <Route element={<AuthLayout />}>
-                <Route path="login" element={<Login />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AutomationProvider>
+          <NotificationProvider>
+            <AutomationProvider>
+              <Routes>
+                <Route element={<AppLayout />}>
+                  {routes.map(({ path, element }) => (
+                    <Route key={path} path={path} element={element} />
+                  ))}
+                </Route>
+                <Route element={<AuthLayout />}>
+                  <Route path="login" element={<Login />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </AutomationProvider>
+          </NotificationProvider>
         </AuthProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </BrowserRouter>
   )
@@ -135,6 +141,7 @@ function AppLayout() {
     <div className="min-h-screen">
       <Navbar />
       <Outlet />
+      <Notifications />
     </div>
   )
 }
@@ -161,5 +168,3 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
   return children
 }
-
-export default App

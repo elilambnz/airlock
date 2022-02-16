@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import {
   jettisonShipCargo,
@@ -6,15 +6,19 @@ import {
   transferShipCargo,
 } from '../../../api/routes/my'
 import Select from '../../../components/Select'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../../providers/NotificationProvider'
 import { GoodType } from '../../../types/Order'
 import { Ship, ShipCargo } from '../../../types/Ship'
-import { getShipName } from '../../../utils/helpers'
+import { getErrorMessage, getShipName } from '../../../utils/helpers'
 
 interface ManageCargoProps {
   ship?: Ship
 }
 
-const ManageCargo = (props: ManageCargoProps) => {
+export default function ManageCargo(props: ManageCargoProps) {
   const { ship } = props
 
   const [cargoToTransfer, setCargoToTransfer] = useState<
@@ -28,10 +32,12 @@ const ManageCargo = (props: ManageCargoProps) => {
     ShipCargo & { shipId?: string; maxQuantity: number }
   >()
 
+  const { push } = useContext(NotificationContext)
+
   const queryClient = useQueryClient()
   const myShips = useQuery('myShips', listMyShips)
 
-  const transferShipCargoMutation = useMutation(
+  const handleTransferCargo = useMutation(
     ({
       id,
       toShipId,
@@ -44,45 +50,49 @@ const ManageCargo = (props: ManageCargoProps) => {
       quantity: number
     }) => transferShipCargo(id, toShipId, good, quantity),
     {
-      onSuccess: () => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries('myShips')
+        push({
+          title: 'Successfully transferred cargo',
+          message: `Ship ${getShipName(data.toShip.id)} now has ${
+            data.toShip.maxCargo - data.toShip.spaceAvailable
+          }/${data.toShip.maxCargo} cargo items`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error transferring cargo',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
       },
     }
   )
 
-  const handleTransferCargo = async (
-    cargoToTransfer: ShipCargo & { shipId?: string; toShipId?: string }
-  ) => {
-    const { shipId, toShipId, good, quantity } = cargoToTransfer
-    if (!shipId || !toShipId) {
-      return
+  const handleJettisonCargo = useMutation(
+    ({ shipId, good, quantity }: ShipCargo & { shipId: string }) =>
+      jettisonShipCargo(shipId, good, quantity),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('myShips')
+        push({
+          title: 'Successfully jettisoned cargo',
+          message: `Ship ${getShipName(data.shipId)} now has ${
+            data.quantityRemaining
+          } ${data.good} remaining`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error jettisoning cargo',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-    try {
-      await transferShipCargoMutation.mutateAsync({
-        id: shipId,
-        toShipId,
-        good,
-        quantity,
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const handleJettisonCargo = async (
-    cargoToJettison: ShipCargo & { shipId?: string }
-  ) => {
-    const { shipId, good, quantity } = cargoToJettison
-    if (!shipId) {
-      return
-    }
-    try {
-      const result = await jettisonShipCargo(shipId, good, quantity)
-      console.log(result)
-    } catch (error) {
-      console.error('Error jettisoning cargo', error)
-    }
-  }
+  )
 
   const shipOptions =
     myShips.data?.ships
@@ -276,7 +286,17 @@ const ManageCargo = (props: ManageCargoProps) => {
                       }
                       onClick={(e) => {
                         e.preventDefault()
-                        handleTransferCargo(cargoToTransfer)
+                        const { shipId, toShipId, good, quantity } =
+                          cargoToTransfer
+                        if (!shipId || !toShipId) {
+                          return
+                        }
+                        handleTransferCargo.mutate({
+                          id: shipId,
+                          toShipId,
+                          good,
+                          quantity,
+                        })
                       }}
                     >
                       Transfer
@@ -353,7 +373,11 @@ const ManageCargo = (props: ManageCargoProps) => {
                     disabled={cargoToJettison.quantity === 0}
                     onClick={(e) => {
                       e.preventDefault()
-                      handleJettisonCargo(cargoToJettison)
+                      const { shipId } = cargoToJettison
+                      if (!shipId) {
+                        return
+                      }
+                      handleJettisonCargo.mutate({ ...cargoToJettison, shipId })
                     }}
                   >
                     Jettison
@@ -367,5 +391,3 @@ const ManageCargo = (props: ManageCargoProps) => {
     </div>
   )
 }
-
-export default ManageCargo

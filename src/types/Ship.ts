@@ -58,7 +58,8 @@ export type ShipJettisonCargoResponse = {
 }
 
 export type ScrapShipResponse = {
-  status: string
+  salePrice: number
+  success: string
 }
 
 export type TransferShipCargoResponse = {

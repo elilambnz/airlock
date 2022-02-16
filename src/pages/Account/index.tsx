@@ -1,33 +1,55 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listMyShips, scrapShip, getMyAccount } from '../../api/routes/my'
 import '../../App.css'
 import AlertModal from '../../components/Modal/AlertModal'
-import { abbreviateNumber, getShipName } from '../../utils/helpers'
+import {
+  abbreviateNumber,
+  getErrorMessage,
+  getShipName,
+} from '../../utils/helpers'
 import ManageCargo from './components/ManageCargo'
 import Modal from '../../components/Modal'
 import Tooltip from '../../components/Tooltip'
 import { GoodType } from '../../types/Order'
-import { useQuery } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { CubeIcon, GlobeIcon } from '@heroicons/react/outline'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../providers/NotificationProvider'
 
-function Account() {
+export default function Account() {
   const [shipToManageCargo, setShipToManageCargo] = useState<string>()
   const [shipToScrap, setShipToScrap] = useState<string>()
 
+  const { push } = useContext(NotificationContext)
+
+  const queryClient = useQueryClient()
   const user = useQuery('user', getMyAccount)
   const myShips = useQuery('myShips', listMyShips)
 
-  const handleScrapShip = async (shipId: string) => {
-    try {
-      const result = await scrapShip(shipId)
-      console.log(result)
-    } catch (error) {
-      console.error('Error scrapping ship', error)
-    } finally {
+  const handleScrapShip = useMutation((shipId: string) => scrapShip(shipId), {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('user')
+      queryClient.invalidateQueries('myShips')
+      push({
+        title: 'Ship scrapped successfully',
+        message: data.success,
+        type: NotificationType.Success,
+      })
+    },
+    onError: (error: any) => {
+      push({
+        title: 'Error scrapping ship',
+        message: getErrorMessage(error),
+        type: NotificationType.Error,
+      })
+    },
+    onSettled: () => {
       setShipToScrap(undefined)
-    }
-  }
+    },
+  })
 
   if (!user.data) {
     return null
@@ -41,13 +63,52 @@ function Account() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">
                 {user.data.user.username}
               </h3>
               <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Credits
+                    </dt>
+                    <dd className="flex items-baseline mt-1 text-3xl font-semibold text-gray-900">
+                      {abbreviateNumber(user.data.user.credits)}
+                    </dd>
+                  </div>
+                  <div className="bg-gray-50 px-4 py-4 sm:px-6">
+                    <div className="text-sm">
+                      <Link
+                        to="/loans"
+                        className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
+                      >
+                        View loans
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="ml-1 h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
                     <dt className="text-sm font-medium text-gray-500 truncate">
@@ -98,40 +159,6 @@ function Account() {
                         className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
                       >
                         View structures
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="ml-1 h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 7l5 5m0 0l-5 5m5-5H6"
-                          />
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Credits
-                    </dt>
-                    <dd className="flex items-baseline mt-1 text-3xl font-semibold text-gray-900">
-                      {abbreviateNumber(user.data.user.credits)}
-                    </dd>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                    <div className="text-sm">
-                      <Link
-                        to="/loans"
-                        className="flex items-center font-medium text-indigo-600 hover:text-indigo-500"
-                      >
-                        View loans
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="ml-1 h-5 w-5"
@@ -499,10 +526,8 @@ function Account() {
         actionText="Scrap"
         closeText="Cancel"
         onClose={() => setShipToScrap(undefined)}
-        onAction={() => shipToScrap && handleScrapShip(shipToScrap)}
+        onAction={() => shipToScrap && handleScrapShip.mutate(shipToScrap)}
       />
     </>
   )
 }
-
-export default Account

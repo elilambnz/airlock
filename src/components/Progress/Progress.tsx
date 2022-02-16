@@ -2,7 +2,7 @@ interface ProgressProps {
   percent: number
 }
 
-const Progress = (props: ProgressProps) => {
+export default function Progress(props: ProgressProps) {
   const { percent } = props
 
   return (
@@ -17,5 +17,3 @@ const Progress = (props: ProgressProps) => {
     </div>
   )
 }
-
-export default Progress

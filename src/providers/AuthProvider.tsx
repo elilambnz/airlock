@@ -15,7 +15,7 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-function AuthProvider(props: AuthProviderProps) {
+export default function AuthProvider(props: AuthProviderProps) {
   const { trackEvent, children } = props
 
   const [apiToken, setApiToken] = useState<string>()
@@ -86,5 +86,3 @@ function AuthProvider(props: AuthProviderProps) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-
-export default AuthProvider

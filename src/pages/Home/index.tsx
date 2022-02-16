@@ -10,7 +10,7 @@ import {
   formatNumberCommas,
 } from '../../utils/helpers'
 
-function Home() {
+export default function Home() {
   const gameStatus = useQuery('gameStatus', getGameStatus)
   const leaderboardNetWorth = useQuery(
     'leaderboardNetWorth',
@@ -39,17 +39,26 @@ function Home() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div className="lg:text-center">
               <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">
                 Status
               </h2>
-              <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                {!gameStatus.isLoading
-                  ? capitaliseFirstLetter(gameStatus.data?.status ?? '')
-                  : 'Loading...'}
-              </p>
+              {!gameStatus.isLoading ? (
+                <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                  {capitaliseFirstLetter(gameStatus.data?.status ?? '')}
+                </p>
+              ) : (
+                <div className="flex justify-center animate-pulse">
+                  <div className="mt-2 w-72 bg-gray-300 h-10 rounded-md"></div>
+                </div>
+              )}
             </div>
 
             <div className="bg-white shadow overflow-hidden sm:rounded-lg my-6">
@@ -154,5 +163,3 @@ function Home() {
     </>
   )
 }
-
-export default Home

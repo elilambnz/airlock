@@ -1,6 +1,6 @@
 import '../../App.css'
 
-const NotFound = () => {
+export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -10,5 +10,3 @@ const NotFound = () => {
     </div>
   )
 }
-
-export default NotFound

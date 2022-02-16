@@ -7,7 +7,7 @@ interface AssignedShipsProps {
   setTradeRoute?: Dispatch<SetStateAction<TradeRoute>>
 }
 
-const AssignedShips = (props: AssignedShipsProps) => {
+export default function AssignedShips(props: AssignedShipsProps) {
   const { tradeRoute, setTradeRoute } = props
 
   return (
@@ -74,5 +74,3 @@ const AssignedShips = (props: AssignedShipsProps) => {
     </div>
   )
 }
-
-export default AssignedShips

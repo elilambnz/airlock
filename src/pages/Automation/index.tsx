@@ -30,7 +30,7 @@ import { useQueries, useQuery } from 'react-query'
 import moment from 'moment'
 import 'moment-duration-format'
 
-function Automation() {
+export default function Automation() {
   const [showInfo, setShowInfo] = useState(false)
   const [marketplaceLocation, setMarketplaceLocation] = useState<string>()
   const [currentSystem, setCurrentSystem] = useState<string>(System[0])
@@ -255,7 +255,12 @@ function Automation() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div>
               <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -809,7 +814,10 @@ function Automation() {
               <div>
                 {tradeRoutes.data?.find((r) => r.id === routeToManage.id)
                   ?.status === TradeRouteStatus.ERROR && (
-                  <Alert message={routeToManage.errorMessage} />
+                  <Alert
+                    title="Error"
+                    message={routeToManage.errorMessage || ''}
+                  />
                 )}
                 {tradeRoutes.data?.find((r) => r.id === routeToManage.id)
                   ?.status === TradeRouteStatus.ACTIVE && (
@@ -884,5 +892,3 @@ function Automation() {
     </>
   )
 }
-
-export default Automation

@@ -1,29 +1,74 @@
-import { useQuery, useQueryClient } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { listMyLoans, payOffLoan, takeOutLoan } from '../../api/routes/my'
 import { listLoanTypes } from '../../api/routes/types'
 import '../../App.css'
 import { LoanStatus, LoanTier } from '../../types/Loan'
-import { formatNumberCommas } from '../../utils/helpers'
+import { formatNumberCommas, getErrorMessage } from '../../utils/helpers'
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { CreditCardIcon } from '@heroicons/react/solid'
+import { useContext } from 'react'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../providers/NotificationProvider'
 
-function Loans() {
+export default function Loans() {
+  const { push } = useContext(NotificationContext)
+
   const queryClient = useQueryClient()
   const myLoans = useQuery('myLoans', listMyLoans)
   const availableLoans = useQuery('availableLoans', listLoanTypes)
 
-  const handleTakeOutLoan = async (type: string) => {
-    await takeOutLoan(type)
-    queryClient.invalidateQueries('user')
-    queryClient.invalidateQueries('myLoans')
-  }
+  const handleTakeOutLoan = useMutation(
+    ({ type }: { type: string }) => takeOutLoan(type),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('user')
+        queryClient.invalidateQueries('myLoans')
+        queryClient.invalidateQueries('availableLoans')
+        push({
+          title: 'Loan taken out',
+          message: `${
+            LoanTier[data.loan.type as unknown as keyof typeof LoanTier]
+          } loan taken out`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error taking out loan',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
+    }
+  )
 
-  const handlePayOffLoan = async (id: string) => {
-    await payOffLoan(id)
-    queryClient.invalidateQueries('user')
-    queryClient.invalidateQueries('myLoans')
-  }
+  const handlePayOffLoan = useMutation(
+    ({ id }: { id: string }) => payOffLoan(id),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('user')
+        queryClient.invalidateQueries('myLoans')
+        queryClient.invalidateQueries('availableLoans')
+        push({
+          title: 'Loan paid off',
+          message: `${
+            LoanTier[data.loans[0].type as unknown as keyof typeof LoanTier]
+          } loan paid off`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error paying off loan',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
+    }
+  )
 
   return (
     <>
@@ -33,7 +78,12 @@ function Loans() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto py-6">
               <h2 className="text-2xl font-bold text-gray-900">My Loans</h2>
@@ -104,9 +154,17 @@ function Loans() {
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     {loan.status === LoanStatus.CURRENT && (
                                       <button
-                                        className="text-indigo-600 hover:text-indigo-900"
+                                        className={
+                                          'text-indigo-600 hover:text-indigo-900' +
+                                          (handlePayOffLoan.isLoading
+                                            ? ' opacity-50 cursor-not-allowed'
+                                            : '')
+                                        }
+                                        disabled={handlePayOffLoan.isLoading}
                                         onClick={() => {
-                                          handlePayOffLoan(loan.id)
+                                          handlePayOffLoan.mutate({
+                                            id: loan.id,
+                                          })
                                         }}
                                       >
                                         Pay Off Loan
@@ -205,9 +263,17 @@ function Loans() {
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
-                                      className="text-indigo-600 hover:text-indigo-900"
+                                      className={
+                                        'text-indigo-600 hover:text-indigo-900' +
+                                        (handleTakeOutLoan.isLoading
+                                          ? ' opacity-50 cursor-not-allowed'
+                                          : '')
+                                      }
+                                      disabled={handleTakeOutLoan.isLoading}
                                       onClick={() => {
-                                        handleTakeOutLoan(loan.type)
+                                        handleTakeOutLoan.mutate({
+                                          type: loan.type,
+                                        })
                                       }}
                                     >
                                       Take Out Loan
@@ -243,5 +309,3 @@ function Loans() {
     </>
   )
 }
-
-export default Loans

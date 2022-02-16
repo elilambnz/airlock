@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { useQueries, useQuery, useQueryClient } from 'react-query'
+import { useState, useMemo, useContext } from 'react'
+import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
 import { getLocationMarketplace } from '../../api/routes/locations'
 import { buyShip, listMyShips } from '../../api/routes/my'
 import { getShipListings } from '../../api/routes/systems'
@@ -10,10 +10,11 @@ import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
 import { MarketplaceGood, System } from '../../types/Location'
 import { GoodType } from '../../types/Order'
-import { ShipListing } from '../../types/Ship'
+import { Ship, ShipListing } from '../../types/Ship'
 import {
   abbreviateNumber,
   formatNumberCommas,
+  getErrorMessage,
   getShipName,
 } from '../../utils/helpers'
 import { purchase, sell } from '../../utils/mechanics'
@@ -22,6 +23,7 @@ import {
   CreditCardIcon,
   CubeIcon,
   FireIcon,
+  GlobeIcon,
   HeartIcon,
   LightningBoltIcon,
   OfficeBuildingIcon,
@@ -29,6 +31,11 @@ import {
   TrendingUpIcon,
   TruckIcon,
 } from '@heroicons/react/solid'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../providers/NotificationProvider'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 interface GoodToProcess extends MarketplaceGood {
   location?: string
@@ -36,13 +43,15 @@ interface GoodToProcess extends MarketplaceGood {
   quantity?: number
 }
 
-function Marketplace() {
+export default function Marketplace() {
   const [filteredGood, setFilteredGood] = useState<GoodType>()
   const [volume, setVolume] = useState(80)
 
   const [goodToBuy, setGoodToBuy] = useState<GoodToProcess | null>(null)
   const [goodToSell, setGoodToSell] = useState<GoodToProcess | null>(null)
   const [shipToBuy, setShipToBuy] = useState<ShipListing | null>(null)
+
+  const { push } = useContext(NotificationContext)
 
   const queryClient = useQueryClient()
   const myShips = useQuery('myShips', listMyShips)
@@ -134,52 +143,95 @@ function Marketplace() {
         ),
       })) ?? []
 
-  const handleBuyGood = async (goodToProcess: GoodToProcess) => {
-    if (!goodToProcess.shipId || !goodToProcess.quantity) {
-      return
+  const handleBuyGood = useMutation(
+    ({
+      ship,
+      symbol,
+      quantity,
+    }: {
+      ship: Ship
+      symbol: GoodType
+      quantity: number
+    }) => purchase(ship, symbol, quantity),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries('user')
+        queryClient.invalidateQueries('myShips')
+        const { ship, symbol, quantity } = variables
+        push({
+          title: 'Successfully purchased goods',
+          message: `${getShipName(
+            ship.id
+          )} has purchased ${quantity} ${symbol}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-    try {
-      const ship = myShips.data?.ships.find(
-        (s) => s.id === goodToProcess.shipId
-      )
-      if (!ship) {
-        throw new Error('Ship not found')
-      }
-      await purchase(ship, goodToProcess.symbol, goodToProcess.quantity)
-      queryClient.invalidateQueries('user')
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  )
 
-  const handleSellGood = async (goodToProcess: GoodToProcess) => {
-    if (!goodToProcess.shipId || !goodToProcess.quantity) {
-      return
+  const handleSellGood = useMutation(
+    ({
+      ship,
+      symbol,
+      quantity,
+    }: {
+      ship: Ship
+      symbol: GoodType
+      quantity: number
+    }) => sell(ship, symbol, quantity),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries('user')
+        queryClient.invalidateQueries('myShips')
+        const { ship, symbol, quantity } = variables
+        push({
+          title: 'Successfully sold goods',
+          message: `${getShipName(ship.id)} has sold ${quantity} ${symbol}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-    try {
-      const ship = myShips.data?.ships.find(
-        (s) => s.id === goodToProcess.shipId
-      )
-      if (!ship) {
-        throw new Error('Ship not found')
-      }
-      await sell(ship, goodToProcess.symbol, goodToProcess.quantity)
-      queryClient.invalidateQueries('user')
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  )
 
-  const handleBuyShip = async (location: string, type: string) => {
-    try {
-      const result = await buyShip(location, type)
-      queryClient.invalidateQueries('user')
-      queryClient.invalidateQueries('myShips')
-      console.log(result)
-    } catch (error) {
-      console.error(error)
+  const handleBuyShip = useMutation(
+    ({ location, type }: { location: string; type: string }) =>
+      buyShip(location, type),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('user')
+        queryClient.invalidateQueries('myShips')
+        const { ship } = data
+        push({
+          title: 'Successfully purchased ship',
+          message: `Ship ${getShipName(ship.id)} now docked at ${
+            ship.location
+          }`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-  }
+  )
 
   const lowestBuyPriceOfFilteredGood =
     useMemo(
@@ -220,7 +272,12 @@ function Marketplace() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto py-6">
               <h2 className="text-2xl font-bold text-gray-900">Goods</h2>
@@ -406,11 +463,11 @@ function Marketplace() {
                                     ?.sort((a, b) =>
                                       a.symbol.localeCompare(b.symbol)
                                     )
-                                    .map((locationMarketplace, i) => (
+                                    .map((locationMarketplace, j) => (
                                       <tr
                                         key={`${dockedLocations[i]}-${locationMarketplace.symbol}`}
                                         className={
-                                          i % 2 === 0
+                                          j % 2 === 0
                                             ? 'bg-white'
                                             : 'bg-gray-50'
                                         }
@@ -797,6 +854,11 @@ function Marketplace() {
                   </div>
                   <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
+                      <span className="sr-only">Location</span>
+                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {goodToBuy.location}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Purchase price per unit</span>
                       <CreditCardIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
                       {formatNumberCommas(goodToBuy.purchasePricePerUnit)}
@@ -808,76 +870,111 @@ function Marketplace() {
                     </span>
                   </div>
                   {shipOptions.length > 0 ? (
-                    <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <Select
-                          label="Select Ship"
-                          options={shipOptions}
-                          value={goodToBuy.shipId}
-                          onChange={(value) => {
-                            setGoodToBuy({
-                              ...goodToBuy,
-                              shipId: value,
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="sm:col-span-1">
-                        <label
-                          htmlFor="quantity"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Quantity
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            type="number"
-                            name="quantity"
-                            id="quantity"
-                            min={1}
-                            max={goodToBuy.quantityAvailable}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            onChange={(e) => {
-                              const quantity = !isNaN(parseInt(e.target.value))
-                                ? parseInt(e.target.value)
-                                : 0
+                    <>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-4">
+                          <Select
+                            label="Select Ship"
+                            options={shipOptions}
+                            value={goodToBuy.shipId}
+                            onChange={(value) => {
                               setGoodToBuy({
                                 ...goodToBuy,
-                                quantity,
+                                shipId: value,
                               })
                             }}
                           />
                         </div>
+                        <div className="sm:col-span-2">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Quantity
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              min={1}
+                              max={goodToBuy.quantityAvailable}
+                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              onChange={(e) => {
+                                const quantity = !isNaN(
+                                  parseInt(e.target.value)
+                                )
+                                  ? parseInt(e.target.value)
+                                  : 0
+                                setGoodToBuy({
+                                  ...goodToBuy,
+                                  quantity,
+                                })
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="pt-6 sm:col-span-2">
-                        <button
-                          type="submit"
-                          className={
-                            'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                            (goodToBuy.quantity === 0 || !goodToBuy.shipId
-                              ? ' opacity-50 cursor-not-allowed'
-                              : '')
-                          }
-                          disabled={
-                            goodToBuy.quantity === 0 || !goodToBuy.shipId
-                          }
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handleBuyGood(goodToBuy)
-                          }}
-                        >
-                          Buy
-                          {!!goodToBuy.quantity &&
-                            goodToBuy.quantity > 0 &&
-                            `
-                            ${formatNumberCommas(goodToBuy.quantity)} 
+                      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="pt-6 sm:col-span-6">
+                          <button
+                            type="submit"
+                            className={
+                              'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (goodToBuy.quantity === 0 ||
+                              !goodToBuy.shipId ||
+                              handleBuyGood.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              goodToBuy.quantity === 0 ||
+                              !goodToBuy.shipId ||
+                              handleBuyGood.isLoading
+                            }
+                            onClick={(e) => {
+                              e.preventDefault()
+                              const ship = myShips.data?.ships.find(
+                                (s) => s.id === goodToBuy.shipId
+                              )
+                              if (!ship) {
+                                throw new Error('Ship not found')
+                              }
+                              handleBuyGood.mutate({
+                                ship,
+                                symbol: goodToBuy.symbol,
+                                quantity: goodToBuy.quantity ?? 0,
+                              })
+                            }}
+                          >
+                            {!handleBuyGood.isLoading ? (
+                              `Buy ${
+                                !!goodToBuy.quantity && goodToBuy.quantity > 0
+                                  ? `${formatNumberCommas(
+                                      goodToBuy.quantity
+                                    )} ${
+                                      GoodType[
+                                        goodToBuy.symbol as unknown as keyof typeof GoodType
+                                      ]
+                                    }
                             for ${formatNumberCommas(
                               goodToBuy.quantity *
                                 goodToBuy.purchasePricePerUnit
-                            )}`}
-                        </button>
+                            )} units`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Placing purchase order
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
@@ -927,76 +1024,111 @@ function Marketplace() {
                     </span>
                   </div>
                   {shipOptions.length > 0 ? (
-                    <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <Select
-                          label="Select Ship"
-                          options={shipOptions}
-                          value={goodToSell.shipId}
-                          onChange={(value) => {
-                            setGoodToSell({
-                              ...goodToSell,
-                              shipId: value,
-                            })
-                          }}
-                        />
-                      </div>
-                      <div className="sm:col-span-1">
-                        <label
-                          htmlFor="quantity"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Quantity
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            type="number"
-                            name="quantity"
-                            id="quantity"
-                            min={1}
-                            max={goodToSell.quantityAvailable}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            onChange={(e) => {
-                              const quantity = !isNaN(parseInt(e.target.value))
-                                ? parseInt(e.target.value)
-                                : 0
+                    <>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-4">
+                          <Select
+                            label="Select Ship"
+                            options={shipOptions}
+                            value={goodToSell.shipId}
+                            onChange={(value) => {
                               setGoodToSell({
                                 ...goodToSell,
-                                quantity,
+                                shipId: value,
                               })
                             }}
                           />
                         </div>
+                        <div className="sm:col-span-2">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Quantity
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              min={1}
+                              max={goodToSell.quantityAvailable}
+                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              onChange={(e) => {
+                                const quantity = !isNaN(
+                                  parseInt(e.target.value)
+                                )
+                                  ? parseInt(e.target.value)
+                                  : 0
+                                setGoodToSell({
+                                  ...goodToSell,
+                                  quantity,
+                                })
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="pt-6 sm:col-span-2">
-                        <button
-                          type="submit"
-                          className={
-                            'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                            (goodToSell.quantity === 0 || !goodToSell.shipId
-                              ? ' opacity-50 cursor-not-allowed'
-                              : '')
-                          }
-                          disabled={
-                            goodToSell.quantity === 0 || !goodToSell.shipId
-                          }
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handleSellGood(goodToSell)
-                          }}
-                        >
-                          Sell
-                          {!!goodToSell.quantity &&
-                            goodToSell.quantity > 0 &&
-                            `
-                            ${formatNumberCommas(goodToSell.quantity)} 
+                      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="pt-6 sm:col-span-6">
+                          <button
+                            type="submit"
+                            className={
+                              'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (goodToSell.quantity === 0 ||
+                              !goodToSell.shipId ||
+                              handleSellGood.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              goodToSell.quantity === 0 ||
+                              !goodToSell.shipId ||
+                              handleSellGood.isLoading
+                            }
+                            onClick={(e) => {
+                              e.preventDefault()
+                              const ship = myShips.data?.ships.find(
+                                (s) => s.id === goodToSell.shipId
+                              )
+                              if (!ship) {
+                                throw new Error('Ship not found')
+                              }
+                              handleSellGood.mutate({
+                                ship,
+                                symbol: goodToSell.symbol,
+                                quantity: goodToSell.quantity ?? 0,
+                              })
+                            }}
+                          >
+                            {!handleSellGood.isLoading ? (
+                              `Sell ${
+                                !!goodToSell.quantity && goodToSell.quantity > 0
+                                  ? `${formatNumberCommas(
+                                      goodToSell.quantity
+                                    )} ${
+                                      GoodType[
+                                        goodToSell.symbol as unknown as keyof typeof GoodType
+                                      ]
+                                    }
                             for ${formatNumberCommas(
                               goodToSell.quantity *
                                 goodToSell.purchasePricePerUnit
-                            )}`}
-                        </button>
+                            )} units`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Placing sell order
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
@@ -1079,7 +1211,7 @@ function Marketplace() {
                             key={pl.location}
                             className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6"
                           >
-                            <div className="sm:col-span-3">
+                            <div className="sm:col-span-2">
                               <label
                                 htmlFor="location"
                                 className="block text-sm font-medium text-gray-700"
@@ -1093,19 +1225,37 @@ function Marketplace() {
                                 {pl.location}
                               </p>
                             </div>
-                            <div className="sm:col-span-3">
+                            <div className="justify-self-end sm:col-span-4">
                               <button
                                 type="submit"
-                                className="truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                className={
+                                  'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                                  (handleBuyShip.isLoading
+                                    ? ' opacity-50 cursor-not-allowed'
+                                    : '')
+                                }
+                                disabled={handleBuyShip.isLoading}
                                 onClick={(e) => {
                                   e.preventDefault()
-                                  handleBuyShip(pl.location, shipToBuy.type)
+                                  const { type } = shipToBuy
+                                  handleBuyShip.mutate({
+                                    location: pl.location,
+                                    type,
+                                  })
                                 }}
                               >
-                                Buy{' '}
-                                {`${shipToBuy.type} for ${formatNumberCommas(
-                                  pl.price
-                                )}`}
+                                {!handleBuyShip.isLoading ? (
+                                  `Buy ${
+                                    shipToBuy.type
+                                  } for ${formatNumberCommas(pl.price)} credits`
+                                ) : (
+                                  <>
+                                    Purchasing
+                                    <div className="ml-2">
+                                      <LoadingSpinner />
+                                    </div>
+                                  </>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -1136,5 +1286,3 @@ function Marketplace() {
     </>
   )
 }
-
-export default Marketplace

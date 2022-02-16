@@ -1,7 +1,14 @@
-import { OfficeBuildingIcon } from '@heroicons/react/solid'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CubeIcon,
+  GlobeIcon,
+  OfficeBuildingIcon,
+  UserIcon,
+} from '@heroicons/react/solid'
 import moment from 'moment'
-import { useMemo, useState } from 'react'
-import { useQueries, useQuery, useQueryClient } from 'react-query'
+import { useContext, useMemo, useState } from 'react'
+import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
 import {
   listMyStructures,
   createNewStructure,
@@ -16,36 +23,61 @@ import {
 import { getSystemLocations } from '../../api/routes/systems'
 import { listStructureTypes } from '../../api/routes/types'
 import '../../App.css'
+import Alert from '../../components/Alert'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import Modal from '../../components/Modal/index'
 import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
+import {
+  NotificationContext,
+  NotificationType,
+} from '../../providers/NotificationProvider'
 import { System } from '../../types/Location'
 import { GoodType } from '../../types/Order'
-import { abbreviateNumber, formatNumberCommas } from '../../utils/helpers'
+import { Structure, StructureCategory } from '../../types/Structure'
+import {
+  abbreviateNumber,
+  formatNumberCommas,
+  getErrorMessage,
+} from '../../utils/helpers'
 
-function Structures() {
+export default function Structures() {
   const [newStructure, setNewStructure] =
     useState<{ type?: string; location?: string }>()
   const [structureToQuery, setStructureToQuery] =
     useState<{ structureId?: string }>()
-  const [ownStructureToDeposit, setOwnStructureToDeposit] = useState<{
-    structureId?: string
-    shipId?: string
-    good?: string
-    quantity?: number
-  } | null>(null)
-  const [ownStructureToWithdraw, setOwnStructureToWithdraw] = useState<{
-    structureId?: string
-    shipId?: string
-    good?: string
-    quantity?: number
-  } | null>(null)
-  const [structureToDeposit, setStructureToDeposit] = useState<{
-    structureId?: string
-    shipId?: string
-    good?: string
-    quantity?: number
-  } | null>(null)
+  const [ownStructureToDeposit, setOwnStructureToDeposit] = useState<
+    | (Structure & {
+        deposit?: {
+          shipId?: string
+          good?: GoodType
+          quantity?: number
+        }
+      })
+    | undefined
+  >()
+  const [ownStructureToWithdraw, setOwnStructureToWithdraw] = useState<
+    | (Structure & {
+        withdraw?: {
+          shipId?: string
+          good?: GoodType
+          quantity?: number
+        }
+      })
+    | undefined
+  >()
+  const [structureToDeposit, setStructureToDeposit] = useState<
+    | (Structure & {
+        deposit?: {
+          shipId?: string
+          good?: GoodType
+          quantity?: number
+        }
+      })
+    | undefined
+  >()
+
+  const { push } = useContext(NotificationContext)
 
   const queryClient = useQueryClient()
   const myShips = useQuery('myShips', listMyShips)
@@ -55,6 +87,7 @@ function Structures() {
     () => getStructureInfo(structureToQuery?.structureId ?? ''),
     {
       enabled: !!structureToQuery?.structureId,
+      retry: false, // Don't retry on failure because the API will return a 500 error if the structure doesn't exist
     }
   )
 
@@ -89,75 +122,150 @@ function Structures() {
     [availableSystems]
   )
 
-  const handleCreateStructure = async (location: string, type: string) => {
-    try {
-      const response = createNewStructure(location, type)
-      console.log(response)
-      queryClient.invalidateQueries('myStructures')
-    } catch (error) {
-      console.error(error)
+  const handleCreateStructure = useMutation(
+    ({ location, type }: { location: string; type: string }) =>
+      createNewStructure(location, type),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries('myStructures')
+        push({
+          title: 'Structure created',
+          message: `${data.structure.type} structure created at ${data.structure.location}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error creating structure',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
+      onSettled: () => {
+        setNewStructure(undefined)
+      },
     }
-  }
+  )
 
-  const handleDepositGoodsToOwnStructure = async (
-    structureId: string,
-    shipId: string,
-    good: string,
-    quantity: number
-  ) => {
-    try {
-      const response = await depositToMyStructure(
-        structureId,
-        shipId,
-        good,
-        quantity
-      )
-      console.log(response)
-      queryClient.invalidateQueries('myStructures')
-    } catch (error) {
-      console.error(error)
+  const handleDepositGoodsToOwnStructure = useMutation(
+    ({
+      structureId,
+      shipId,
+      good,
+      quantity,
+    }: {
+      structureId: string
+      shipId: string
+      good: GoodType
+      quantity: number
+    }) => depositToMyStructure(structureId, shipId, good, quantity),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries('myStructures')
+        queryClient.invalidateQueries('myShips')
+        const { structureId, good, quantity } = variables
+        const updatedStructure = allMyStructures.data?.structures.find(
+          (s) => s.id === structureId
+        )
+        push({
+          title: 'Goods deposited',
+          message: `${quantity} ${good} deposited to ${
+            StructureCategory[
+              updatedStructure?.type as unknown as keyof typeof StructureCategory
+            ]
+          } at ${updatedStructure?.location}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error depositing goods',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-  }
+  )
 
-  const handleWithdrawGoodsFromOwnStructure = async (
-    structureId: string,
-    shipId: string,
-    good: string,
-    quantity: number
-  ) => {
-    try {
-      const response = await withdrawFromMyStructure(
-        structureId,
-        shipId,
-        good,
-        quantity
-      )
-      console.log(response)
-      queryClient.invalidateQueries('myStructures')
-    } catch (error) {
-      console.error(error)
+  const handleWithdrawGoodsFromOwnStructure = useMutation(
+    ({
+      structureId,
+      shipId,
+      good,
+      quantity,
+    }: {
+      structureId: string
+      shipId: string
+      good: GoodType
+      quantity: number
+    }) => withdrawFromMyStructure(structureId, shipId, good, quantity),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries('myStructures')
+        queryClient.invalidateQueries('myShips')
+        const { structureId, good, quantity } = variables
+        const updatedStructure = allMyStructures.data?.structures.find(
+          (s) => s.id === structureId
+        )
+        push({
+          title: 'Goods withdrawn',
+          message: `${quantity} ${good} withdrawn from ${
+            StructureCategory[
+              updatedStructure?.type as unknown as keyof typeof StructureCategory
+            ]
+          } at ${updatedStructure?.location}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error withdrawing goods',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-  }
+  )
 
-  const handleDepositGoodsToStructure = async (
-    structureId: string,
-    shipId: string,
-    good: string,
-    quantity: number
-  ) => {
-    try {
-      const response = await depositToStructure(
-        structureId,
-        shipId,
-        good,
-        quantity
-      )
-      console.log(response)
-      queryClient.invalidateQueries('myStructures')
-    } catch (error) {
-      console.error(error)
+  const handleDepositGoodsToStructure = useMutation(
+    ({
+      structureId,
+      shipId,
+      good,
+      quantity,
+    }: {
+      structureId: string
+      shipId: string
+      good: GoodType
+      quantity: number
+    }) => depositToStructure(structureId, shipId, good, quantity),
+    {
+      onSuccess: (_, variables) => {
+        const { structureId, good, quantity } = variables
+        queryClient.invalidateQueries(['structure', structureId])
+        queryClient.invalidateQueries('myShips')
+        const updatedStructure = allMyStructures.data?.structures.find(
+          (s) => s.id === structureId
+        )
+        push({
+          title: 'Goods deposited',
+          message: `${quantity} ${good} deposited to ${
+            StructureCategory[
+              updatedStructure?.type as unknown as keyof typeof StructureCategory
+            ]
+          } at ${updatedStructure?.location}`,
+          type: NotificationType.Success,
+        })
+      },
+      onError: (error: any) => {
+        push({
+          title: 'Error depositing goods',
+          message: getErrorMessage(error),
+          type: NotificationType.Error,
+        })
+      },
     }
-  }
+  )
 
   const structureTypeOptions =
     structureTypes.data?.structures.map((s) => ({
@@ -213,7 +321,12 @@ function Structures() {
         </div>
       </header>
       <main>
-        <div className="bg-gray-100 min-h-screen">
+        <div
+          className="bg-gray-100"
+          style={{
+            minHeight: 'calc(100vh - 148px)',
+          }}
+        >
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto py-6">
               <h2 className="text-2xl font-bold text-gray-900">
@@ -266,13 +379,17 @@ function Structures() {
                           <button
                             type="submit"
                             className={
-                              'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                              (newStructure?.type && newStructure?.location
-                                ? ''
-                                : ' opacity-50 cursor-not-allowed')
+                              'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (!newStructure?.location ||
+                              !newStructure.type ||
+                              handleCreateStructure.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
                             }
                             disabled={
-                              !(newStructure?.type && newStructure?.location)
+                              !newStructure?.location ||
+                              !newStructure.type ||
+                              handleCreateStructure.isLoading
                             }
                             onClick={(e) => {
                               e.preventDefault()
@@ -282,19 +399,31 @@ function Structures() {
                               ) {
                                 return
                               }
-                              handleCreateStructure(
-                                newStructure.location,
-                                newStructure.type
-                              )
+                              const { location, type } = newStructure
+                              handleCreateStructure.mutate({
+                                location,
+                                type,
+                              })
                             }}
                           >
-                            Create{' '}
-                            {newStructure?.type &&
-                              `for ${formatNumberCommas(
-                                structureTypes.data?.structures.find(
-                                  (s) => s.type === newStructure.type
-                                )?.price ?? 0
-                              )} credits`}
+                            {!handleCreateStructure.isLoading ? (
+                              `Create ${
+                                newStructure?.type
+                                  ? `for ${formatNumberCommas(
+                                      structureTypes.data?.structures.find(
+                                        (s) => s.type === newStructure.type
+                                      )?.price ?? 0
+                                    )} credits`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Creating
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -320,8 +449,9 @@ function Structures() {
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                     <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                    {allMyStructures.data &&
-                    allMyStructures.data.structures.length > 0 ? (
+                    {allMyStructures.isLoading ||
+                    (allMyStructures.data &&
+                      allMyStructures.data.structures.length > 0) ? (
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -362,7 +492,11 @@ function Structures() {
                                   }
                                 >
                                   <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                    {structure.type}
+                                    {
+                                      StructureCategory[
+                                        structure.type as unknown as keyof typeof StructureCategory
+                                      ]
+                                    }
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                     {structure.location}
@@ -386,11 +520,15 @@ function Structures() {
                                     {structure.consumes
                                       .map(
                                         (good) =>
-                                          `${good} (${
+                                          `${
+                                            GoodType[
+                                              good as unknown as keyof typeof GoodType
+                                            ]
+                                          } (${formatNumberCommas(
                                             structure.inventory.find(
                                               (item) => item.good === good
                                             )?.quantity ?? 0
-                                          })`
+                                          )})`
                                       )
                                       .join(', ')}
                                   </td>
@@ -398,11 +536,15 @@ function Structures() {
                                     {structure.produces
                                       .map(
                                         (good) =>
-                                          `${good} (${
+                                          `${
+                                            GoodType[
+                                              good as unknown as keyof typeof GoodType
+                                            ]
+                                          } (${formatNumberCommas(
                                             structure.inventory.find(
                                               (item) => item.good === good
                                             )?.quantity ?? 0
-                                          })`
+                                          )})`
                                       )
                                       .join(', ')}
                                   </td>
@@ -410,10 +552,16 @@ function Structures() {
                                     <button
                                       className="text-indigo-600 hover:text-indigo-900"
                                       onClick={() => {
-                                        setOwnStructureToDeposit((prev) => ({
-                                          ...prev,
-                                          structureId: structure.id,
-                                        }))
+                                        const structureToDeposit =
+                                          allMyStructures.data.structures.find(
+                                            (s) => s.id === structure.id
+                                          )
+                                        if (!structureToDeposit) {
+                                          return
+                                        }
+                                        setOwnStructureToDeposit(
+                                          structureToDeposit
+                                        )
                                       }}
                                     >
                                       Deposit
@@ -421,10 +569,16 @@ function Structures() {
                                     <button
                                       className="ml-4 text-indigo-600 hover:text-indigo-900"
                                       onClick={() => {
-                                        setOwnStructureToWithdraw((prev) => ({
-                                          ...prev,
-                                          structureId: structure.id,
-                                        }))
+                                        const ownStructureToWithdraw =
+                                          allMyStructures.data.structures.find(
+                                            (s) => s.id === structure.id
+                                          )
+                                        if (!ownStructureToWithdraw) {
+                                          return
+                                        }
+                                        setOwnStructureToWithdraw(
+                                          ownStructureToWithdraw
+                                        )
                                       }}
                                     >
                                       Withdraw
@@ -479,8 +633,8 @@ function Structures() {
                   <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                     <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
                     <form className="min-w-full divide-y divide-gray-200">
-                      <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-                        <div className="sm:col-span-1">
+                      <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
                           <label
                             htmlFor="structureId"
                             className="block text-sm font-medium text-gray-700"
@@ -505,60 +659,109 @@ function Structures() {
                       </div>
                     </form>
 
-                    {!structure.isLoading ? (
-                      structure.data && (
-                        <>
-                          <div className="px-4 sm:px-6">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">
-                              Structure Details
+                    {!structure.isLoading && structure.data && (
+                      <>
+                        <div className="px-4 sm:px-6">
+                          <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            Structure Details
+                          </h3>
+                        </div>
+                        <div className="px-6 py-4 bg-white">
+                          <div className="inline-flex items-center">
+                            <h3 className="text-md font-medium text-gray-900">
+                              {
+                                StructureCategory[
+                                  structure.data.structure
+                                    .type as unknown as keyof typeof StructureCategory
+                                ]
+                              }
                             </h3>
-                          </div>
-                          <div className="px-6 py-4 bg-white">
-                            <p className="text-gray-900">
-                              {structure.data.structure.name}
-                            </p>
-                            <p className="text-gray-500">
-                              {structure.data.structure.completed
-                                ? 'Completed'
-                                : 'Not Completed'}
-                            </p>
-                            <p className="text-gray-500">
-                              Stability {structure.data.structure.stability}
-                            </p>
-                            {structure.data.structure.materials.map(
-                              (material, i) => (
-                                <div key={i} className="mt-1">
-                                  <p className="text-gray-500">
-                                    Good: {material.good}
-                                  </p>
-                                  <p className="text-gray-500">
-                                    Quantity:{' '}
-                                    {formatNumberCommas(material.quantity)}
-                                  </p>
-                                  <p className="text-gray-500">
-                                    Target quantity:{' '}
-                                    {formatNumberCommas(
-                                      material.targetQuantity
-                                    )}
-                                  </p>
-                                </div>
-                              )
-                            )}
-                            <button
-                              className="mt-1 text-indigo-600 hover:text-indigo-900"
-                              onClick={() => {
-                                setStructureToDeposit((prev) => ({
-                                  ...prev,
-                                  structureId: structure.data.structure.id,
-                                }))
-                              }}
+                            <span
+                              className={
+                                'ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                (structure.data.structure.active
+                                  ? ' bg-green-100 text-green-800'
+                                  : ' bg-yellow-100 text-yellow-800')
+                              }
                             >
-                              Deposit
-                            </button>
+                              {structure.data.structure.active
+                                ? 'Active'
+                                : 'Inactive'}
+                            </span>
                           </div>
-                        </>
-                      )
-                    ) : (
+                          <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                            {structure.data.structure.status}
+                          </p>
+                          <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                            <span className="inline-flex items-center">
+                              <span className="sr-only">Username</span>
+                              <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                              {structure.data.structure.ownedBy.username}
+                            </span>
+                            <span className="ml-4 inline-flex items-center">
+                              <span className="sr-only">Location</span>
+                              <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                              {structure.data.structure.location}
+                            </span>
+                            <span className="ml-4 inline-flex items-center">
+                              <span className="sr-only">Consumes</span>
+                              <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                              {structure.data.structure.consumes
+                                .map(
+                                  (c) =>
+                                    GoodType[
+                                      c as unknown as keyof typeof GoodType
+                                    ]
+                                )
+                                .join(', ')}
+                            </span>
+                            <span className="ml-4 inline-flex items-center">
+                              <span className="sr-only">Produces</span>
+                              <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                              {structure.data.structure.produces
+                                .map(
+                                  (c) =>
+                                    GoodType[
+                                      c as unknown as keyof typeof GoodType
+                                    ]
+                                )
+                                .join(', ')}
+                            </span>
+                            <span className="ml-4 inline-flex items-center">
+                              <span className="sr-only">Inventory</span>
+                              <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                              {structure.data.structure.inventory
+                                .sort((a) =>
+                                  structure.data.structure.consumes.includes(
+                                    a.good
+                                  )
+                                    ? -1
+                                    : 1
+                                )
+                                .map(
+                                  (i) =>
+                                    `${i.quantity} ${
+                                      GoodType[
+                                        i.good as unknown as keyof typeof GoodType
+                                      ]
+                                    }`
+                                )
+                                .join(', ')}
+                            </span>
+                          </div>
+
+                          <button
+                            className="mt-4 text-indigo-600 hover:text-indigo-900"
+                            onClick={() => {
+                              setStructureToDeposit(structure.data.structure)
+                            }}
+                          >
+                            Deposit
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {structure.isLoading && (
                       <div className="shadow rounded-md p-6 w-full mx-auto">
                         <div className="animate-pulse flex space-x-4">
                           <div className="rounded-full bg-gray-300 h-10 w-10"></div>
@@ -575,6 +778,14 @@ function Structures() {
                         </div>
                       </div>
                     )}
+                    {structure.isError && (
+                      <div className="p-6 w-full mx-auto">
+                        <Alert
+                          title="Error fetching structure"
+                          message={getErrorMessage(structure.error as any)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -589,89 +800,210 @@ function Structures() {
           <>
             {ownStructureToDeposit && (
               <div className="mt-4 px-4 py-2">
-                {' '}
-                <div className="sm:col-span-3">
-                  <Select
-                    label="Good"
-                    options={
-                      allMyStructures.data?.structures
-                        .find((s) => s.id === ownStructureToDeposit.structureId)
-                        ?.consumes.map((g) => ({
-                          label: g,
-                          value: g,
-                        })) ?? []
-                    }
-                    value={ownStructureToDeposit.good}
-                    onChange={(value) => {
-                      setOwnStructureToDeposit((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Quantity
-                  </label>
-                  <input
-                    className="mt-1 form-input w-full"
-                    type="number"
-                    min={1}
-                    // max={} // ship quantity
-                    onChange={(e) =>
-                      setOwnStructureToDeposit((prev) => ({
-                        ...prev,
-                        quantity: parseInt(e.target.value),
-                      }))
-                    }
-                  />
-                </div>
-                <div className="sm:col-span-3">
-                  <Select
-                    label="From Ship"
-                    options={shipOptions}
-                    value={ownStructureToDeposit.shipId}
-                    onChange={(value) => {
-                      setOwnStructureToDeposit((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <button
-                  className="m-4"
-                  onClick={() => setOwnStructureToDeposit(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="m-4"
-                  onClick={() => {
-                    if (
-                      !ownStructureToDeposit?.structureId ||
-                      !ownStructureToDeposit?.shipId ||
-                      !ownStructureToDeposit?.good ||
-                      !ownStructureToDeposit?.quantity
-                    ) {
-                      return
-                    }
-                    handleDepositGoodsToOwnStructure(
-                      ownStructureToDeposit.structureId,
-                      ownStructureToDeposit.shipId,
-                      ownStructureToDeposit.good,
-                      ownStructureToDeposit.quantity
-                    )
-                  }}
-                >
-                  Deposit
-                </button>
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      Deposit Goods to{' '}
+                      {
+                        StructureCategory[
+                          ownStructureToDeposit.type as unknown as keyof typeof StructureCategory
+                        ]
+                      }
+                    </h3>
+                  </div>
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Location</span>
+                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToDeposit.location}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Consumes</span>
+                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToDeposit.consumes
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
+                        )
+                        .join(', ')}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Produces</span>
+                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToDeposit.produces
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
+                        )
+                        .join(', ')}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="From Ship"
+                            options={shipOptions}
+                            value={ownStructureToDeposit.deposit?.shipId}
+                            onChange={(value) => {
+                              setOwnStructureToDeposit((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  deposit: {
+                                    ...prev.deposit,
+                                    shipId: value,
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="Select Good"
+                            options={
+                              ownStructureToDeposit.consumes.map((g) => ({
+                                label: g,
+                                value: g,
+                              })) ?? []
+                            }
+                            value={ownStructureToDeposit.deposit?.good}
+                            onChange={(value) => {
+                              setOwnStructureToDeposit((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  deposit: {
+                                    ...prev.deposit,
+                                    good: GoodType[
+                                      value as keyof typeof GoodType
+                                    ],
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Quantity
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              min={1}
+                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              onChange={(e) => {
+                                const quantity = !isNaN(
+                                  parseInt(e.target.value)
+                                )
+                                  ? parseInt(e.target.value)
+                                  : 0
+                                setOwnStructureToDeposit((prev) => {
+                                  if (!prev) {
+                                    return
+                                  }
+                                  return {
+                                    ...prev,
+                                    deposit: {
+                                      ...prev.deposit,
+                                      quantity,
+                                    },
+                                  }
+                                })
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-6 sm:col-span-2">
+                          <button
+                            type="submit"
+                            className={
+                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (ownStructureToDeposit.deposit?.quantity === 0 ||
+                              !ownStructureToDeposit.deposit?.shipId ||
+                              handleDepositGoodsToOwnStructure.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              ownStructureToDeposit.deposit?.quantity === 0 ||
+                              !ownStructureToDeposit.deposit?.shipId ||
+                              handleDepositGoodsToOwnStructure.isLoading
+                            }
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (
+                                !ownStructureToDeposit.id ||
+                                !ownStructureToDeposit.deposit?.shipId ||
+                                !ownStructureToDeposit.deposit?.good ||
+                                !ownStructureToDeposit.deposit?.quantity
+                              ) {
+                                return
+                              }
+                              handleDepositGoodsToOwnStructure.mutate({
+                                structureId: ownStructureToDeposit.id,
+                                shipId: ownStructureToDeposit.deposit?.shipId,
+                                good: ownStructureToDeposit.deposit?.good,
+                                quantity:
+                                  ownStructureToDeposit.deposit?.quantity,
+                              })
+                            }}
+                          >
+                            {!handleDepositGoodsToOwnStructure.isLoading ? (
+                              `Deposit ${
+                                !!ownStructureToDeposit.deposit?.quantity &&
+                                ownStructureToDeposit.deposit?.quantity > 0
+                                  ? `${formatNumberCommas(
+                                      ownStructureToDeposit.deposit?.quantity
+                                    )} units`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Depositing goods
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships available to deposit goods.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Ships must be docked in this location to deposit
+                            goods.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
               </div>
             )}
           </>
         }
-        onClose={() => setOwnStructureToDeposit(null)}
+        onClose={() => setOwnStructureToDeposit(undefined)}
+        className="w-full md:max-w-xl"
       />
       <Modal
         open={!!ownStructureToWithdraw}
@@ -680,93 +1012,213 @@ function Structures() {
           <>
             {ownStructureToWithdraw && (
               <div className="mt-4 px-4 py-2">
-                {' '}
-                <div className="sm:col-span-3">
-                  <Select
-                    label="Good"
-                    options={
-                      allMyStructures.data?.structures
-                        .find(
-                          (s) => s.id === ownStructureToWithdraw.structureId
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      Withdraw Goods from{' '}
+                      {
+                        StructureCategory[
+                          ownStructureToWithdraw.type as unknown as keyof typeof StructureCategory
+                        ]
+                      }
+                    </h3>
+                  </div>
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Location</span>
+                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToWithdraw.location}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Consumes</span>
+                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToWithdraw.consumes
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
                         )
-                        ?.produces.map((g) => ({
-                          label: g,
-                          value: g,
-                        })) ?? []
-                    }
-                    value={ownStructureToWithdraw.good}
-                    onChange={(value) => {
-                      setOwnStructureToWithdraw((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Quantity
-                  </label>
-                  <input
-                    className="mt-1 form-input w-full"
-                    type="number"
-                    min={1}
-                    // max={} // structure quantity
-                    onChange={(e) =>
-                      setOwnStructureToWithdraw((prev) => ({
-                        ...prev,
-                        quantity: parseInt(e.target.value),
-                      }))
-                    }
-                  />
-                </div>
-                <div className="sm:col-span-3">
-                  <Select
-                    label="To Ship"
-                    options={shipOptions}
-                    value={ownStructureToWithdraw.shipId}
-                    onChange={(value) => {
-                      setOwnStructureToWithdraw((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <button
-                  className="m-4"
-                  onClick={() => setOwnStructureToWithdraw(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="m-4"
-                  onClick={() => {
-                    if (
-                      !ownStructureToWithdraw?.structureId ||
-                      !ownStructureToWithdraw?.shipId ||
-                      !ownStructureToWithdraw?.good ||
-                      !ownStructureToWithdraw?.quantity
-                    ) {
-                      return
-                    }
-                    handleWithdrawGoodsFromOwnStructure(
-                      ownStructureToWithdraw.structureId,
-                      ownStructureToWithdraw.shipId,
-                      ownStructureToWithdraw.good,
-                      ownStructureToWithdraw.quantity
-                    )
-                  }}
-                >
-                  Withdraw
-                </button>
+                        .join(', ')}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Produces</span>
+                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {ownStructureToWithdraw.produces
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
+                        )
+                        .join(', ')}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="To Ship"
+                            options={shipOptions}
+                            value={ownStructureToWithdraw.withdraw?.shipId}
+                            onChange={(value) => {
+                              setOwnStructureToWithdraw((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  withdraw: {
+                                    ...prev.withdraw,
+                                    shipId: value,
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="Select Good"
+                            options={
+                              ownStructureToWithdraw.produces.map((g) => ({
+                                label: g,
+                                value: g,
+                              })) ?? []
+                            }
+                            value={ownStructureToWithdraw.withdraw?.good}
+                            onChange={(value) => {
+                              setOwnStructureToWithdraw((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  withdraw: {
+                                    ...prev.withdraw,
+                                    good: GoodType[
+                                      value as keyof typeof GoodType
+                                    ],
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Quantity
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              min={1}
+                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              onChange={(e) => {
+                                const quantity = !isNaN(
+                                  parseInt(e.target.value)
+                                )
+                                  ? parseInt(e.target.value)
+                                  : 0
+                                setOwnStructureToWithdraw((prev) => {
+                                  if (!prev) {
+                                    return
+                                  }
+                                  return {
+                                    ...prev,
+                                    withdraw: {
+                                      ...prev.withdraw,
+                                      quantity,
+                                    },
+                                  }
+                                })
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-6 sm:col-span-2">
+                          <button
+                            type="submit"
+                            className={
+                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (ownStructureToWithdraw.withdraw?.quantity ===
+                                0 ||
+                              !ownStructureToWithdraw.withdraw?.shipId ||
+                              handleWithdrawGoodsFromOwnStructure.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              ownStructureToWithdraw.withdraw?.quantity === 0 ||
+                              !ownStructureToWithdraw.withdraw?.shipId ||
+                              handleWithdrawGoodsFromOwnStructure.isLoading
+                            }
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (
+                                !ownStructureToWithdraw.id ||
+                                !ownStructureToWithdraw.withdraw?.shipId ||
+                                !ownStructureToWithdraw.withdraw?.good ||
+                                !ownStructureToWithdraw.withdraw?.quantity
+                              ) {
+                                return
+                              }
+                              handleWithdrawGoodsFromOwnStructure.mutate({
+                                structureId: ownStructureToWithdraw.id,
+                                shipId: ownStructureToWithdraw.withdraw?.shipId,
+                                good: ownStructureToWithdraw.withdraw?.good,
+                                quantity:
+                                  ownStructureToWithdraw.withdraw?.quantity,
+                              })
+                            }}
+                          >
+                            {!handleWithdrawGoodsFromOwnStructure.isLoading ? (
+                              `Withdraw ${
+                                !!ownStructureToWithdraw.withdraw?.quantity &&
+                                ownStructureToWithdraw.withdraw?.quantity > 0
+                                  ? `${formatNumberCommas(
+                                      ownStructureToWithdraw.withdraw?.quantity
+                                    )} units`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Withdrawing goods
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships available to withdraw goods.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Ships must be docked in this location to withdraw
+                            goods.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
               </div>
             )}
           </>
         }
         onClose={() => {
-          setOwnStructureToWithdraw(null)
+          setOwnStructureToWithdraw(undefined)
         }}
+        className="w-full md:max-w-xl"
       />
       <Modal
         open={!!structureToDeposit}
@@ -775,92 +1227,215 @@ function Structures() {
           <>
             {structureToDeposit && (
               <div className="mt-4 px-4 py-2">
-                {' '}
-                <div className="sm:col-span-3">
-                  <Select
-                    label="Good"
-                    options={
-                      structure.data?.structure.materials.map((g) => ({
-                        label: `${g.good} (${formatNumberCommas(
-                          g.quantity
-                        )}/${formatNumberCommas(g.targetQuantity)})`,
-                        value: g.good,
-                      })) ?? []
-                    }
-                    value={structureToDeposit.good}
-                    onChange={(value) => {
-                      setStructureToDeposit((prev) => ({
-                        ...prev,
-                        good: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Quantity
-                  </label>
-                  <input
-                    className="mt-1 form-input w-full"
-                    type="number"
-                    min={1}
-                    // max={} // ship quantity
-                    onChange={(e) =>
-                      setStructureToDeposit((prev) => ({
-                        ...prev,
-                        quantity: parseInt(e.target.value),
-                      }))
-                    }
-                  />
-                </div>
-                <div className="sm:col-span-3">
-                  <Select
-                    label="From Ship"
-                    options={shipOptions}
-                    value={structureToDeposit.shipId}
-                    onChange={(value) => {
-                      setStructureToDeposit((prev) => ({
-                        ...prev,
-                        shipId: value,
-                      }))
-                    }}
-                  />
-                </div>
-                <button
-                  className="m-4"
-                  onClick={() => setStructureToDeposit(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="m-4"
-                  onClick={() => {
-                    if (
-                      !structureToDeposit?.structureId ||
-                      !structureToDeposit?.shipId ||
-                      !structureToDeposit?.good ||
-                      !structureToDeposit?.quantity
-                    ) {
-                      return
-                    }
-                    handleDepositGoodsToStructure(
-                      structureToDeposit.structureId,
-                      structureToDeposit.shipId,
-                      structureToDeposit.good,
-                      structureToDeposit.quantity
-                    )
-                  }}
-                >
-                  Deposit
-                </button>
+                <form>
+                  <div>
+                    <h3 className="text-md font-medium text-gray-900">
+                      Deposit Goods to{' '}
+                      {
+                        StructureCategory[
+                          structureToDeposit.type as unknown as keyof typeof StructureCategory
+                        ]
+                      }
+                    </h3>
+                  </div>
+                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">Username</span>
+                      <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {structureToDeposit.ownedBy.username}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Location</span>
+                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {structureToDeposit.location}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Consumes</span>
+                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {structureToDeposit.consumes
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
+                        )
+                        .join(', ')}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Produces</span>
+                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {structureToDeposit.produces
+                        .map(
+                          (c) => GoodType[c as unknown as keyof typeof GoodType]
+                        )
+                        .join(', ')}
+                    </span>
+                  </div>
+                  {shipOptions.length > 0 ? (
+                    <>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="From Ship"
+                            options={shipOptions}
+                            value={structureToDeposit.deposit?.shipId}
+                            onChange={(value) => {
+                              setStructureToDeposit((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  deposit: {
+                                    ...prev.deposit,
+                                    shipId: value,
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div className="sm:col-span-3">
+                          <Select
+                            label="Select Good"
+                            options={
+                              structureToDeposit.consumes.map((g) => ({
+                                label: g,
+                                value: g,
+                              })) ?? []
+                            }
+                            value={structureToDeposit.deposit?.good}
+                            onChange={(value) => {
+                              setStructureToDeposit((prev) => {
+                                if (!prev) {
+                                  return
+                                }
+                                return {
+                                  ...prev,
+                                  deposit: {
+                                    ...prev.deposit,
+                                    good: GoodType[
+                                      value as keyof typeof GoodType
+                                    ],
+                                  },
+                                }
+                              })
+                            }}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Quantity
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="number"
+                              name="quantity"
+                              id="quantity"
+                              min={1}
+                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              onChange={(e) => {
+                                const quantity = !isNaN(
+                                  parseInt(e.target.value)
+                                )
+                                  ? parseInt(e.target.value)
+                                  : 0
+                                setStructureToDeposit((prev) => {
+                                  if (!prev) {
+                                    return
+                                  }
+                                  return {
+                                    ...prev,
+                                    deposit: {
+                                      ...prev.deposit,
+                                      quantity,
+                                    },
+                                  }
+                                })
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-6 sm:col-span-2">
+                          <button
+                            type="submit"
+                            className={
+                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              (structureToDeposit.deposit?.quantity === 0 ||
+                              !structureToDeposit.deposit?.shipId ||
+                              handleDepositGoodsToStructure.isLoading
+                                ? ' opacity-50 cursor-not-allowed'
+                                : '')
+                            }
+                            disabled={
+                              structureToDeposit.deposit?.quantity === 0 ||
+                              !structureToDeposit.deposit?.shipId ||
+                              handleDepositGoodsToStructure.isLoading
+                            }
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (
+                                !structureToDeposit.id ||
+                                !structureToDeposit.deposit?.shipId ||
+                                !structureToDeposit.deposit?.good ||
+                                !structureToDeposit.deposit?.quantity
+                              ) {
+                                return
+                              }
+                              handleDepositGoodsToStructure.mutate({
+                                structureId: structureToDeposit.id,
+                                shipId: structureToDeposit.deposit?.shipId,
+                                good: structureToDeposit.deposit?.good,
+                                quantity: structureToDeposit.deposit?.quantity,
+                              })
+                            }}
+                          >
+                            {!handleDepositGoodsToStructure.isLoading ? (
+                              `Deposit ${
+                                !!structureToDeposit.deposit?.quantity &&
+                                structureToDeposit.deposit?.quantity > 0
+                                  ? `${formatNumberCommas(
+                                      structureToDeposit.deposit?.quantity
+                                    )} units`
+                                  : ''
+                              }`
+                            ) : (
+                              <>
+                                Depositing goods
+                                <div className="ml-2">
+                                  <LoadingSpinner />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-full py-4">
+                        <div className="flex flex-col items-center text-center mb-4">
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No ships available to deposit goods.
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Ships must be docked in this location to deposit
+                            goods.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </form>
               </div>
             )}
           </>
         }
-        onClose={() => setStructureToDeposit(null)}
+        onClose={() => setStructureToDeposit(undefined)}
+        className="w-full md:max-w-xl"
       />
     </>
   )
 }
-
-export default Structures

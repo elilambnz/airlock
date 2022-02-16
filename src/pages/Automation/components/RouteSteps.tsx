@@ -9,7 +9,7 @@ interface RouteStepsProps {
   handleResume?: (index: number) => void
 }
 
-const RouteSteps = (props: RouteStepsProps) => {
+export default function RouteSteps(props: RouteStepsProps) {
   const { tradeRoute, setTradeRoute, notActive, handleResume } = props
 
   const getIconForEvent = (event: RouteEventType) => {
@@ -197,5 +197,3 @@ const RouteSteps = (props: RouteStepsProps) => {
     </div>
   )
 }
-
-export default RouteSteps

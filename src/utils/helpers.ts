@@ -66,3 +66,19 @@ export const getShortName = (seed?: number) => {
 export const getShipName = (shipId: string) => {
   return getShortName(getCharCodeOfAllStringChars(shipId.substring(3, 8)))
 }
+
+export const getErrorMessage = (error: { code: number; message: string }) => {
+  return getMessageForErrorCode(error.code) || error.message
+}
+
+// Handles error codes specific to the SpaceTraders API and returns a friendly error message
+export const getMessageForErrorCode = (code: number) => {
+  switch (code) {
+    case 500:
+      return 'Something unexpected went wrong!'
+    case 42901:
+      return 'Throttle limit reached. Please try again'
+    default:
+      return
+  }
+}

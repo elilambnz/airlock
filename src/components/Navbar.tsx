@@ -8,7 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 
 import { abbreviateNumber } from '../utils/helpers'
 
-const Navbar = () => {
+export default function Navbar() {
   const location = useLocation()
   const auth = useAuth()
   const user = useQuery('user', getMyAccount)
@@ -229,5 +229,3 @@ const Navbar = () => {
     </Disclosure>
   )
 }
-
-export default Navbar

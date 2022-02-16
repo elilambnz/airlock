@@ -8,7 +8,7 @@ interface ActiveProgressProps {
   end: Moment
 }
 
-const ActiveProgress = (props: ActiveProgressProps) => {
+export default function ActiveProgress(props: ActiveProgressProps) {
   const { start, end } = props
 
   const [percent, setPercent] = useState(0)
@@ -23,5 +23,3 @@ const ActiveProgress = (props: ActiveProgressProps) => {
 
   return <Progress percent={percent} />
 }
-
-export default ActiveProgress

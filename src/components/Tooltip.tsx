@@ -6,7 +6,7 @@ interface ToolTipProps {
   className?: string
 }
 
-const Tooltip = (props: ToolTipProps) => {
+export default function Tooltip(props: ToolTipProps) {
   const { children, title, className } = props
   return (
     <div
@@ -25,5 +25,3 @@ const Tooltip = (props: ToolTipProps) => {
     </div>
   )
 }
-
-export default Tooltip
