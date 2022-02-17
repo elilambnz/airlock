@@ -7,7 +7,6 @@ import {
 import {
   createNewFlightPlan,
   getFlightPlanInfo,
-  getMyAccount,
   getShipInfo,
   initiateWarpJump,
 } from '../api/routes/my'
@@ -34,11 +33,11 @@ export const AutomationContext = createContext({
   runTime: 0,
   tradeRoutes: {} as UseQueryResult<TradeRoute[], unknown>,
   tradeRouteLog: {} as { [id: string]: string[] },
+  setStatus: (status: AutomationStatus) => {},
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
   pauseTradeRoute: (id: string) => {},
   resumeTradeRoute: (id: string, step?: number) => {},
-  state: 0,
 })
 
 export default function AutomationProvider(props: any) {
@@ -56,17 +55,28 @@ export default function AutomationProvider(props: any) {
 
   useEffect(() => {
     if (status === AutomationStatus.Running) {
-      const timer = setInterval(() => tick(), 1000)
+      const worker = new Worker(
+        new URL('../workers/timer-worker', import.meta.url)
+      )
+      const timer: Remote<{
+        start: (callback: (value: number) => void) => void
+        clear: () => void
+      }> = wrap(worker)
+
+      const init = async () => {
+        await timer.start(proxy((value) => setRunTime(value)))
+      }
+      init()
 
       return function cleanup() {
-        clearInterval(timer)
+        worker.terminate()
       }
     }
 
     if (status === AutomationStatus.Stopped) {
       setRunTime(0)
     }
-  }, [status, runTime])
+  }, [status])
 
   const start = () => {
     if (status === AutomationStatus.Running) {
@@ -84,21 +94,6 @@ export default function AutomationProvider(props: any) {
     setStatus(AutomationStatus.Stopped)
   }
 
-  // worker test
-  const [state, setState] = useState(0)
-  useEffect(() => {
-    const init = async () => {
-      const worker = new Worker(
-        new URL('../workers/my-worker', import.meta.url)
-      )
-      const obj: Remote<{
-        start: (tick: (value: number) => void) => void
-      }> = wrap(worker)
-      await obj.start(proxy((value) => setState(value)))
-    }
-    init()
-  }, [])
-
   // Start automation tasks
   useEffect(() => {
     if (tradeRoutes.data && tradeRoutes.data.length > 0) {
@@ -113,7 +108,9 @@ export default function AutomationProvider(props: any) {
         automateTradeRoute(tradeRoute, i)
       })
     } else {
-      stop()
+      console.log('Automation: No trade routes')
+
+      // stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tradeRoutes])
@@ -445,20 +442,16 @@ export default function AutomationProvider(props: any) {
     )
   }
 
-  const tick = () => {
-    setRunTime((prev) => prev + 1)
-  }
-
   const value = {
     status,
     runTime,
     tradeRoutes,
     tradeRouteLog,
+    setStatus,
     addTradeRoute,
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
-    state,
   }
   return <AutomationContext.Provider value={value} {...props} />
 }

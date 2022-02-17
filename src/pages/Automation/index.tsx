@@ -99,11 +99,11 @@ export default function Automation() {
     runTime,
     tradeRoutes,
     tradeRouteLog,
+    setStatus,
     addTradeRoute,
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
-    state,
   } = useAutomation()
 
   const knownSystemOptions: { value: string; label: string }[] = [
@@ -269,10 +269,27 @@ export default function Automation() {
                     <dt className="text-sm font-medium text-gray-500 truncate">
                       Status
                     </dt>
-                    <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                      <span
+                    <dd className="mt-1 flex justify-between items-baseline md:block lg:flex">
+                      <div className="flex items-baseline">
+                        <button
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          onClick={() => {
+                            if (status === AutomationStatus.Stopped) {
+                              setStatus(AutomationStatus.Running)
+                            } else {
+                              setStatus(AutomationStatus.Stopped)
+                            }
+                          }}
+                        >
+                          {status === AutomationStatus.Stopped
+                            ? 'Start'
+                            : 'Stop'}
+                        </button>
+                      </div>
+
+                      <div
                         className={
-                          'inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium' +
+                          'inline-flex items-baseline px-2.5 py-0.5 rounded-full text-sm font-medium md:mt-2 lg:mt-0' +
                           (status === AutomationStatus.Running
                             ? ' bg-green-100 text-green-800'
                             : status === AutomationStatus.Stopped
@@ -281,7 +298,7 @@ export default function Automation() {
                         }
                       >
                         {status}
-                      </span>
+                      </div>
                     </dd>
                   </div>
                 </div>
@@ -294,11 +311,6 @@ export default function Automation() {
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
                       {moment.duration(runTime, 'seconds').format('HH:mm:ss')}
                     </dd>
-                    <p>Worker: {state}</p>
-                    <p>
-                      Drift:{' '}
-                      <span className="text-red-600">{state - runTime}</span>
-                    </p>
                   </div>
                 </div>
 
