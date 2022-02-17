@@ -13,8 +13,8 @@ import Notifications from './components/Notifications'
 
 import Home from './pages/Home'
 import Account from './pages/Account'
-import Marketplace from './pages/Marketplace'
 import Systems from './pages/Systems'
+import Marketplace from './pages/Marketplace'
 import Structures from './pages/Structures'
 import Automation from './pages/Automation'
 import Loans from './pages/Loans'
@@ -61,14 +61,6 @@ export default function App() {
       ),
     },
     {
-      path: 'marketplace',
-      element: (
-        <RequireAuth>
-          <Marketplace />
-        </RequireAuth>
-      ),
-    },
-    {
       path: 'systems',
       element: (
         <RequireAuth>
@@ -81,6 +73,14 @@ export default function App() {
       element: (
         <RequireAuth>
           <Systems />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: 'marketplace',
+      element: (
+        <RequireAuth>
+          <Marketplace />
         </RequireAuth>
       ),
     },

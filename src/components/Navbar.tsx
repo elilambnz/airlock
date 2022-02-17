@@ -20,8 +20,8 @@ export default function Navbar() {
   const links = [
     { path: '', name: 'Home' },
     { path: 'account', name: 'Account' },
-    { path: 'marketplace', name: 'Marketplace' },
     { path: 'systems', name: 'Systems' },
+    { path: 'marketplace', name: 'Marketplace' },
     { path: 'structures', name: 'Structures' },
     { path: 'automation', name: 'Automation' },
     { path: 'loans', name: 'Loans' },
