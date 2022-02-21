@@ -8,6 +8,8 @@ import { useAuth } from '../hooks/useAuth'
 
 import { abbreviateNumber } from '../utils/helpers'
 
+const BUILD = process.env.REACT_APP_GIT_SHA
+
 export default function Navbar() {
   const location = useLocation()
   const auth = useAuth()
@@ -127,6 +129,18 @@ export default function Navbar() {
                               </>
                             )}
                           </Menu.Item>
+                          <Menu.Item>
+                            {() => (
+                              <>
+                                <span className="block px-4 py-1 text-xs text-gray-700">
+                                  Build
+                                </span>
+                                <span className="block px-4 py-1 text-xs text-gray-700">
+                                  <pre>{BUILD}</pre>
+                                </span>
+                              </>
+                            )}
+                          </Menu.Item>
                         </div>
                         <div className="py-1">
                           <Menu.Item>
@@ -210,6 +224,14 @@ export default function Navbar() {
                       <pre>{auth.apiToken}</pre>
                     </div>
                   </div>
+                </div>
+                <div className="p-2 mb-2 space-y-1">
+                  <span className="block px-4 py-1 text-sm text-gray-400">
+                    Build
+                  </span>
+                  <span className="block px-4 py-1 text-sm text-gray-400">
+                    <pre>{BUILD}</pre>
+                  </span>
                 </div>
               </div>
               <div className="py-1">
