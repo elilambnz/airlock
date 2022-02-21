@@ -32,8 +32,9 @@ import { ReactQueryDevtools } from 'react-query/devtools'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
-    domain: process.env.REACT_APP_DOMAIN,
-    apiHost: process.env.REACT_APP_PLAUSIBLE_API_HOST,
+    domain: process.env.REACT_APP_DOMAIN || 'http://localhost:3000',
+    apiHost:
+      process.env.REACT_APP_PLAUSIBLE_API_HOST || 'https://api.plausible.io',
   })
 // This tracks the current page view and all future ones as well
 enableAutoPageviews()
