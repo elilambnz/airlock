@@ -40,10 +40,6 @@ export const getProgress = (start: Moment, end: Moment) => {
   return clamp(p, 0, 100)
 }
 
-export const sleep = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 export const getCharCodeOfAllStringChars = (str: string) => {
   return parseInt([...str].map((c) => c.charCodeAt(0)).join(''))
 }

@@ -1,16 +1,16 @@
 import { expose } from 'comlink'
 
-let interval: NodeJS.Timer
+let intervalRef: NodeJS.Timer
 const timer = {
-  start(callback: (value: number) => void) {
+  start(callback: (value: number) => void, interval = 1000) {
     let counter = 0
-    interval = setInterval(() => {
+    intervalRef = setInterval(() => {
       counter++
       callback(counter)
-    }, 1000)
+    }, interval)
   },
-  stop() {
-    clearInterval(interval)
+  clear() {
+    clearInterval(intervalRef)
   },
 }
 
