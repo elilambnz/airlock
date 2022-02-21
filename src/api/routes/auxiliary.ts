@@ -58,6 +58,33 @@ const createTradingRoute = async (
   }
 }
 
+const updateTradingRoute = async (
+  id: string,
+  version: number,
+  events: TradeRouteEvent[],
+  assignedShips: string[],
+  autoRefuel: boolean
+) => {
+  try {
+    const response: { data: CreateTradingRoutesResponse } = await axios.put(
+      `${BASE_ROUTE}/${id}`,
+      {
+        version,
+        events,
+        assignedShips,
+        autoRefuel,
+      },
+      {
+        baseURL: BASE_URL,
+      }
+    )
+    return response.data
+  } catch (error: any) {
+    console.error(error)
+    throw error.response?.data?.error
+  }
+}
+
 const removeTradingRoute = async (id: string, version: number) => {
   try {
     const response: { data: RemoveTradingRoutesResponse } = await axios.delete(
@@ -73,4 +100,9 @@ const removeTradingRoute = async (id: string, version: number) => {
   }
 }
 
-export { getTradingRoutes, createTradingRoute, removeTradingRoute }
+export {
+  getTradingRoutes,
+  createTradingRoute,
+  updateTradingRoute,
+  removeTradingRoute,
+}

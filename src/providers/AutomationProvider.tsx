@@ -3,6 +3,7 @@ import {
   getTradingRoutes,
   createTradingRoute,
   removeTradingRoute,
+  updateTradingRoute,
 } from '../api/routes/auxiliary'
 import {
   createNewFlightPlan,
@@ -35,6 +36,7 @@ export const AutomationContext = createContext({
   tradeRouteLog: {} as { [id: string]: string[] },
   setStatus: (status: AutomationStatus) => {},
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
+  updateTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
   pauseTradeRoute: (id: string) => {},
   resumeTradeRoute: (id: string, step?: number) => {},
@@ -108,12 +110,10 @@ export default function AutomationProvider(props: any) {
         automateTradeRoute(tradeRoute, i)
       })
     } else {
-      console.log('Automation: No trade routes')
-
-      // stop()
+      stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tradeRoutes])
+  }, [tradeRoutes.data])
 
   // FIXME: Pausing and resuming trade routes is not working
   const automateTradeRoute = async (
@@ -387,11 +387,25 @@ export default function AutomationProvider(props: any) {
         tradeRoute.autoRefuel
       )
       console.log('addTradeRoute', response)
-
-      const _version = response._version
       queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error creating trade route:', error)
+    }
+  }
+
+  const updateTradeRoute = async (tradeRoute: TradeRoute) => {
+    try {
+      const response = await updateTradingRoute(
+        tradeRoute.id,
+        tradeRoute._version,
+        tradeRoute.events,
+        tradeRoute.assignedShips,
+        tradeRoute.autoRefuel
+      )
+      console.log('updateTradeRoute', response)
+      queryClient.invalidateQueries('tradeRoutes')
+    } catch (error) {
+      console.error('Error updating trade route:', error)
     }
   }
 
@@ -449,6 +463,7 @@ export default function AutomationProvider(props: any) {
     tradeRouteLog,
     setStatus,
     addTradeRoute,
+    updateTradeRoute,
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,

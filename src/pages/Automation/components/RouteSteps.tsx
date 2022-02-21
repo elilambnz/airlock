@@ -108,7 +108,9 @@ export default function RouteSteps(props: RouteStepsProps) {
                         <p className="text-sm text-gray-500">
                           Buy{' '}
                           <span className="font-medium text-gray-900">
-                            {event.good?.quantity} units
+                            {`${event.good?.quantity} unit${
+                              (event.good?.quantity ?? 0) > 1 ? 's' : ''
+                            }`}
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
@@ -120,7 +122,9 @@ export default function RouteSteps(props: RouteStepsProps) {
                         <p className="text-sm text-gray-500">
                           Sell{' '}
                           <span className="font-medium text-gray-900">
-                            {event.good?.quantity} units
+                            {`${event.good?.quantity} unit${
+                              (event.good?.quantity ?? 0) > 1 ? 's' : ''
+                            }`}{' '}
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
@@ -188,7 +192,7 @@ export default function RouteSteps(props: RouteStepsProps) {
                 No steps have been added to this route.
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Start by adding either a trade or travel step.
+                Start by adding either a travel or trade step.
               </p>
             </div>
           </div>

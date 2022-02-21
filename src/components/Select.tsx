@@ -97,8 +97,11 @@ export default function Select(props: SelectProps) {
                   {selected ? selected.label : 'Select'}
                   {selected?.tags && (
                     <div className="inline-flex text-xs text-gray-500">
-                      {selected.tags.slice(0, 2).map((tag) => (
-                        <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
+                      {selected.tags.slice(0, 2).map((tag, i) => (
+                        <span
+                          key={i}
+                          className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -204,8 +207,11 @@ export default function Select(props: SelectProps) {
                               {option.label}
                               {option.tags && (
                                 <div className="inline-flex text-xs text-gray-500">
-                                  {option.tags.map((tag) => (
-                                    <span className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100">
+                                  {option.tags.map((tag, i) => (
+                                    <span
+                                      key={i}
+                                      className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100"
+                                    >
                                       {tag}
                                     </span>
                                   ))}
