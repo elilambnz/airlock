@@ -149,7 +149,7 @@ export default function Systems() {
           )} is now in transit to ${destination} and will arrive ${moment(
             data.flightPlan.arrivesAt
           ).fromNow()}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: async (error: any, variables) => {
@@ -168,7 +168,7 @@ export default function Systems() {
           push({
             title: 'Error creating flight plan',
             message: getErrorMessage(error),
-            type: NotificationType.Error,
+            type: NotificationType.ERROR,
           })
         }
       },
@@ -194,14 +194,14 @@ export default function Systems() {
           )} is now in transit to ${
             data.flightPlan.destination
           } and will arrive ${moment(data.flightPlan.arrivesAt).fromNow()}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error initiating warp jump',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
       onSettled: () => {

@@ -163,14 +163,14 @@ export default function Marketplace() {
           message: `${getShipName(ship.id)} has purchased ${quantity} ${
             GoodType[symbol as unknown as keyof typeof GoodType]
           }`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -196,14 +196,14 @@ export default function Marketplace() {
           message: `${getShipName(ship.id)} has sold ${quantity} ${
             GoodType[symbol as unknown as keyof typeof GoodType]
           }`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -222,14 +222,14 @@ export default function Marketplace() {
           message: `Ship ${getShipName(ship.id)} now docked at ${
             ship.location
           }`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }

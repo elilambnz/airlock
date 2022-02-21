@@ -57,14 +57,14 @@ export default function ManageCargo(props: ManageCargoProps) {
           message: `Ship ${getShipName(data.toShip.id)} now has ${
             data.toShip.maxCargo - data.toShip.spaceAvailable
           }/${data.toShip.maxCargo} cargo items`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error transferring cargo',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -81,14 +81,14 @@ export default function ManageCargo(props: ManageCargoProps) {
           message: `Ship ${getShipName(data.shipId)} now has ${
             data.quantityRemaining
           } ${data.good} remaining`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error jettisoning cargo',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }

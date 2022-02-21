@@ -88,7 +88,7 @@ export default function AutomationProvider(props: any) {
       message: `${tradeRoutes.data?.length} trade route${
         (tradeRoutes.data?.length ?? 0) > 1 ? 's are' : ' is'
       } running`,
-      type: NotificationType.Info,
+      type: NotificationType.INFO,
     })
     setStatus(AutomationStatus.Running)
   }
@@ -100,7 +100,7 @@ export default function AutomationProvider(props: any) {
     push({
       title: 'Automation stopped',
       message: 'All trade routes have been stopped',
-      type: NotificationType.Info,
+      type: NotificationType.INFO,
     })
     setStatus(AutomationStatus.Stopped)
   }
@@ -361,8 +361,20 @@ export default function AutomationProvider(props: any) {
       push({
         title: 'Automation Error',
         message: error.message,
-        type: NotificationType.Error,
+        type: NotificationType.ERROR,
       })
+      // Set error status
+      queryClient.setQueryData(
+        'tradeRoutes',
+        tradeRoutes.data?.map((r) =>
+          r.id === tradeRoute.id
+            ? {
+                ...r,
+                status: TradeRouteStatus.ERROR,
+              }
+            : r
+        )
+      )
     }
   }
 

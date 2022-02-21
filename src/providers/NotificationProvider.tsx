@@ -9,9 +9,9 @@ export interface Notification {
 }
 
 export enum NotificationType {
-  Success = 'success',
-  Error = 'error',
-  Info = 'info',
+  SUCCESS = 'success',
+  ERROR = 'error',
+  INFO = 'info',
 }
 
 export const NotificationContext = createContext({

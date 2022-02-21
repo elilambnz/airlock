@@ -32,14 +32,14 @@ export default function Loans() {
           message: `${
             LoanTier[data.loan.type as unknown as keyof typeof LoanTier]
           } loan taken out`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error taking out loan',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -57,14 +57,14 @@ export default function Loans() {
           message: `${
             LoanTier[data.loans[0].type as unknown as keyof typeof LoanTier]
           } loan paid off`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error paying off loan',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }

@@ -15,21 +15,21 @@ export default function Notifications() {
 
   const getIconForNotificationType = (type: NotificationType) => {
     switch (type) {
-      case NotificationType.Success:
+      case NotificationType.SUCCESS:
         return (
           <CheckCircleIcon
             className="h-6 w-6 text-green-400"
             aria-hidden="true"
           />
         )
-      case NotificationType.Error:
+      case NotificationType.ERROR:
         return (
           <ExclamationCircleIcon
             className="h-6 w-6 text-red-400"
             aria-hidden="true"
           />
         )
-      case NotificationType.Info:
+      case NotificationType.INFO:
         return (
           <InformationCircleIcon
             className="h-6 w-6 text-blue-400"

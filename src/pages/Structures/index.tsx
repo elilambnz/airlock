@@ -132,14 +132,14 @@ export default function Structures() {
         push({
           title: 'Structure created',
           message: `${data.structure.type} structure created at ${data.structure.location}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error creating structure',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
       onSettled: () => {
@@ -177,14 +177,14 @@ export default function Structures() {
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
           } at ${updatedStructure?.location}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error depositing goods',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -219,14 +219,14 @@ export default function Structures() {
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
           } at ${updatedStructure?.location}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error withdrawing goods',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }
@@ -261,14 +261,14 @@ export default function Structures() {
               updatedStructure?.type as unknown as keyof typeof StructureCategory
             ]
           } at ${updatedStructure?.location}`,
-          type: NotificationType.Success,
+          type: NotificationType.SUCCESS,
         })
       },
       onError: (error: any) => {
         push({
           title: 'Error depositing goods',
           message: getErrorMessage(error),
-          type: NotificationType.Error,
+          type: NotificationType.ERROR,
         })
       },
     }

@@ -36,14 +36,14 @@ export default function Account() {
       push({
         title: 'Ship scrapped successfully',
         message: data.success,
-        type: NotificationType.Success,
+        type: NotificationType.SUCCESS,
       })
     },
     onError: (error: any) => {
       push({
         title: 'Error scrapping ship',
         message: getErrorMessage(error),
-        type: NotificationType.Error,
+        type: NotificationType.ERROR,
       })
     },
     onSettled: () => {
