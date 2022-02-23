@@ -44,6 +44,7 @@ import {
   NotificationType,
 } from '../../providers/NotificationProvider'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { useTimeout } from '../../hooks/useTimeout'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -53,6 +54,7 @@ export default function Systems() {
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
   const [showMap, setShowMap] = useState(false)
 
+  const { sleep } = useTimeout()
   const { push } = useContext(NotificationContext)
 
   const navigate = useNavigate()
@@ -120,6 +122,12 @@ export default function Systems() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.systemSymbol])
 
+  const delayUpdateShips = async (delay: number, systemSymbol?: string) => {
+    await sleep(delay)
+    queryClient.invalidateQueries(['systemFlightPlans', systemSymbol])
+    queryClient.invalidateQueries(['systemDockedShips', systemSymbol])
+  }
+
   const handleCreateFlightPlan = useMutation(
     ({
       shipId,
@@ -151,6 +159,10 @@ export default function Systems() {
           ).fromNow()}`,
           type: NotificationType.SUCCESS,
         })
+        delayUpdateShips(
+          data.flightPlan.timeRemainingInSeconds * 1000,
+          params.systemSymbol
+        )
       },
       onError: async (error: any, variables) => {
         const { shipId, autoRefuel } = variables
@@ -178,7 +190,7 @@ export default function Systems() {
   const handleInitiateWarpJump = useMutation(
     ({ shipId }: { shipId: string }) => initiateWarpJump(shipId),
     {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         queryClient.invalidateQueries([
           'systemFlightPlans',
           params.systemSymbol,
@@ -196,6 +208,10 @@ export default function Systems() {
           } and will arrive ${moment(data.flightPlan.arrivesAt).fromNow()}`,
           type: NotificationType.SUCCESS,
         })
+        delayUpdateShips(
+          data.flightPlan.timeRemainingInSeconds * 1000,
+          params.systemSymbol
+        )
       },
       onError: (error: any) => {
         push({

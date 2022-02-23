@@ -16,6 +16,8 @@ import { ChipIcon, InformationCircleIcon } from '@heroicons/react/solid'
 import moment from 'moment'
 import 'moment-duration-format'
 import RouteConfiguration from './components/RouteConfiguration'
+import { getShipName } from '../../utils/helpers'
+import { GoodType } from '../../types/Order'
 
 export default function Automation() {
   const [showInfo, setShowInfo] = useState(false)
@@ -257,7 +259,12 @@ export default function Automation() {
                                       ?.reduce(
                                         (acc: string[], cur) => [
                                           ...acc,
-                                          String(cur.good?.good),
+                                          String(
+                                            GoodType[
+                                              cur.good
+                                                ?.good as keyof typeof GoodType
+                                            ]
+                                          ),
                                         ],
                                         []
                                       )
@@ -265,7 +272,9 @@ export default function Automation() {
                                 ].join(', ')}
                               </td>
                               <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                {route.assignedShips.join(', ')}
+                                {route.assignedShips
+                                  .map((id) => getShipName(id))
+                                  .join(', ')}
                               </td>
                               <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                 {route.autoRefuel ? 'Yes' : 'No'}

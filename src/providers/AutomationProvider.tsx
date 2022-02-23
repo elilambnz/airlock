@@ -77,6 +77,7 @@ export default function AutomationProvider(props: any) {
       clear()
       setRunTime(0)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   const start = () => {
@@ -142,6 +143,10 @@ export default function AutomationProvider(props: any) {
     try {
       // for (const event of tradeRoute.events) {
       console.log('startFromStep', tradeRoute.startFromStep ?? 0)
+
+      if (tradeRoute.events.length === 0) {
+        throw new Error('No trade route steps defined')
+      }
 
       for (
         let i = tradeRoute.startFromStep ?? 0;

@@ -98,8 +98,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
     [availableSystems]
   )
 
-  const { tradeRoutes, addTradeRoute, updateTradeRoute, removeTradeRoute } =
-    useAutomation()
+  const { tradeRoutes, addTradeRoute, updateTradeRoute } = useAutomation()
 
   const knownSystemOptions: { value: string; label: string }[] = [
     ...knownSystems,
@@ -240,7 +239,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 sm:divide-x sm:divide-gray-200">
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 sm:divide-x sm:divide-gray-200 border-b">
         <div className="col-span-4">
           <div className="mt-4 px-6">
             <h4 className="text-md leading-6 font-medium text-gray-900">
@@ -327,7 +326,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                       good: {
                         ...prev.good,
                         good: value,
-                        quantity: prev.good?.quantity || 1,
+                        quantity: prev.good?.quantity ?? 0,
                       },
                     }))
                   }}
