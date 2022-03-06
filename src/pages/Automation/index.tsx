@@ -134,7 +134,7 @@ export default function Automation() {
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Tasks
+                      Routes
                     </dt>
                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
                       {tradeRoutes.data?.length ?? 0}
@@ -361,7 +361,7 @@ export default function Automation() {
         }
         open={showInfo}
         title="About automation"
-        message={`Automation routes are saved to a secondary database. This means that you can leave the game and when you return, the routes you set will be saved. This browser tab must remain open to run automation routes, but does not have to be focused.\n\nThis feature is not part of, nor endorsed by the official Spacetraders API. To opt out of this feature, you can simply choose to not create any automation routes.`}
+        message={`Automation routes are saved to a secondary database. This means that you can leave the game and when you return, the routes you set will be saved. This browser tab must remain open to run automation routes, but does not have to be focused.\n\nThis feature is not part of, nor endorsed by the official SpaceTraders API. To opt out of this feature, you can simply choose to not create any automation routes.`}
         onClose={() => setShowInfo(false)}
         className="w-full md:max-w-xl"
       />
