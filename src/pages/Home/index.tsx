@@ -28,21 +28,6 @@ export default function Home() {
       .filter((u) => !!u)
       ?.sort((a, b) => a!.rank - b!.rank)) as NetWorth[]
 
-  const columns = [
-    {
-      key: 'rank',
-      label: 'Rank',
-    },
-    {
-      key: 'username',
-      label: 'Username',
-    },
-    {
-      key: 'netWorth',
-      label: 'Net Worth',
-    },
-  ]
-
   return (
     <>
       <Header>

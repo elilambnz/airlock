@@ -63,7 +63,7 @@ export default function CommandPalette() {
     }
   }, [])
 
-  const query = rawQuery.toLowerCase().replace(/^[#>]/, '')
+  const query = rawQuery.toLowerCase().replace(/^[#@]/, '')
 
   const availableShips =
     myShips.data?.ships

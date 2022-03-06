@@ -104,7 +104,6 @@ export default function Marketplace() {
   )
 
   const goodTypes = useQuery('goodTypes', listGoodTypes)
-  // const shipTypes = useQuery('shipTypes', listShipTypes)
 
   const filteredGoodDetails = useMemo(() => {
     if (!filteredGood) return
@@ -292,10 +291,18 @@ export default function Marketplace() {
                 <Select
                   label="Filter by Good"
                   options={
-                    goodTypes.data?.goods.map((g) => ({
-                      label: g.name,
-                      value: g.symbol,
-                    })) ?? []
+                    goodTypes.data?.goods
+                      .sort((a, b) =>
+                        GoodType[
+                          a.symbol as unknown as keyof typeof GoodType
+                        ].localeCompare(
+                          GoodType[b.symbol as unknown as keyof typeof GoodType]
+                        )
+                      )
+                      .map((g) => ({
+                        label: g.name,
+                        value: g.symbol,
+                      })) ?? []
                   }
                   value={filteredGood}
                   onChange={(value) => {
