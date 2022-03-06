@@ -1,3 +1,8 @@
+import {
+  CashIcon,
+  ChevronDoubleRightIcon,
+  PaperAirplaneIcon,
+} from '@heroicons/react/solid'
 import { Dispatch, SetStateAction } from 'react'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
 import { GoodType } from '../../../types/Order'
@@ -16,51 +21,11 @@ export default function RouteSteps(props: RouteStepsProps) {
     switch (event) {
       case RouteEventType.BUY:
       case RouteEventType.SELL:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
+        return <CashIcon className="h-5 w-5" />
       case RouteEventType.TRAVEL:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-          </svg>
-        )
+        return <PaperAirplaneIcon className="h-5 w-5" />
       case RouteEventType.WARP_JUMP:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-              clipRule="evenodd"
-            />
-            <path
-              fillRule="evenodd"
-              d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
+        return <ChevronDoubleRightIcon className="h-5 w-5" />
     }
   }
 

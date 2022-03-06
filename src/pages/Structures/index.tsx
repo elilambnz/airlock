@@ -24,8 +24,12 @@ import { getSystemLocations } from '../../api/routes/systems'
 import { listStructureTypes } from '../../api/routes/types'
 import '../../App.css'
 import Alert from '../../components/Alert'
+import Header from '../../components/Header'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import Main from '../../components/Main'
 import Modal from '../../components/Modal/index'
+import Section from '../../components/Section'
+import Title from '../../components/Title'
 import Select from '../../components/Select'
 import LoadingRows from '../../components/Table/LoadingRows'
 import {
@@ -341,484 +345,447 @@ export default function Structures() {
 
   return (
     <>
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Structures</h1>
-        </div>
-      </header>
-      <main>
-        <div
-          className="bg-gray-100"
-          style={{
-            minHeight: 'calc(100vh - 148px)',
-          }}
-        >
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto py-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                My Structures
-              </h2>
-            </div>
+      <Header>Structures</Header>
+      <Main>
+        <Title>My Structures</Title>
 
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-              <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Create New Structure
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Structures can be used to generate goods.
-                </p>
-              </div>
-              <div className="flex flex-col">
-                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                    <form className="min-w-full divide-y divide-gray-200">
-                      <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                        <div className="sm:col-span-2">
-                          <Select
-                            label="Select Structure Type"
-                            options={structureTypeOptions}
-                            value={newStructure?.type}
-                            onChange={(value) => {
-                              setNewStructure(() => ({
-                                type: value,
-                              }))
-                            }}
-                          />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <Select
-                            label="Select Location"
-                            options={locationOptions}
-                            value={newStructure?.location}
-                            disabled={!newStructure?.type}
-                            onChange={(value) => {
-                              setNewStructure((prev) => ({
-                                ...prev,
-                                location: value,
-                              }))
-                            }}
-                          />
-                        </div>
-                        <div className="flex pt-6 sm:col-span-2">
-                          <button
-                            type="submit"
-                            className={
-                              'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                              (!newStructure?.location ||
-                              !newStructure.type ||
-                              handleCreateStructure.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
-                                : '')
-                            }
-                            disabled={
-                              !newStructure?.location ||
-                              !newStructure.type ||
-                              handleCreateStructure.isLoading
-                            }
-                            onClick={(e) => {
-                              e.preventDefault()
-                              if (
-                                !newStructure?.location ||
-                                !newStructure.type
-                              ) {
-                                return
-                              }
-                              const { location, type } = newStructure
-                              handleCreateStructure.mutate({
-                                location,
-                                type,
-                              })
-                            }}
-                          >
-                            {!handleCreateStructure.isLoading ? (
-                              `Create ${
-                                newStructure?.type
-                                  ? `for ${formatNumberCommas(
-                                      structureTypes.data?.structures.find(
-                                        (s) => s.type === newStructure.type
-                                      )?.price ?? 0
-                                    )} credits`
-                                  : ''
-                              }`
-                            ) : (
-                              <>
-                                Creating
-                                <div className="ml-2">
-                                  <LoadingSpinner />
-                                </div>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-              <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Structures
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Last updated:{' '}
-                  {moment(allMyStructures.dataUpdatedAt).format(
-                    'DD/MM/YY hh:mm:ss a'
-                  )}
-                </p>
-              </div>
-              <div className="flex flex-col">
-                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                    {allMyStructures.isLoading ||
-                    (allMyStructures.data &&
-                      allMyStructures.data.structures.length > 0) ? (
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Location
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Active
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Consumes
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                              Produces
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {!allMyStructures.isLoading ? (
-                            allMyStructures.data.structures.map(
-                              (structure, i) => (
-                                <tr
-                                  key={structure.id}
-                                  className={
-                                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                  }
-                                >
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                    {
-                                      StructureCategory[
-                                        structure.type as unknown as keyof typeof StructureCategory
-                                      ]
-                                    }
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    {structure.location}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                    <span
-                                      className={
-                                        'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
-                                        (structure.active
-                                          ? ' bg-green-100 text-green-800'
-                                          : ' bg-yellow-100 text-yellow-800')
-                                      }
-                                    >
-                                      {structure.active ? 'Active' : 'Inactive'}
-                                    </span>
-                                  </td>
-                                  <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                    {structure.status}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                    {structure.consumes
-                                      .map(
-                                        (good) =>
-                                          `${
-                                            GoodType[
-                                              good as unknown as keyof typeof GoodType
-                                            ]
-                                          } (${formatNumberCommas(
-                                            structure.inventory.find(
-                                              (item) => item.good === good
-                                            )?.quantity ?? 0
-                                          )})`
-                                      )
-                                      .join(', ')}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                                    {structure.produces
-                                      .map(
-                                        (good) =>
-                                          `${
-                                            GoodType[
-                                              good as unknown as keyof typeof GoodType
-                                            ]
-                                          } (${formatNumberCommas(
-                                            structure.inventory.find(
-                                              (item) => item.good === good
-                                            )?.quantity ?? 0
-                                          )})`
-                                      )
-                                      .join(', ')}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button
-                                      className="text-indigo-600 hover:text-indigo-900"
-                                      onClick={() => {
-                                        const structureToDeposit =
-                                          allMyStructures.data.structures.find(
-                                            (s) => s.id === structure.id
-                                          )
-                                        if (!structureToDeposit) {
-                                          return
-                                        }
-                                        setOwnStructureToDeposit(
-                                          structureToDeposit
-                                        )
-                                      }}
-                                    >
-                                      Deposit
-                                    </button>
-                                    <button
-                                      className="ml-4 text-indigo-600 hover:text-indigo-900"
-                                      onClick={() => {
-                                        const ownStructureToWithdraw =
-                                          allMyStructures.data.structures.find(
-                                            (s) => s.id === structure.id
-                                          )
-                                        if (!ownStructureToWithdraw) {
-                                          return
-                                        }
-                                        setOwnStructureToWithdraw(
-                                          ownStructureToWithdraw
-                                        )
-                                      }}
-                                    >
-                                      Withdraw
-                                    </button>
-                                  </td>
-                                </tr>
-                              )
-                            )
-                          ) : (
-                            <LoadingRows cols={7} rows={3} />
-                          )}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="flex justify-center">
-                        <div className="w-full py-8 px-4">
-                          <div className="flex flex-col items-center text-center mb-4">
-                            <OfficeBuildingIcon className="w-12 h-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">
-                              No structures have been created yet.
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                              Create a structure to start generating your own
-                              goods.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto py-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                All Structures
-              </h2>
-            </div>
-
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-              <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Find Structure
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Enter a known structure ID to get more information about it.
-                </p>
-              </div>
-              <div className="flex flex-col">
-                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                    <form className="min-w-full divide-y divide-gray-200">
-                      <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                        <div className="sm:col-span-3">
-                          <label
-                            htmlFor="structureId"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Structure ID
-                          </label>
-                          <div className="mt-1">
-                            <input
-                              type="text"
-                              name="structureId"
-                              id="structureId"
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                              onChange={(e) => {
-                                setStructureToQuery({
-                                  ...structureToQuery,
-                                  structureId: e.target.value.trim(),
-                                })
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-
-                    {!structure.isLoading && structure.data && (
-                      <>
-                        <div className="px-4 sm:px-6">
-                          <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            Structure Details
-                          </h3>
-                        </div>
-                        <div className="px-6 py-4 bg-white">
-                          <div className="inline-flex items-center">
-                            <h3 className="text-md font-medium text-gray-900">
-                              {
-                                StructureCategory[
-                                  structure.data.structure
-                                    .type as unknown as keyof typeof StructureCategory
-                                ]
-                              }
-                            </h3>
-                            <span
-                              className={
-                                'ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
-                                (structure.data.structure.active
-                                  ? ' bg-green-100 text-green-800'
-                                  : ' bg-yellow-100 text-yellow-800')
-                              }
-                            >
-                              {structure.data.structure.active
-                                ? 'Active'
-                                : 'Inactive'}
-                            </span>
-                          </div>
-                          <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                            {structure.data.structure.status}
-                          </p>
-                          <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
-                            <span className="inline-flex items-center">
-                              <span className="sr-only">Username</span>
-                              <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                              {structure.data.structure.ownedBy.username}
-                            </span>
-                            <span className="ml-4 inline-flex items-center">
-                              <span className="sr-only">Location</span>
-                              <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                              {structure.data.structure.location}
-                            </span>
-                            <span className="ml-4 inline-flex items-center">
-                              <span className="sr-only">Consumes</span>
-                              <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                              {structure.data.structure.consumes
-                                .map(
-                                  (c) =>
-                                    GoodType[
-                                      c as unknown as keyof typeof GoodType
-                                    ]
-                                )
-                                .join(', ')}
-                            </span>
-                            <span className="ml-4 inline-flex items-center">
-                              <span className="sr-only">Produces</span>
-                              <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                              {structure.data.structure.produces
-                                .map(
-                                  (c) =>
-                                    GoodType[
-                                      c as unknown as keyof typeof GoodType
-                                    ]
-                                )
-                                .join(', ')}
-                            </span>
-                            <span className="ml-4 inline-flex items-center">
-                              <span className="sr-only">Inventory</span>
-                              <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                              {structure.data.structure.inventory
-                                .sort((a) =>
-                                  structure.data.structure.consumes.includes(
-                                    a.good
-                                  )
-                                    ? -1
-                                    : 1
-                                )
-                                .map(
-                                  (i) =>
-                                    `${i.quantity} ${
-                                      GoodType[
-                                        i.good as unknown as keyof typeof GoodType
-                                      ]
-                                    }`
-                                )
-                                .join(', ')}
-                            </span>
-                          </div>
-
-                          <button
-                            className="mt-4 text-indigo-600 hover:text-indigo-900"
-                            onClick={() => {
-                              setStructureToDeposit(structure.data.structure)
-                            }}
-                          >
-                            Deposit
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    {structure.isLoading && (
-                      <div className="shadow rounded-md p-6 w-full mx-auto">
-                        <div className="animate-pulse flex space-x-4">
-                          <div className="rounded-full bg-gray-300 h-10 w-10"></div>
-                          <div className="flex-1 space-y-6 py-1">
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-3 gap-4">
-                                <div className="h-2 bg-gray-300 rounded col-span-2"></div>
-                                <div className="h-2 bg-gray-300 rounded col-span-1"></div>
-                              </div>
-                              <div className="h-2 bg-gray-300 rounded"></div>
+        <Section>
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Create New Structure
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Structures can be used to generate goods.
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                <form className="min-w-full divide-y divide-gray-200">
+                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div className="sm:col-span-2">
+                      <Select
+                        label="Select Structure Type"
+                        options={structureTypeOptions}
+                        value={newStructure?.type}
+                        onChange={(value) => {
+                          setNewStructure(() => ({
+                            type: value,
+                          }))
+                        }}
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <Select
+                        label="Select Location"
+                        options={locationOptions}
+                        value={newStructure?.location}
+                        disabled={!newStructure?.type}
+                        onChange={(value) => {
+                          setNewStructure((prev) => ({
+                            ...prev,
+                            location: value,
+                          }))
+                        }}
+                      />
+                    </div>
+                    <div className="flex pt-6 sm:col-span-2">
+                      <button
+                        type="submit"
+                        className={
+                          'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                          (!newStructure?.location ||
+                          !newStructure.type ||
+                          handleCreateStructure.isLoading
+                            ? ' opacity-50 cursor-not-allowed'
+                            : '')
+                        }
+                        disabled={
+                          !newStructure?.location ||
+                          !newStructure.type ||
+                          handleCreateStructure.isLoading
+                        }
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (!newStructure?.location || !newStructure.type) {
+                            return
+                          }
+                          const { location, type } = newStructure
+                          handleCreateStructure.mutate({
+                            location,
+                            type,
+                          })
+                        }}
+                      >
+                        {!handleCreateStructure.isLoading ? (
+                          `Create ${
+                            newStructure?.type
+                              ? `for ${formatNumberCommas(
+                                  structureTypes.data?.structures.find(
+                                    (s) => s.type === newStructure.type
+                                  )?.price ?? 0
+                                )} credits`
+                              : ''
+                          }`
+                        ) : (
+                          <>
+                            Creating
+                            <div className="ml-2">
+                              <LoadingSpinner />
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {structure.isError && (
-                      <div className="p-6 w-full mx-auto">
-                        <Alert
-                          title="Error fetching structure"
-                          message={getErrorMessage(structure.error as any)}
-                        />
-                      </div>
-                    )}
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </form>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </Section>
+
+        <Section>
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Structures
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Last updated:{' '}
+              {moment(allMyStructures.dataUpdatedAt).format(
+                'DD/MM/YY hh:mm:ss a'
+              )}
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                {allMyStructures.isLoading ||
+                (allMyStructures.data &&
+                  allMyStructures.data.structures.length > 0) ? (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Location
+                        </th>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Active
+                        </th>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Consumes
+                        </th>
+                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          Produces
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {!allMyStructures.isLoading ? (
+                        allMyStructures.data.structures.map((structure, i) => (
+                          <tr
+                            key={structure.id}
+                            className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                              {
+                                StructureCategory[
+                                  structure.type as unknown as keyof typeof StructureCategory
+                                ]
+                              }
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              {structure.location}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              <span
+                                className={
+                                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                  (structure.active
+                                    ? ' bg-green-100 text-green-800'
+                                    : ' bg-yellow-100 text-yellow-800')
+                                }
+                              >
+                                {structure.active ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {structure.status}
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {structure.consumes
+                                .map(
+                                  (good) =>
+                                    `${
+                                      GoodType[
+                                        good as unknown as keyof typeof GoodType
+                                      ]
+                                    } (${formatNumberCommas(
+                                      structure.inventory.find(
+                                        (item) => item.good === good
+                                      )?.quantity ?? 0
+                                    )})`
+                                )
+                                .join(', ')}
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {structure.produces
+                                .map(
+                                  (good) =>
+                                    `${
+                                      GoodType[
+                                        good as unknown as keyof typeof GoodType
+                                      ]
+                                    } (${formatNumberCommas(
+                                      structure.inventory.find(
+                                        (item) => item.good === good
+                                      )?.quantity ?? 0
+                                    )})`
+                                )
+                                .join(', ')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => {
+                                  const structureToDeposit =
+                                    allMyStructures.data.structures.find(
+                                      (s) => s.id === structure.id
+                                    )
+                                  if (!structureToDeposit) {
+                                    return
+                                  }
+                                  setOwnStructureToDeposit(structureToDeposit)
+                                }}
+                              >
+                                Deposit
+                              </button>
+                              <button
+                                className="ml-4 text-indigo-600 hover:text-indigo-900"
+                                onClick={() => {
+                                  const ownStructureToWithdraw =
+                                    allMyStructures.data.structures.find(
+                                      (s) => s.id === structure.id
+                                    )
+                                  if (!ownStructureToWithdraw) {
+                                    return
+                                  }
+                                  setOwnStructureToWithdraw(
+                                    ownStructureToWithdraw
+                                  )
+                                }}
+                              >
+                                Withdraw
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <LoadingRows cols={7} rows={3} />
+                      )}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="flex justify-center">
+                    <div className="w-full py-8 px-4">
+                      <div className="flex flex-col items-center text-center mb-4">
+                        <OfficeBuildingIcon className="w-12 h-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">
+                          No structures have been created yet.
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Create a structure to start generating your own goods.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Title>All Structures</Title>
+
+        <Section>
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Find Structure
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Enter a known structure ID to get more information about it.
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                <form className="min-w-full divide-y divide-gray-200">
+                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div className="sm:col-span-3">
+                      <label
+                        htmlFor="structureId"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Structure ID
+                      </label>
+                      <div className="mt-1">
+                        <input
+                          type="text"
+                          name="structureId"
+                          id="structureId"
+                          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                          onChange={(e) => {
+                            setStructureToQuery({
+                              ...structureToQuery,
+                              structureId: e.target.value.trim(),
+                            })
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </form>
+
+                {!structure.isLoading && structure.data && (
+                  <>
+                    <div className="px-4 sm:px-6">
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Structure Details
+                      </h3>
+                    </div>
+                    <div className="px-6 py-4 bg-white">
+                      <div className="inline-flex items-center">
+                        <h3 className="text-md font-medium text-gray-900">
+                          {
+                            StructureCategory[
+                              structure.data.structure
+                                .type as unknown as keyof typeof StructureCategory
+                            ]
+                          }
+                        </h3>
+                        <span
+                          className={
+                            'ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                            (structure.data.structure.active
+                              ? ' bg-green-100 text-green-800'
+                              : ' bg-yellow-100 text-yellow-800')
+                          }
+                        >
+                          {structure.data.structure.active
+                            ? 'Active'
+                            : 'Inactive'}
+                        </span>
+                      </div>
+                      <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                        {structure.data.structure.status}
+                      </p>
+                      <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                        <span className="inline-flex items-center">
+                          <span className="sr-only">Username</span>
+                          <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          {structure.data.structure.ownedBy.username}
+                        </span>
+                        <span className="ml-4 inline-flex items-center">
+                          <span className="sr-only">Location</span>
+                          <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          {structure.data.structure.location}
+                        </span>
+                        <span className="ml-4 inline-flex items-center">
+                          <span className="sr-only">Consumes</span>
+                          <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          {structure.data.structure.consumes
+                            .map(
+                              (c) =>
+                                GoodType[c as unknown as keyof typeof GoodType]
+                            )
+                            .join(', ')}
+                        </span>
+                        <span className="ml-4 inline-flex items-center">
+                          <span className="sr-only">Produces</span>
+                          <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          {structure.data.structure.produces
+                            .map(
+                              (c) =>
+                                GoodType[c as unknown as keyof typeof GoodType]
+                            )
+                            .join(', ')}
+                        </span>
+                        <span className="ml-4 inline-flex items-center">
+                          <span className="sr-only">Inventory</span>
+                          <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          {structure.data.structure.inventory
+                            .sort((a) =>
+                              structure.data.structure.consumes.includes(a.good)
+                                ? -1
+                                : 1
+                            )
+                            .map(
+                              (i) =>
+                                `${i.quantity} ${
+                                  GoodType[
+                                    i.good as unknown as keyof typeof GoodType
+                                  ]
+                                }`
+                            )
+                            .join(', ')}
+                        </span>
+                      </div>
+
+                      <button
+                        className="mt-4 text-indigo-600 hover:text-indigo-900"
+                        onClick={() => {
+                          setStructureToDeposit(structure.data.structure)
+                        }}
+                      >
+                        Deposit
+                      </button>
+                    </div>
+                  </>
+                )}
+                {structure.isLoading && (
+                  <div className="shadow rounded-md p-6 w-full mx-auto">
+                    <div className="animate-pulse flex space-x-4">
+                      <div className="rounded-full bg-gray-300 h-10 w-10"></div>
+                      <div className="flex-1 space-y-6 py-1">
+                        <div className="h-2 bg-gray-300 rounded"></div>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="h-2 bg-gray-300 rounded col-span-2"></div>
+                            <div className="h-2 bg-gray-300 rounded col-span-1"></div>
+                          </div>
+                          <div className="h-2 bg-gray-300 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {structure.isError && (
+                  <div className="p-6 w-full mx-auto">
+                    <Alert
+                      title="Error fetching structure"
+                      message={getErrorMessage(structure.error as any)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </Section>
+      </Main>
       <Modal
         open={!!ownStructureToDeposit}
         title="Deposit Goods"

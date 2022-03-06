@@ -5,6 +5,7 @@ import '../../App.css'
 import Alert from '../../components/Alert'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import Modal from '../../components/Modal/index'
+import { CubeTransparentIcon } from '@heroicons/react/outline'
 import { useAuth } from '../../hooks/useAuth'
 import {
   getValue,
@@ -114,20 +115,7 @@ export default function Login() {
         <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
-                />
-              </svg>
+              <CubeTransparentIcon className="h-8 w-8" />
               <h1 className="mt-6 text-4xl font-extrabold text-gray-900">
                 Airlock
               </h1>

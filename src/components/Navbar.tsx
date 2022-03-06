@@ -1,4 +1,5 @@
 import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { CubeTransparentIcon } from '@heroicons/react/outline'
 import { CreditCardIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 import { Fragment } from 'react'
 import { useQuery } from 'react-query'
@@ -37,20 +38,7 @@ export default function Navbar() {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center truncate">
                 <Link to="/" className="flex-shrink-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="#FFF"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
-                    />
-                  </svg>
+                  <CubeTransparentIcon className="h-8 w-8 text-white" />
                 </Link>
                 <div className="flex md:hidden">
                   <span className="ml-2 text-white font-semibold text-xl tracking-tight">
