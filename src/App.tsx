@@ -29,6 +29,7 @@ import { useAuth } from './hooks/useAuth'
 
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
+import CommandPalette from './components/CommandPalette'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
@@ -54,6 +55,14 @@ export default function App() {
     },
     {
       path: 'account',
+      element: (
+        <RequireAuth>
+          <Account />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: 'account/:shipId',
       element: (
         <RequireAuth>
           <Account />
@@ -142,6 +151,7 @@ function AppLayout() {
       <Navbar />
       <Outlet />
       <Notifications />
+      <CommandPalette />
     </div>
   )
 }

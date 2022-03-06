@@ -1,3 +1,11 @@
+import {
+  CubeIcon,
+  FireIcon,
+  HeartIcon,
+  LightningBoltIcon,
+  OfficeBuildingIcon,
+  TruckIcon,
+} from '@heroicons/react/solid'
 import { useContext, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import {
@@ -14,11 +22,11 @@ import { GoodType } from '../../../types/Order'
 import { Ship, ShipCargo } from '../../../types/Ship'
 import { getErrorMessage, getShipName } from '../../../utils/helpers'
 
-interface ManageCargoProps {
+interface ManageShipProps {
   ship?: Ship
 }
 
-export default function ManageCargo(props: ManageCargoProps) {
+export default function ManageShip(props: ManageShipProps) {
   const { ship } = props
 
   const [cargoToTransfer, setCargoToTransfer] = useState<
@@ -108,8 +116,9 @@ export default function ManageCargo(props: ManageCargoProps) {
           ship.location,
           `⛽ ${
             ship.cargo.find(
-              // @ts-expect-error
-              (c) => GoodType[c.good] === GoodType.FUEL
+              (c) =>
+                GoodType[c.good as unknown as keyof typeof GoodType] ===
+                GoodType.FUEL
             )?.quantity ?? 0
           }`,
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
@@ -138,7 +147,39 @@ export default function ManageCargo(props: ManageCargoProps) {
   return (
     <div className="mt-4 px-4 py-2">
       <div className="overflow-x-auto">
-        <div className="py-2 px-1 align-middle inline-block min-w-full">
+        <div className="flex items-center mb-4 py-1 text-sm leading-5 text-gray-500">
+          <span className="inline-flex items-center">
+            <span className="sr-only">Manufacturer</span>
+            <OfficeBuildingIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            {ship.manufacturer}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Speed</span>
+            <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            {ship.speed}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Weapons</span>
+            <FireIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.weapons}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Plating</span>
+            <HeartIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.plating}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Loading speed</span>
+            <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            {ship.loadingSpeed}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Max cargo</span>
+            <CubeIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.maxCargo}
+          </span>
+        </div>
+
+        <h2 className="mb-2 text-md font-medium text-gray-900">Cargo hold</h2>
+
+        <div className="mb-4 py-2 px-1 align-middle inline-block min-w-full">
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -213,9 +254,9 @@ export default function ManageCargo(props: ManageCargoProps) {
 
         {cargoToTransfer && (
           <div className="py-2 px-1">
-            <form className="mt-4">
+            <form>
               <div>
-                <h3 className="text-md font-medium text-gray-900">
+                <h3 className="text-sm font-medium text-gray-900">
                   {/* @ts-expect-error */}
                   Transfer {GoodType[cargoToTransfer.good]}
                 </h3>
@@ -323,9 +364,9 @@ export default function ManageCargo(props: ManageCargoProps) {
         )}
         {cargoToJettison && (
           <div className="py-2 px-1">
-            <form className="mt-4">
+            <form>
               <div>
-                <h3 className="text-md font-medium text-gray-900">
+                <h3 className="text-sm font-medium text-gray-900">
                   {/* @ts-expect-error */}
                   Jettison {GoodType[cargoToJettison.good]}
                 </h3>

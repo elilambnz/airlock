@@ -237,9 +237,11 @@ export default function Systems() {
           ship.type,
           ship.location,
           `⛽ ${
-            // @ts-expect-error
-            ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
-              ?.quantity ?? 0
+            ship.cargo.find(
+              (c) =>
+                GoodType[c.good as unknown as keyof typeof GoodType] ===
+                GoodType.FUEL
+            )?.quantity ?? 0
           }`,
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
@@ -259,8 +261,9 @@ export default function Systems() {
         <div className="flex items-center justify-center w-5 h-5">
           <span className="text-xs">
             {getIconForLocationType(
-              // @ts-expect-error
-              LocationType[location.type]
+              LocationType[
+                location.type as unknown as keyof typeof LocationType
+              ]
             )}
           </span>
         </div>
@@ -496,8 +499,12 @@ export default function Systems() {
                                     </td>
                                     <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                       {location.traits
-                                        // @ts-expect-error
-                                        ?.map((t) => LocationTrait[t] ?? t)
+                                        ?.map(
+                                          (t) =>
+                                            LocationTrait[
+                                              t as keyof typeof LocationTrait
+                                            ] ?? t
+                                        )
                                         .join(', ')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">

@@ -130,9 +130,11 @@ export default function Marketplace() {
           ship.type,
           ship.location,
           `⛽ ${
-            // @ts-expect-error
-            ship.cargo.find((c) => GoodType[c.good] === GoodType.FUEL)
-              ?.quantity ?? 0
+            ship.cargo.find(
+              (c) =>
+                GoodType[c.good as unknown as keyof typeof GoodType] ===
+                GoodType.FUEL
+            )?.quantity ?? 0
           }`,
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
@@ -160,9 +162,9 @@ export default function Marketplace() {
         const { ship, symbol, quantity } = variables
         push({
           title: 'Successfully purchased goods',
-          message: `${getShipName(ship.id)} has purchased ${quantity} ${
+          message: `${quantity} ${
             GoodType[symbol as unknown as keyof typeof GoodType]
-          }`,
+          } added to ${getShipName(ship.id)}`,
           type: NotificationType.SUCCESS,
         })
       },
@@ -193,9 +195,9 @@ export default function Marketplace() {
         const { ship, symbol, quantity } = variables
         push({
           title: 'Successfully sold goods',
-          message: `${getShipName(ship.id)} has sold ${quantity} ${
+          message: `${quantity} ${
             GoodType[symbol as unknown as keyof typeof GoodType]
-          }`,
+          } sold from ${getShipName(ship.id)}`,
           type: NotificationType.SUCCESS,
         })
       },
@@ -477,8 +479,7 @@ export default function Marketplace() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
                                           {
                                             GoodType[
-                                              // @ts-expect-error
-                                              locationMarketplace.symbol
+                                              locationMarketplace.symbol as unknown as keyof typeof GoodType
                                             ]
                                           }
                                         </td>
@@ -755,8 +756,12 @@ export default function Marketplace() {
                                           }
                                         >
                                           {ship.restrictedGoods
-                                            // @ts-expect-error
-                                            ?.map((good) => GoodType[good])
+                                            ?.map(
+                                              (good) =>
+                                                GoodType[
+                                                  good as unknown as keyof typeof GoodType
+                                                ]
+                                            )
                                             .join(', ') ?? 'None'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">

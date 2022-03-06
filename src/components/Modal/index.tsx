@@ -20,20 +20,12 @@ export default function Modal(props: ModalProps) {
     setIsOpen(open)
   }, [open])
 
-  const handleClose = () => {
-    setIsOpen(false)
-    // Wait for the animation to finish before calling onClose
-    setTimeout(() => {
-      onClose()
-    }, 200)
-  }
-
   return (
-    <Transition.Root show={isOpen} as={Fragment}>
+    <Transition.Root show={isOpen} as={Fragment} afterLeave={onClose}>
       <Dialog
         as="div"
         className="fixed z-10 inset-0 overflow-y-auto"
-        onClose={handleClose}
+        onClose={setIsOpen}
       >
         <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           <Transition.Child
@@ -74,7 +66,7 @@ export default function Modal(props: ModalProps) {
                 <button
                   type="button"
                   className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onClick={() => handleClose()}
+                  onClick={() => setIsOpen(false)}
                 >
                   <span className="sr-only">Close</span>
                   <XIcon className="h-6 w-6" aria-hidden="true" />
@@ -96,7 +88,7 @@ export default function Modal(props: ModalProps) {
                 <button
                   type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                  onClick={() => handleClose()}
+                  onClick={() => setIsOpen(false)}
                 >
                   {closeText || 'Dismiss'}
                 </button>

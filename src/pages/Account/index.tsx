@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { listMyShips, scrapShip, getMyAccount } from '../../api/routes/my'
 import '../../App.css'
 import AlertModal from '../../components/Modal/AlertModal'
@@ -8,7 +8,7 @@ import {
   getErrorMessage,
   getShipName,
 } from '../../utils/helpers'
-import ManageCargo from './components/ManageCargo'
+import ManageShip from './components/ManageShip'
 import Modal from '../../components/Modal'
 import Tooltip from '../../components/Tooltip'
 import { GoodType } from '../../types/Order'
@@ -20,8 +20,10 @@ import {
 } from '../../providers/NotificationProvider'
 
 export default function Account() {
-  const [shipToManageCargo, setShipToManageCargo] = useState<string>()
   const [shipToScrap, setShipToScrap] = useState<string>()
+
+  const navigate = useNavigate()
+  const params = useParams()
 
   const { push } = useContext(NotificationContext)
 
@@ -307,8 +309,11 @@ export default function Account() {
                                 title={ship.cargo
                                   .map(
                                     (c) =>
-                                      // @ts-expect-error
-                                      `${GoodType[c.good]} ${c.quantity}` +
+                                      `${
+                                        GoodType[
+                                          c.good as unknown as keyof typeof GoodType
+                                        ]
+                                      }: ${c.quantity}` +
                                       (c.quantity !== c.totalVolume
                                         ? ` (${c.totalVolume})`
                                         : '')
@@ -384,11 +389,11 @@ export default function Account() {
                                     ? ' text-gray-500'
                                     : '')
                                 }
-                                onClick={() => setShipToManageCargo(ship.id!)}
+                                onClick={() => navigate(`/account/${ship.id}`)}
                                 disabled={ship.spaceAvailable === ship.maxCargo}
                               >
                                 <CubeIcon className="w-6 h-6" />
-                                <span className="ml-3">Manage cargo</span>
+                                <span className="ml-3">Cargo hold</span>
                               </button>
                             </div>
                             <div className="-ml-px w-0 flex-1 flex">
@@ -505,18 +510,16 @@ export default function Account() {
         </div>
       </main>
       <Modal
-        open={!!shipToManageCargo}
-        title="Manage cargo"
+        open={!!params.shipId}
+        title={`Manage ship ${getShipName(params.shipId || '')}`}
         content={
-          <ManageCargo
-            ship={myShips.data?.ships.find(
-              (ship) => ship.id === shipToManageCargo
-            )}
+          <ManageShip
+            ship={myShips.data?.ships.find((ship) => ship.id === params.shipId)}
           />
         }
         className="w-full md:max-w-xl"
         onClose={() => {
-          setShipToManageCargo(undefined)
+          navigate(`/account`)
         }}
       />
       <AlertModal

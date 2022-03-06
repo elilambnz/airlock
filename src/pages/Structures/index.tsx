@@ -280,10 +280,10 @@ export default function Structures() {
       label: s.name,
       tags: [
         `💰 ${abbreviateNumber(s.price)}`,
-        // @ts-expect-error
-        `${s.consumes.map((c) => GoodType[c]).join(', ')} → ${s.produces
-          // @ts-expect-error
-          .map((p) => GoodType[p])
+        `${s.consumes
+          .map((c) => GoodType[c as unknown as keyof typeof GoodType])
+          .join(', ')} → ${s.produces
+          .map((p) => GoodType[p as unknown as keyof typeof GoodType])
           .join(', ')}`,
       ],
     })) ?? []
