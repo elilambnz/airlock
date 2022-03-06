@@ -25,6 +25,7 @@ export enum LocationType {
   GAS_GIANT = 'Gas Giant',
   WORMHOLE = 'Wormhole',
   NEBULA = 'Nebula',
+  STRUCTURE = 'Structure',
 }
 
 export enum LocationTrait {
@@ -91,6 +92,8 @@ export const getIconForLocationType = (type: LocationType) => {
       return '🕳️'
     case LocationType.NEBULA:
       return '🌌'
+    case LocationType.STRUCTURE:
+      return '🏭'
     default:
       return '🪐'
   }

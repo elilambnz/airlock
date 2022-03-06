@@ -1,4 +1,6 @@
 import {
+  ArrowUpIcon,
+  ArrowDownIcon,
   CashIcon,
   ChevronDoubleRightIcon,
   PaperAirplaneIcon,
@@ -26,14 +28,20 @@ export default function RouteSteps(props: RouteStepsProps) {
         return <PaperAirplaneIcon className="h-5 w-5" />
       case RouteEventType.WARP_JUMP:
         return <ChevronDoubleRightIcon className="h-5 w-5" />
+      case RouteEventType.WITHDRAW:
+        return <ArrowUpIcon className="h-5 w-5" />
+      case RouteEventType.DEPOSIT:
+        return <ArrowDownIcon className="h-5 w-5" />
     }
   }
 
   const getColourForEvent = (event: RouteEventType) => {
     switch (event) {
       case RouteEventType.BUY:
+      case RouteEventType.WITHDRAW:
         return 'bg-blue-500'
       case RouteEventType.SELL:
+      case RouteEventType.DEPOSIT:
         return 'bg-green-500'
       case RouteEventType.TRAVEL:
       case RouteEventType.WARP_JUMP:
