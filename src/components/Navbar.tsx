@@ -129,19 +129,6 @@ export default function Navbar() {
                               </>
                             )}
                           </Menu.Item>
-                          <Menu.Item>
-                            {() => (
-                              <>
-                                <span className="block px-4 py-1 text-xs text-gray-700 font-medium">
-                                  Search
-                                </span>
-                                <span className="block px-4 py-1 text-xs text-gray-700">
-                                  <kbd className="font-sans">⌘</kbd>
-                                  <kbd className="font-sans">K</kbd>
-                                </span>
-                              </>
-                            )}
-                          </Menu.Item>
                         </div>
                         <div className="py-1">
                           <Menu.Item>
