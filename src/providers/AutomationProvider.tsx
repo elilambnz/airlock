@@ -17,7 +17,6 @@ import {
   TradeRoute,
   TradeRouteStatus,
 } from '../types/Automation'
-import { GoodType } from '../types/Order'
 import { getShipName } from '../utils/helpers'
 import { purchase, refuel, sell } from '../utils/mechanics'
 
