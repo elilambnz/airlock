@@ -943,7 +943,7 @@ export default function Marketplace() {
                             for ${formatNumberCommas(
                               goodToBuy.quantity *
                                 goodToBuy.purchasePricePerUnit
-                            )} units`
+                            )} credits`
                                   : ''
                               }`
                             ) : (
@@ -1101,7 +1101,7 @@ export default function Marketplace() {
                             for ${formatNumberCommas(
                               goodToSell.quantity *
                                 goodToSell.purchasePricePerUnit
-                            )} units`
+                            )} credits`
                                   : ''
                               }`
                             ) : (
