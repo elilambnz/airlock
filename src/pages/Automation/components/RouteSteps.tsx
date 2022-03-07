@@ -6,8 +6,11 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/solid'
 import { Dispatch, SetStateAction } from 'react'
+import { useQuery } from 'react-query'
+import { listMyStructures } from '../../../api/routes/my'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
 import { GoodType } from '../../../types/Order'
+import { StructureCategory } from '../../../types/Structure'
 
 interface RouteStepsProps {
   tradeRoute: TradeRoute
@@ -18,6 +21,8 @@ interface RouteStepsProps {
 
 export default function RouteSteps(props: RouteStepsProps) {
   const { tradeRoute, setTradeRoute, notActive, handleResume } = props
+
+  const allMyStructures = useQuery('myStructures', listMyStructures)
 
   const getIconForEvent = (event: RouteEventType) => {
     switch (event) {
@@ -116,6 +121,52 @@ export default function RouteSteps(props: RouteStepsProps) {
                         <p className="text-sm text-gray-500">
                           <span className="font-medium text-gray-900">
                             Warp jump
+                          </span>
+                        </p>
+                      ) : event.type === RouteEventType.WITHDRAW ? (
+                        <p className="text-sm text-gray-500">
+                          Withdraw{' '}
+                          <span className="font-medium text-gray-900">
+                            {`${event.structure?.quantity} unit${
+                              (event.structure?.quantity ?? 0) > 1 ? 's' : ''
+                            }`}{' '}
+                          </span>{' '}
+                          of{' '}
+                          <span className="font-medium text-gray-900">
+                            {/* @ts-expect-error */}
+                            {GoodType[event.structure?.good]}
+                          </span>{' '}
+                          from{' '}
+                          <span className="font-medium text-gray-900">
+                            {StructureCategory[
+                              allMyStructures.data?.structures.find(
+                                (s) => s.id === event.structure?.structure
+                              )
+                                ?.type as unknown as keyof typeof StructureCategory
+                            ] ?? 'Unknown'}
+                          </span>
+                        </p>
+                      ) : event.type === RouteEventType.DEPOSIT ? (
+                        <p className="text-sm text-gray-500">
+                          Deposit{' '}
+                          <span className="font-medium text-gray-900">
+                            {`${event.structure?.quantity} unit${
+                              (event.structure?.quantity ?? 0) > 1 ? 's' : ''
+                            }`}{' '}
+                          </span>{' '}
+                          of{' '}
+                          <span className="font-medium text-gray-900">
+                            {/* @ts-expect-error */}
+                            {GoodType[event.structure?.good]}
+                          </span>{' '}
+                          to{' '}
+                          <span className="font-medium text-gray-900">
+                            {StructureCategory[
+                              allMyStructures.data?.structures.find(
+                                (s) => s.id === event.structure?.structure
+                              )
+                                ?.type as unknown as keyof typeof StructureCategory
+                            ] ?? 'Unknown'}
                           </span>
                         </p>
                       ) : (

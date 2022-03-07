@@ -243,6 +243,26 @@ export default function Automation() {
                                     []
                                   )
                               ),
+                              ...new Set(
+                                route.events
+                                  .filter(
+                                    (e) =>
+                                      e.type === RouteEventType.WITHDRAW ||
+                                      e.type === RouteEventType.DEPOSIT
+                                  )
+                                  ?.reduce(
+                                    (acc: string[], cur) => [
+                                      ...acc,
+                                      String(
+                                        GoodType[
+                                          cur.structure
+                                            ?.good as keyof typeof GoodType
+                                        ]
+                                      ),
+                                    ],
+                                    []
+                                  )
+                              ),
                             ].join(', ')}
                           </td>
                           <td className="px-6 py-4 text-sm leading-5 text-gray-500">
@@ -341,7 +361,10 @@ export default function Automation() {
           <>
             {routeToEdit && (
               <div className="mt-4">
-                <RouteConfiguration routeToEdit={routeToEdit} />
+                <RouteConfiguration
+                  routeToEdit={routeToEdit}
+                  onUpdate={() => setRouteToEdit(undefined)}
+                />
               </div>
             )}
           </>

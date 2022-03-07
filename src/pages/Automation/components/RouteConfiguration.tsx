@@ -26,10 +26,11 @@ import { StructureCategory } from '../../../types/Structure'
 
 interface RouteConfigurationProps {
   routeToEdit?: TradeRoute
+  onUpdate?: () => void
 }
 
 export default function RouteConfiguration(props: RouteConfigurationProps) {
-  const { routeToEdit } = props
+  const { routeToEdit, onUpdate } = props
 
   const [marketplaceLocation, setMarketplaceLocation] = useState<string>()
   const [currentSystem, setCurrentSystem] = useState<string>(System[0])
@@ -71,7 +72,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
   const [newTradeRouteShip, setNewTradeRouteShip] = useState<string>()
 
   const myShips = useQuery('myShips', listMyShips)
-  const myStructures = useQuery('myStructures', listMyStructures)
+  const allMyStructures = useQuery('myStructures', listMyStructures)
   const goodTypes = useQuery('goodTypes', listGoodTypes)
   const availableGoods = useQuery(
     ['locationMarketplace', marketplaceLocation],
@@ -153,7 +154,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
     }))
 
   const structureOptions =
-    myStructures.data?.structures
+    allMyStructures.data?.structures
       .filter((s) => s.location === newTradeRouteLocation.location)
       .map((s) => {
         const location = availableLocations.find(
@@ -176,7 +177,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
         }
       }) ?? []
 
-  const goodOptions =
+  const goodTradeOptions =
     goodTypes.data?.goods.map((g) => {
       const availableGood = availableGoods.data?.marketplace.find((m) => {
         return m.symbol === g.symbol
@@ -200,6 +201,42 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
         disabled: !availableGood,
       }
     }) ?? []
+
+  const goodStructureOptions = useMemo(() => {
+    const structure =
+      newTradeRouteStructure.structure &&
+      allMyStructures.data?.structures.find(
+        (s) => s.id === newTradeRouteStructure.structure?.structure
+      )
+    return (
+      goodTypes.data?.goods
+        .filter(
+          (g) =>
+            (newTradeRouteStructure.type === RouteEventType.WITHDRAW &&
+              structure?.produces &&
+              Object.values(structure.produces).includes(g.symbol)) ||
+            (newTradeRouteStructure.type === RouteEventType.DEPOSIT &&
+              structure?.consumes &&
+              Object.values(structure.consumes).includes(g.symbol))
+        )
+        ?.map((g) => ({
+          value: g.symbol,
+          label: g.name,
+          tags: [
+            String(
+              formatNumberCommas(
+                structure?.inventory?.find((i) => i.good === g.symbol)
+                  ?.quantity ?? 0
+              )
+            ),
+          ],
+        })) ?? []
+    )
+  }, [
+    goodTypes.data?.goods,
+    allMyStructures.data?.structures,
+    newTradeRouteStructure,
+  ])
 
   const shipOptions =
     myShips.data?.ships
@@ -242,6 +279,12 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
         .length > 0
     ) || newTradeRouteTrade.good?.quantity === 0
 
+  const addStructureToTradeRouteDisabled =
+    !(
+      newTradeRoute.events.filter((e) => e.type === RouteEventType.TRAVEL)
+        .length > 0
+    ) || newTradeRouteStructure.structure?.quantity === 0
+
   const handleSaveTradeRoute = async () => {
     if (newTradeRoute.id && newTradeRoute._version > 0) {
       try {
@@ -253,6 +296,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
           events: [],
           assignedShips: [],
         })
+        onUpdate && onUpdate()
       } catch (error) {
         console.error('Error adding trade route', error)
       }
@@ -353,7 +397,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
               <div className="sm:col-span-2">
                 <Select
                   label="Select Good"
-                  options={goodOptions}
+                  options={goodTradeOptions}
                   value={newTradeRouteTrade.good?.good}
                   onChange={(value) => {
                     setNewTradeRouteTrade((prev) => ({
@@ -452,7 +496,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">
-                Or automate structure transfers
+                Or automate transfers to and from structures
               </span>
             </div>
           </div>
@@ -463,24 +507,52 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                 <Select
                   label="Select Structure"
                   options={structureOptions}
-                  value={newTradeRouteTrade.structure?.good}
+                  value={newTradeRouteStructure.structure?.structure}
                   onChange={(value) => {
-                    console.log(value)
+                    setNewTradeRouteStructure((prev) => ({
+                      ...prev,
+                      structure: {
+                        ...prev.structure!,
+                        structure: value,
+                      },
+                    }))
+                  }}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Select
+                  label="Action"
+                  options={[
+                    {
+                      value: RouteEventType.WITHDRAW,
+                      label: 'Withdraw',
+                    },
+                    {
+                      value: RouteEventType.DEPOSIT,
+                      label: 'Deposit',
+                    },
+                  ]}
+                  value={newTradeRouteStructure?.type}
+                  onChange={(value) => {
+                    setNewTradeRouteStructure((prev) => ({
+                      ...prev,
+                      type: value as RouteEventType,
+                    }))
                   }}
                 />
               </div>
               <div className="sm:col-span-2">
                 <Select
                   label="Select Good"
-                  options={goodOptions}
-                  value={newTradeRouteTrade.good?.good}
+                  options={goodStructureOptions}
+                  value={newTradeRouteStructure.structure?.good}
                   onChange={(value) => {
                     setNewTradeRouteStructure((prev) => ({
                       ...prev,
                       structure: {
                         ...prev.structure!,
                         good: value,
-                        quantity: prev.good?.quantity ?? 0,
+                        quantity: prev.structure?.quantity ?? 0,
                       },
                     }))
                   }}
@@ -508,7 +580,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                         ...prev,
                         structure: {
                           ...prev.structure!,
-                          good: prev.good?.good || '',
+                          good: prev.structure?.good || '',
                           quantity,
                         },
                       }
@@ -516,32 +588,16 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                   }}
                 />
               </div>
-              <div className="sm:col-span-2">
-                <Select
-                  label="Action"
-                  options={[
-                    {
-                      value: RouteEventType.WITHDRAW,
-                      label: 'Withdraw',
-                    },
-                    {
-                      value: RouteEventType.DEPOSIT,
-                      label: 'Deposit',
-                    },
-                  ]}
-                  value={newTradeRouteTrade?.type}
-                  onChange={(value) => {
-                    setNewTradeRouteStructure((prev) => ({
-                      ...prev,
-                      type: value as RouteEventType,
-                    }))
-                  }}
-                />
-              </div>
               <div className="sm:col-span-1 pt-6">
                 <button
                   type="submit"
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className={
+                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                    (addStructureToTradeRouteDisabled
+                      ? ' opacity-50 cursor-not-allowed'
+                      : '')
+                  }
+                  disabled={addStructureToTradeRouteDisabled}
                   onClick={(e) => {
                     e.preventDefault()
                     if (!newTradeRoute || !newTradeRouteStructure) {
