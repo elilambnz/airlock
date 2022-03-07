@@ -827,8 +827,12 @@ export default function Marketplace() {
                 <form>
                   <div>
                     <h3 className="text-md font-medium text-gray-900">
-                      {/* @ts-expect-error */}
-                      Buy {GoodType[goodToBuy.symbol]}
+                      Buy{' '}
+                      {
+                        GoodType[
+                          goodToBuy.symbol as unknown as keyof typeof GoodType
+                        ]
+                      }
                     </h3>
                   </div>
                   <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
@@ -986,8 +990,12 @@ export default function Marketplace() {
                 <form>
                   <div>
                     <h3 className="text-md font-medium text-gray-900">
-                      {/* @ts-expect-error */}
-                      Sell {GoodType[goodToSell.symbol]}
+                      Sell{' '}
+                      {
+                        GoodType[
+                          goodToSell.symbol as unknown as keyof typeof GoodType
+                        ]
+                      }
                     </h3>
                   </div>
                   <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">

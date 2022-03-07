@@ -195,7 +195,9 @@ export default function CommandPalette() {
                                   {ship.type}
                                 </span>
                                 <span className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100">
-                                  {ship.location}
+                                  {ship.flightPlanId
+                                    ? 'In transit'
+                                    : ship.location}
                                 </span>
                               </div>
                             </>

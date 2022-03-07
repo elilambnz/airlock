@@ -403,9 +403,8 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                     setNewTradeRouteTrade((prev) => ({
                       ...prev,
                       good: {
-                        ...prev.good,
+                        ...prev.good!,
                         good: value,
-                        quantity: prev.good?.quantity ?? 0,
                       },
                     }))
                   }}
@@ -432,8 +431,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                       return {
                         ...prev,
                         good: {
-                          ...prev.good,
-                          good: prev.good?.good || '',
+                          ...prev.good!,
                           quantity,
                         },
                       }
@@ -552,7 +550,6 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                       structure: {
                         ...prev.structure!,
                         good: value,
-                        quantity: prev.structure?.quantity ?? 0,
                       },
                     }))
                   }}
@@ -580,7 +577,6 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                         ...prev,
                         structure: {
                           ...prev.structure!,
-                          good: prev.structure?.good || '',
                           quantity,
                         },
                       }

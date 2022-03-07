@@ -92,8 +92,11 @@ export default function RouteSteps(props: RouteStepsProps) {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {/* @ts-expect-error */}
-                            {GoodType[event.good?.good]}
+                            {
+                              GoodType[
+                                event.good?.good as keyof typeof GoodType
+                              ]
+                            }
                           </span>
                         </p>
                       ) : event.type === RouteEventType.SELL ? (
@@ -106,8 +109,11 @@ export default function RouteSteps(props: RouteStepsProps) {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {/* @ts-expect-error */}
-                            {GoodType[event.good?.good]}
+                            {
+                              GoodType[
+                                event.good?.good as keyof typeof GoodType
+                              ]
+                            }
                           </span>
                         </p>
                       ) : event.type === RouteEventType.TRAVEL ? (
@@ -133,8 +139,11 @@ export default function RouteSteps(props: RouteStepsProps) {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {/* @ts-expect-error */}
-                            {GoodType[event.structure?.good]}
+                            {
+                              GoodType[
+                                event.structure?.good as keyof typeof GoodType
+                              ]
+                            }
                           </span>{' '}
                           from{' '}
                           <span className="font-medium text-gray-900">
@@ -156,8 +165,11 @@ export default function RouteSteps(props: RouteStepsProps) {
                           </span>{' '}
                           of{' '}
                           <span className="font-medium text-gray-900">
-                            {/* @ts-expect-error */}
-                            {GoodType[event.structure?.good]}
+                            {
+                              GoodType[
+                                event.structure?.good as keyof typeof GoodType
+                              ]
+                            }
                           </span>{' '}
                           to{' '}
                           <span className="font-medium text-gray-900">

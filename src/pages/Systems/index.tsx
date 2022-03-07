@@ -482,8 +482,9 @@ export default function Systems() {
                                   {location.symbol}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                  {/* @ts-expect-error */}
-                                  {LocationType[location.type] ?? location.type}
+                                  {LocationType[
+                                    location.type as unknown as keyof typeof LocationType
+                                  ] ?? location.type}
                                 </td>
                                 <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                                   {location.traits

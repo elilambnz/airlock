@@ -117,8 +117,11 @@ export default function Loans() {
                               }
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {/* @ts-expect-error */}
-                                {LoanTier[loan.type]}
+                                {
+                                  LoanTier[
+                                    loan.type as unknown as keyof typeof LoanTier
+                                  ]
+                                }
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {formatNumberCommas(loan.repaymentAmount)}
@@ -135,8 +138,11 @@ export default function Loans() {
                                       : ' bg-yellow-100 text-yellow-800')
                                   }
                                 >
-                                  {/* @ts-expect-error */}
-                                  {LoanStatus[loan.status]}
+                                  {
+                                    LoanStatus[
+                                      loan.status as unknown as keyof typeof LoanStatus
+                                    ]
+                                  }
                                 </span>
                               </td>
 
@@ -231,8 +237,11 @@ export default function Loans() {
                               }
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                {/* @ts-expect-error */}
-                                {LoanTier[loan.type]}
+                                {
+                                  LoanTier[
+                                    loan.type as unknown as keyof typeof LoanTier
+                                  ]
+                                }
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                 {formatNumberCommas(loan.amount)}

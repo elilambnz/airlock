@@ -251,7 +251,10 @@ export default function Account() {
                       </div>
 
                       <div className="self-start flex-shrink-0">
-                        <button className="w-8 h-8 bg-white inline-flex items-center justify-center text-red-400 rounded-full bg-transparent hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        <button
+                          className="w-8 h-8 bg-white inline-flex items-center justify-center text-red-400 rounded-full bg-transparent hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          onClick={() => setShipToScrap(ship.id)}
+                        >
                           <span className="sr-only">Scrap ship</span>
                           <TrashIcon className="w-5 h-5" />
                         </button>

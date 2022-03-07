@@ -17,7 +17,7 @@ export const refuel = async (ship: Ship, fuelRequired: number) => {
 
 export const purchase = async (
   ship: Ship,
-  goodType: GoodType,
+  goodType: string,
   quantity: number
 ) => {
   let lastResult
@@ -32,11 +32,7 @@ export const purchase = async (
   return lastResult
 }
 
-export const sell = async (
-  ship: Ship,
-  goodType: GoodType,
-  quantity: number
-) => {
+export const sell = async (ship: Ship, goodType: string, quantity: number) => {
   let lastResult
   while (quantity > 0) {
     lastResult = await createSellOrder(

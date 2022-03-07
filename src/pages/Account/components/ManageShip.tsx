@@ -88,7 +88,9 @@ export default function ManageShip(props: ManageShipProps) {
           title: 'Successfully jettisoned cargo',
           message: `Ship ${getShipName(data.shipId)} now has ${
             data.quantityRemaining
-          } ${data.good} remaining`,
+          } ${
+            GoodType[data.good as unknown as keyof typeof GoodType]
+          } remaining`,
           type: NotificationType.SUCCESS,
         })
       },
@@ -211,8 +213,7 @@ export default function ManageShip(props: ManageShipProps) {
                     className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {/* @ts-expect-error */}
-                      {GoodType[cargo.good]}
+                      {GoodType[cargo.good as unknown as keyof typeof GoodType]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {cargo.quantity}
@@ -257,8 +258,12 @@ export default function ManageShip(props: ManageShipProps) {
             <form>
               <div>
                 <h3 className="text-sm font-medium text-gray-900">
-                  {/* @ts-expect-error */}
-                  Transfer {GoodType[cargoToTransfer.good]}
+                  Transfer{' '}
+                  {
+                    GoodType[
+                      cargoToTransfer.good as unknown as keyof typeof GoodType
+                    ]
+                  }
                 </h3>
               </div>
               {shipOptions.length > 0 ? (
@@ -367,8 +372,12 @@ export default function ManageShip(props: ManageShipProps) {
             <form>
               <div>
                 <h3 className="text-sm font-medium text-gray-900">
-                  {/* @ts-expect-error */}
-                  Jettison {GoodType[cargoToJettison.good]}
+                  Jettison{' '}
+                  {
+                    GoodType[
+                      cargoToJettison.good as unknown as keyof typeof GoodType
+                    ]
+                  }
                 </h3>
               </div>
               <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-5">

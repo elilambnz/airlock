@@ -278,7 +278,7 @@ export default function AutomationProvider(props: any) {
               if (ship.ship.spaceAvailable >= event.good!.quantity) {
                 await purchase(
                   ship.ship,
-                  GoodType[event.good!.good as keyof typeof GoodType],
+                  event.good!.good,
                   event.good!.quantity
                 )
                 queryClient.invalidateQueries('user')
@@ -321,11 +321,7 @@ export default function AutomationProvider(props: any) {
                   ?.quantity ??
                 0 >= event.good!.quantity
               ) {
-                await sell(
-                  ship.ship,
-                  GoodType[event.good!.good as keyof typeof GoodType],
-                  event.good!.quantity
-                )
+                await sell(ship.ship, event.good!.good, event.good!.quantity)
                 queryClient.invalidateQueries('user')
               } else {
                 // Not throwing an error here because it's possible that the ship has no goods to sell if it's the first event in the route

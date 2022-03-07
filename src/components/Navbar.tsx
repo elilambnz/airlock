@@ -106,7 +106,7 @@ export default function Navbar() {
                           <Menu.Item>
                             {() => (
                               <>
-                                <span className="block px-4 py-1 text-xs text-gray-700">
+                                <span className="block px-4 py-1 text-xs text-gray-700 font-medium">
                                   API Token
                                 </span>
                                 <div className="mx-3 mb-2">
@@ -120,11 +120,24 @@ export default function Navbar() {
                           <Menu.Item>
                             {() => (
                               <>
-                                <span className="block px-4 py-1 text-xs text-gray-700">
+                                <span className="block px-4 py-1 text-xs text-gray-700 font-medium">
                                   Build
                                 </span>
                                 <span className="block px-4 py-1 text-xs text-gray-700">
                                   <pre>{BUILD}</pre>
+                                </span>
+                              </>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {() => (
+                              <>
+                                <span className="block px-4 py-1 text-xs text-gray-700 font-medium">
+                                  Search
+                                </span>
+                                <span className="block px-4 py-1 text-xs text-gray-700">
+                                  <kbd className="font-sans">⌘</kbd>
+                                  <kbd className="font-sans">K</kbd>
                                 </span>
                               </>
                             )}
