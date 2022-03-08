@@ -100,8 +100,8 @@ export default function Login() {
   if (attemptingLogin) {
     return (
       <div className="min-h-screen bg-white flex">
-        <div className="w-full flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-          <h1 className="text-center text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 via-purple-500 animate-gradient-x">
+        <div className="w-full flex-1 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+          <h1 className="inline-block text-center text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 via-purple-500 animate-gradient-x">
             Airlock
           </h1>
         </div>
@@ -244,7 +244,7 @@ export default function Login() {
               <div className="mt-6 max-w-4xl">
                 <Alert
                   title="Error creating account"
-                  message={registrationError}
+                  message={registrationError || ''}
                 />
               </div>
             )}
@@ -345,7 +345,7 @@ export default function Login() {
 
               {loginError && (
                 <div className="mt-6 max-w-4xl">
-                  <Alert title="Error logging in" message={loginError} />
+                  <Alert title="Error logging in" message={loginError || ''} />
                 </div>
               )}
             </form>
