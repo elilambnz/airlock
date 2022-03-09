@@ -22,7 +22,9 @@ export default function Loans() {
 
   const queryClient = useQueryClient()
   const myLoans = useQuery('myLoans', listMyLoans)
-  const availableLoans = useQuery('availableLoans', listLoanTypes)
+  const availableLoans = useQuery('availableLoans', listLoanTypes, {
+    staleTime: Infinity,
+  })
 
   const handleTakeOutLoan = useMutation(
     ({ type }: { type: string }) => takeOutLoan(type),

@@ -96,7 +96,9 @@ export default function Structures() {
     }
   )
 
-  const structureTypes = useQuery('structureTypes', listStructureTypes)
+  const structureTypes = useQuery('structureTypes', listStructureTypes, {
+    staleTime: Infinity,
+  })
 
   const knownSystems = useMemo(
     () => [

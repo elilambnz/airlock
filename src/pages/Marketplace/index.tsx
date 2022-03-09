@@ -103,7 +103,9 @@ export default function Marketplace() {
     }))
   )
 
-  const goodTypes = useQuery('goodTypes', listGoodTypes)
+  const goodTypes = useQuery('goodTypes', listGoodTypes, {
+    staleTime: Infinity,
+  })
 
   const filteredGoodDetails = useMemo(() => {
     if (!filteredGood) return

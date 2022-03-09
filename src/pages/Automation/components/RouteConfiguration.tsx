@@ -73,7 +73,9 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
   const myShips = useQuery('myShips', listMyShips)
   const allMyStructures = useQuery('myStructures', listMyStructures)
-  const goodTypes = useQuery('goodTypes', listGoodTypes)
+  const goodTypes = useQuery('goodTypes', listGoodTypes, {
+    staleTime: Infinity,
+  })
   const availableGoods = useQuery(
     ['locationMarketplace', marketplaceLocation],
     () => getLocationMarketplace(marketplaceLocation ?? ''),

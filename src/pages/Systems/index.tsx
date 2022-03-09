@@ -13,7 +13,6 @@ import {
   getSystemLocations,
 } from '../../api/routes/systems'
 import '../../App.css'
-import { Ship } from '../../types/Ship'
 import moment from 'moment'
 import LoadingRows from '../../components/Table/LoadingRows'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
@@ -49,6 +48,7 @@ import Main from '../../components/Main'
 import Section from '../../components/Section'
 import Title from '../../components/Title'
 import { GlobeIcon } from '@heroicons/react/outline'
+import Modal from '../../components/Modal'
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -57,6 +57,8 @@ export default function Systems() {
     useState<{ shipId?: string; destination?: string; autoRefuel?: boolean }>()
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
   const [showMap, setShowMap] = useState(false)
+  const [showAllFlightPlans, setShowAllFlightPlans] = useState(false)
+  const [showAllDockedShips, setShowAllDockedShips] = useState(false)
 
   const { sleep } = useTimeout()
   const { push } = useContext(NotificationContext)
@@ -129,7 +131,7 @@ export default function Systems() {
   const delayUpdateShips = async (delay: number, systemSymbol?: string) => {
     await sleep(delay)
     queryClient.invalidateQueries(['systemFlightPlans', systemSymbol])
-    queryClient.invalidateQueries(['systemDockedShips', systemSymbol])
+    queryClient.invalidateQueries('myShips')
   }
 
   const handleCreateFlightPlan = useMutation(
@@ -144,7 +146,6 @@ export default function Systems() {
     }) => createNewFlightPlan(shipId, destination),
     {
       onSuccess: (data, variables) => {
-        setNewFlightPlan((prev) => ({ ...prev, shipId: undefined }))
         queryClient.invalidateQueries([
           'systemFlightPlans',
           params.systemSymbol,
@@ -153,6 +154,7 @@ export default function Systems() {
           'systemDockedShips',
           params.systemSymbol,
         ])
+        queryClient.invalidateQueries('myShips')
         const { shipId, destination } = variables
         push({
           title: 'Flight plan created',
@@ -203,6 +205,7 @@ export default function Systems() {
           'systemDockedShips',
           params.systemSymbol,
         ])
+        queryClient.invalidateQueries('myShips')
         push({
           title: 'Warp jump initiated',
           message: `Ship ${getShipName(
@@ -230,31 +233,40 @@ export default function Systems() {
     }
   )
 
-  const shipOptions =
+  const myDockedShips =
     myShips.data?.ships
-      .filter((s) => s.location?.split('-')[0] === system.data?.system.symbol)
-      ?.map((ship) => ({
-        value: ship.id,
-        label: `${getShipName(ship.id)}
+      .filter((s) => s.location?.split('-')[0] === params.systemSymbol)
+      ?.sort(
+        (a, b) =>
+          a.x! - b.x! ||
+          a.y! - b.y! ||
+          a.type.localeCompare(b.type) ||
+          getShipName(a.id).localeCompare(getShipName(b.id))
+      ) ?? []
+
+  const shipOptions =
+    myDockedShips.map((ship) => ({
+      value: ship.id,
+      label: `${getShipName(ship.id)}
         `,
-        tags: [
-          ship.type,
-          ship.location,
-          `⛽ ${
-            ship.cargo.find(
-              (c) =>
-                GoodType[c.good as unknown as keyof typeof GoodType] ===
-                GoodType.FUEL
-            )?.quantity ?? 0
-          }`,
-          `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
-        ],
-        icon: (
-          <div className="flex items-center justify-center w-5 h-5">
-            <span className="text-xs">🚀</span>
-          </div>
-        ),
-      })) ?? []
+      tags: [
+        ship.type,
+        ship.location,
+        `⛽ ${
+          ship.cargo.find(
+            (c) =>
+              GoodType[c.good as unknown as keyof typeof GoodType] ===
+              GoodType.FUEL
+          )?.quantity ?? 0
+        }`,
+        `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
+      ],
+      icon: (
+        <div className="flex items-center justify-center w-5 h-5">
+          <span className="text-xs">🚀</span>
+        </div>
+      ),
+    })) ?? []
 
   const locationOptions =
     systemLocations.data?.locations.map((location) => ({
@@ -278,13 +290,6 @@ export default function Systems() {
     systemFlightPlans.data?.flightPlans.filter(
       (flightPlan) => flightPlan.username === user.data?.user.username
     ) ?? []
-
-  // Might be more efficient to filter myShips, but we have to consider ships in transit
-  const myDockedShips =
-    (systemDockedShips.data?.ships
-      .filter((s) => s.username === user.data?.user.username)
-      ?.map((s) => myShips.data?.ships.find((ms) => ms.id === s.shipId))
-      .filter((s) => s?.location) as Ship[]) ?? []
 
   return (
     <>
@@ -334,7 +339,7 @@ export default function Systems() {
           </div>
         </div>
 
-        <div>
+        <div className="mb-5">
           <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
@@ -369,7 +374,7 @@ export default function Systems() {
           </dl>
         </div>
 
-        <div className="mt-5 bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <Section>
           <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
             <div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -514,7 +519,7 @@ export default function Systems() {
               </div>
             </div>
           </div>
-        </div>
+        </Section>
 
         <Title>Flight Plans</Title>
 
@@ -635,16 +640,27 @@ export default function Systems() {
         </Section>
 
         <Section>
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Active Flight Plans
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Last updated:{' '}
-              {moment(systemFlightPlans.dataUpdatedAt).format(
-                'DD/MM/YY hh:mm:ss a'
-              )}
-            </p>
+          <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
+            <div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Active Flight Plans
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                Last updated:{' '}
+                {moment(systemFlightPlans.dataUpdatedAt).format(
+                  'DD/MM/YY hh:mm:ss a'
+                )}
+              </p>
+            </div>
+            <div className="mt-1">
+              <button
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                type="button"
+                onClick={() => setShowAllFlightPlans(true)}
+              >
+                View All Flight Plans
+              </button>
+            </div>
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -767,22 +783,31 @@ export default function Systems() {
         </Section>
 
         <Section>
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Docked Ships
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Last updated:{' '}
-              {moment(systemDockedShips.dataUpdatedAt).format(
-                'DD/MM/YY hh:mm:ss a'
-              )}
-            </p>
+          <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
+            <div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Docked Ships
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                Last updated:{' '}
+                {moment(myShips.dataUpdatedAt).format('DD/MM/YY hh:mm:ss a')}
+              </p>
+            </div>
+            <div className="mt-1">
+              <button
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                type="button"
+                onClick={() => setShowAllDockedShips(true)}
+              >
+                View All Docked Ships
+              </button>
+            </div>
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                {systemDockedShips.isLoading || myDockedShips.length > 0 ? (
+                {myShips.isLoading || myDockedShips.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -807,29 +832,23 @@ export default function Systems() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {!systemDockedShips.isLoading ? (
-                        myDockedShips
-                          .sort((a, b) => a.x! - b.x! || a.y! - b.y!)
-                          .map((ship, i) => (
-                            <tr
-                              key={ship.id}
-                              className={
-                                i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                              }
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                {getShipName(ship.id)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {ship.type}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                {ship.flightPlanId
-                                  ? 'In transit'
-                                  : ship.location}
-                              </td>
-                            </tr>
-                          ))
+                      {!myShips.isLoading ? (
+                        myDockedShips.map((ship, i) => (
+                          <tr
+                            key={ship.id}
+                            className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                              {getShipName(ship.id)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              {ship.type}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              {ship.flightPlanId ? 'In transit' : ship.location}
+                            </td>
+                          </tr>
+                        ))
                       ) : (
                         <LoadingRows cols={3} rows={3} />
                       )}
@@ -929,6 +948,102 @@ export default function Systems() {
           </div>
         </Section>
       </Main>
+      <Modal
+        open={showAllFlightPlans}
+        title={`${params.systemSymbol} Flight Plans`}
+        content={
+          <div className="py-2 px-1 align-middle inline-block min-w-full">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg max-h-96 overflow-y-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Type
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Username
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!systemFlightPlans.isLoading ? (
+                    systemFlightPlans.data?.flightPlans.map((flightPlan, i) => (
+                      <tr
+                        key={flightPlan.id}
+                        className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {flightPlan.shipType}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {flightPlan.username}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <LoadingRows cols={2} rows={3} />
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+        onClose={() => setShowAllFlightPlans(false)}
+      />
+      <Modal
+        open={showAllDockedShips}
+        title={`${params.systemSymbol} Docked Ships`}
+        content={
+          <div className="py-2 px-1 align-middle inline-block min-w-full">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg max-h-96 overflow-y-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Type
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Username
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!systemDockedShips.isLoading ? (
+                    systemDockedShips.data?.ships.map((ship, i) => (
+                      <tr
+                        key={ship.shipId}
+                        className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {ship.shipType}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {ship.username}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <LoadingRows cols={2} rows={3} />
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+        onClose={() => setShowAllDockedShips(false)}
+      />
     </>
   )
 }

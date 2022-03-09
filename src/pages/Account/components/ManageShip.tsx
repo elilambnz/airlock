@@ -206,7 +206,7 @@ export default function ManageShip(props: ManageShipProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody x-max="2">
+              <tbody>
                 {ship.cargo.map((cargo, i) => (
                   <tr
                     key={cargo.good}
