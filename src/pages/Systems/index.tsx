@@ -18,7 +18,7 @@ import LoadingRows from '../../components/Table/LoadingRows'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
-import { getErrorMessage, getShipName } from '../../utils/helpers'
+import { getErrorMessage, getProgress, getShipName } from '../../utils/helpers'
 import {
   getIconForLocationType,
   LocationTrait,
@@ -294,10 +294,34 @@ export default function Systems() {
     )
   }, [systemLocations.data])
 
-  const myActiveFlightPlans =
-    systemFlightPlans.data?.flightPlans.filter(
-      (flightPlan) => flightPlan.username === user.data?.user.username
-    ) ?? []
+  const myActiveFlightPlans = useMemo(() => {
+    return (
+      systemFlightPlans.data?.flightPlans.filter(
+        (flightPlan) => flightPlan.username === user.data?.user.username
+      ) ?? []
+    )
+  }, [systemFlightPlans.data, user.data])
+
+  const activeFlightPlanDataPoints = useMemo(() => {
+    return myActiveFlightPlans
+      .map((fp) => {
+        const from = systemLocations.data?.locations.find(
+          (l) => l.symbol === fp.departure
+        )
+        const to = systemLocations.data?.locations.find(
+          (l) => l.symbol === fp.destination
+        )
+        if (!from || !to) {
+          return null
+        }
+        const progress = getProgress(moment(fp.createdAt), moment(fp.arrivesAt))
+        return {
+          x: from.x! + (to.x! - from.x!) * (progress / 100),
+          y: from.y! + (to.y! - from.y!) * (progress / 100),
+        }
+      })
+      .filter(Boolean)
+  }, [myActiveFlightPlans, systemLocations.data])
 
   return (
     <>
@@ -416,9 +440,6 @@ export default function Systems() {
                       <div className="relative h-350-px">
                         <Scatter
                           options={{
-                            animation: {
-                              duration: 0,
-                            },
                             plugins: {
                               legend: {
                                 display: false,
@@ -426,7 +447,6 @@ export default function Systems() {
                               tooltip: {
                                 callbacks: {
                                   label: function (ctx) {
-                                    console.log('ctx', ctx)
                                     let label
                                     const raw = ctx.raw as any
                                     switch (raw.type) {
@@ -440,16 +460,23 @@ export default function Systems() {
                                             LocationType[
                                               l?.type as unknown as keyof typeof LocationType
                                             ]
-                                          )} ${l?.name}` ?? 'Unknown'
+                                          )} ${l?.name} ${l?.symbol}` ??
+                                          'Unknown'
                                         label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
                                         break
-                                      case 'ship':
+                                      case 'dockedShip':
                                         label = `🚀 ${getShipName(
-                                          dockedShips?.[ctx.dataIndex]?.id
+                                          dockedShips[ctx.dataIndex]?.id
                                         )}`
                                         label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
                                         break
-
+                                      case 'travellingShip':
+                                        label = `🚀 ${getShipName(
+                                          myActiveFlightPlans[ctx.dataIndex]
+                                            ?.shipId
+                                        )}`
+                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
+                                        break
                                       default:
                                         return ''
                                     }
@@ -462,15 +489,39 @@ export default function Systems() {
                           data={{
                             datasets: [
                               {
+                                label: 'Docked ships',
                                 data: dockedShips.map((s) => ({
                                   x: s.x!,
                                   y: s.y!,
-                                  type: 'ship',
+                                  type: 'dockedShip',
                                 })),
                                 backgroundColor: 'rgb(199, 210, 254)',
                                 pointRadius: 4,
                               },
                               {
+                                label: 'Travelling ships',
+                                data: activeFlightPlanDataPoints.map((p) => ({
+                                  x: p!.x,
+                                  y: p!.y,
+                                  type: 'travellingShip',
+                                })),
+                                backgroundColor: 'rgb(199, 210, 254)',
+                                pointRadius: 4,
+                              },
+                              {
+                                label: 'Locations',
+                                data: systemLocations.data?.locations.map(
+                                  (l) => ({
+                                    x: l.x,
+                                    y: l.y,
+                                    type: 'location',
+                                  })
+                                ),
+                                backgroundColor: 'rgb(99, 102, 241)',
+                                pointRadius: 8,
+                              },
+                              {
+                                label: 'Flight plan',
                                 data: myActiveFlightPlans
                                   .map((fp) => {
                                     const from =
@@ -495,22 +546,15 @@ export default function Systems() {
                                       },
                                     ]
                                   })
-                                  .flat(),
-                                backgroundColor: 'rgb(0, 0, 0)',
-                                pointRadius: 0,
+                                  .filter(Boolean)
+                                  .flat() as {
+                                  x: number
+                                  y: number
+                                  type: string
+                                }[],
+                                pointRadius: 10,
                                 showLine: true,
                                 borderDash: [10, 5],
-                              },
-                              {
-                                data: systemLocations.data?.locations.map(
-                                  (l) => ({
-                                    x: l.x,
-                                    y: l.y,
-                                    type: 'location',
-                                  })
-                                ),
-                                backgroundColor: 'rgb(99, 102, 241)',
-                                pointRadius: 8,
                               },
                             ],
                           }}
