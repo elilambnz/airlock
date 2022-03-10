@@ -46,6 +46,7 @@ export default function CommandPalette() {
     knownSystems.map((systemSymbol) => ({
       queryKey: ['systemLocations', systemSymbol],
       queryFn: () => getSystemLocations(systemSymbol),
+      staleTime: Infinity,
     })) ?? []
   )
 

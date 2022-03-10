@@ -105,6 +105,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
     knownSystems.map((systemSymbol) => ({
       queryKey: ['systemLocations', systemSymbol],
       queryFn: () => getSystemLocations(systemSymbol),
+      staleTime: Infinity,
     })) ?? []
   )
 

@@ -121,6 +121,7 @@ export default function Structures() {
     knownSystems.map((systemSymbol) => ({
       queryKey: ['systemLocations', systemSymbol],
       queryFn: () => getSystemLocations(systemSymbol),
+      staleTime: Infinity,
     })) ?? []
   )
 

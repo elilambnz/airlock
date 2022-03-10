@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   createNewFlightPlan,
@@ -73,6 +73,7 @@ export default function Systems() {
     () => getSystemInfo(params.systemSymbol ?? ''),
     {
       enabled: !!params.systemSymbol,
+      staleTime: Infinity,
     }
   )
   const systemLocations = useQuery(
@@ -80,6 +81,7 @@ export default function Systems() {
     () => getSystemLocations(params.systemSymbol ?? ''),
     {
       enabled: !!params.systemSymbol,
+      staleTime: Infinity,
     }
   )
   const systemFlightPlans = useQuery(
@@ -233,19 +235,22 @@ export default function Systems() {
     }
   )
 
-  const myDockedShips =
-    myShips.data?.ships
-      .filter((s) => s.location?.split('-')[0] === params.systemSymbol)
-      ?.sort(
-        (a, b) =>
-          a.x! - b.x! ||
-          a.y! - b.y! ||
-          a.type.localeCompare(b.type) ||
-          getShipName(a.id).localeCompare(getShipName(b.id))
-      ) ?? []
+  const dockedShips = useMemo(() => {
+    return (
+      myShips.data?.ships
+        .filter((s) => s.location?.split('-')[0] === params.systemSymbol)
+        ?.sort(
+          (a, b) =>
+            a.x! - b.x! ||
+            a.y! - b.y! ||
+            a.type.localeCompare(b.type) ||
+            getShipName(a.id).localeCompare(getShipName(b.id))
+        ) ?? []
+    )
+  }, [myShips.data, params.systemSymbol])
 
   const shipOptions =
-    myDockedShips.map((ship) => ({
+    dockedShips.map((ship) => ({
       value: ship.id,
       label: `${getShipName(ship.id)}
         `,
@@ -268,23 +273,26 @@ export default function Systems() {
       ),
     })) ?? []
 
-  const locationOptions =
-    systemLocations.data?.locations.map((location) => ({
-      value: location.symbol,
-      label: location.name,
-      tags: [location.symbol, `(${location.x}, ${location.y})`],
-      icon: (
-        <div className="flex items-center justify-center w-5 h-5">
-          <span className="text-xs">
-            {getIconForLocationType(
-              LocationType[
-                location.type as unknown as keyof typeof LocationType
-              ]
-            )}
-          </span>
-        </div>
-      ),
-    })) ?? []
+  const locationOptions = useMemo(() => {
+    return (
+      systemLocations.data?.locations.map((location) => ({
+        value: location.symbol,
+        label: location.name,
+        tags: [location.symbol, `(${location.x}, ${location.y})`],
+        icon: (
+          <div className="flex items-center justify-center w-5 h-5">
+            <span className="text-xs">
+              {getIconForLocationType(
+                LocationType[
+                  location.type as unknown as keyof typeof LocationType
+                ]
+              )}
+            </span>
+          </div>
+        ),
+      })) ?? []
+    )
+  }, [systemLocations.data])
 
   const myActiveFlightPlans =
     systemFlightPlans.data?.flightPlans.filter(
@@ -367,7 +375,7 @@ export default function Systems() {
                   Docked ships
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                  {myDockedShips?.length ?? 0}
+                  {dockedShips?.length ?? 0}
                 </dd>
               </div>
             </div>
@@ -408,6 +416,9 @@ export default function Systems() {
                       <div className="relative h-350-px">
                         <Scatter
                           options={{
+                            animation: {
+                              duration: 0,
+                            },
                             plugins: {
                               legend: {
                                 display: false,
@@ -415,16 +426,33 @@ export default function Systems() {
                               tooltip: {
                                 callbacks: {
                                   label: function (ctx) {
-                                    let label =
-                                      systemLocations.data?.locations[
-                                        ctx.dataIndex
-                                      ]?.name ?? 'Unknown'
-                                    label +=
-                                      ' (' +
-                                      ctx.parsed.x +
-                                      ', ' +
-                                      ctx.parsed.y +
-                                      ')'
+                                    console.log('ctx', ctx)
+                                    let label
+                                    const raw = ctx.raw as any
+                                    switch (raw.type) {
+                                      case 'location':
+                                        const l =
+                                          systemLocations.data?.locations[
+                                            ctx.dataIndex
+                                          ]
+                                        label =
+                                          `${getIconForLocationType(
+                                            LocationType[
+                                              l?.type as unknown as keyof typeof LocationType
+                                            ]
+                                          )} ${l?.name}` ?? 'Unknown'
+                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
+                                        break
+                                      case 'ship':
+                                        label = `🚀 ${getShipName(
+                                          dockedShips?.[ctx.dataIndex]?.id
+                                        )}`
+                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
+                                        break
+
+                                      default:
+                                        return ''
+                                    }
                                     return label
                                   },
                                 },
@@ -434,11 +462,55 @@ export default function Systems() {
                           data={{
                             datasets: [
                               {
+                                data: dockedShips.map((s) => ({
+                                  x: s.x!,
+                                  y: s.y!,
+                                  type: 'ship',
+                                })),
+                                backgroundColor: 'rgb(199, 210, 254)',
+                                pointRadius: 4,
+                              },
+                              {
+                                data: myActiveFlightPlans
+                                  .map((fp) => {
+                                    const from =
+                                      systemLocations.data?.locations.find(
+                                        (l) => l.symbol === fp.departure
+                                      )
+                                    const to =
+                                      systemLocations.data?.locations.find(
+                                        (l) => l.symbol === fp.destination
+                                      )
+                                    if (!from || !to) {
+                                      return null
+                                    }
+                                    return [
+                                      {
+                                        x: from.x,
+                                        y: from.y,
+                                      },
+                                      {
+                                        x: to.x,
+                                        y: to.y,
+                                      },
+                                    ]
+                                  })
+                                  .flat(),
+                                backgroundColor: 'rgb(0, 0, 0)',
+                                pointRadius: 0,
+                                showLine: true,
+                                borderDash: [10, 5],
+                              },
+                              {
                                 data: systemLocations.data?.locations.map(
-                                  (l) => ({ x: l.x, y: l.y })
+                                  (l) => ({
+                                    x: l.x,
+                                    y: l.y,
+                                    type: 'location',
+                                  })
                                 ),
                                 backgroundColor: 'rgb(99, 102, 241)',
-                                pointRadius: 5,
+                                pointRadius: 8,
                               },
                             ],
                           }}
@@ -807,7 +879,7 @@ export default function Systems() {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                {myShips.isLoading || myDockedShips.length > 0 ? (
+                {myShips.isLoading || dockedShips.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -833,7 +905,7 @@ export default function Systems() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {!myShips.isLoading ? (
-                        myDockedShips.map((ship, i) => (
+                        dockedShips.map((ship, i) => (
                           <tr
                             key={ship.id}
                             className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
@@ -896,7 +968,7 @@ export default function Systems() {
                         options={
                           shipOptions.filter(
                             (o) =>
-                              myDockedShips
+                              dockedShips
                                 .find((s) => s.id === o.value)
                                 ?.location?.split('-')[1] === 'W'
                           ) ?? []
