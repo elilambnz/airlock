@@ -18,22 +18,13 @@ import LoadingRows from '../../components/Table/LoadingRows'
 import ActiveProgress from '../../components/Progress/ActiveProgress'
 import Select from '../../components/Select'
 import { GoodType } from '../../types/Order'
-import { getErrorMessage, getProgress, getShipName } from '../../utils/helpers'
+import { getErrorMessage, getShipName } from '../../utils/helpers'
 import {
   getIconForLocationType,
   LocationTrait,
   LocationType,
   System,
 } from '../../types/Location'
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-import { Scatter } from 'react-chartjs-2'
 import { refuel } from '../../utils/mechanics'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { PaperAirplaneIcon } from '@heroicons/react/solid'
@@ -49,8 +40,7 @@ import Section from '../../components/Section'
 import Title from '../../components/Title'
 import { GlobeIcon } from '@heroicons/react/outline'
 import Modal from '../../components/Modal'
-
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend)
+import SystemMap from './components/SystemMap'
 
 export default function Systems() {
   const [newFlightPlan, setNewFlightPlan] =
@@ -302,27 +292,6 @@ export default function Systems() {
     )
   }, [systemFlightPlans.data, user.data])
 
-  const activeFlightPlanDataPoints = useMemo(() => {
-    return myActiveFlightPlans
-      .map((fp) => {
-        const from = systemLocations.data?.locations.find(
-          (l) => l.symbol === fp.departure
-        )
-        const to = systemLocations.data?.locations.find(
-          (l) => l.symbol === fp.destination
-        )
-        if (!from || !to) {
-          return null
-        }
-        const progress = getProgress(moment(fp.createdAt), moment(fp.arrivesAt))
-        return {
-          x: from.x! + (to.x! - from.x!) * (progress / 100),
-          y: from.y! + (to.y! - from.y!) * (progress / 100),
-        }
-      })
-      .filter(Boolean)
-  }, [myActiveFlightPlans, systemLocations.data])
-
   return (
     <>
       <Header>Systems</Header>
@@ -438,126 +407,10 @@ export default function Systems() {
                   {showMap ? (
                     <div className="p-4 flex-auto">
                       <div className="relative h-350-px">
-                        <Scatter
-                          options={{
-                            plugins: {
-                              legend: {
-                                display: false,
-                              },
-                              tooltip: {
-                                callbacks: {
-                                  label: function (ctx) {
-                                    let label
-                                    const raw = ctx.raw as any
-                                    switch (raw.type) {
-                                      case 'location':
-                                        const l =
-                                          systemLocations.data?.locations[
-                                            ctx.dataIndex
-                                          ]
-                                        label =
-                                          `${getIconForLocationType(
-                                            LocationType[
-                                              l?.type as unknown as keyof typeof LocationType
-                                            ]
-                                          )} ${l?.name} ${l?.symbol}` ??
-                                          'Unknown'
-                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
-                                        break
-                                      case 'dockedShip':
-                                        label = `🚀 ${getShipName(
-                                          dockedShips[ctx.dataIndex]?.id
-                                        )}`
-                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
-                                        break
-                                      case 'travellingShip':
-                                        label = `🚀 ${getShipName(
-                                          myActiveFlightPlans[ctx.dataIndex]
-                                            ?.shipId
-                                        )}`
-                                        label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`
-                                        break
-                                      default:
-                                        return ''
-                                    }
-                                    return label
-                                  },
-                                },
-                              },
-                            },
-                          }}
-                          data={{
-                            datasets: [
-                              {
-                                label: 'Docked ships',
-                                data: dockedShips.map((s) => ({
-                                  x: s.x!,
-                                  y: s.y!,
-                                  type: 'dockedShip',
-                                })),
-                                backgroundColor: 'rgb(199, 210, 254)',
-                                pointRadius: 4,
-                              },
-                              {
-                                label: 'Travelling ships',
-                                data: activeFlightPlanDataPoints.map((p) => ({
-                                  x: p!.x,
-                                  y: p!.y,
-                                  type: 'travellingShip',
-                                })),
-                                backgroundColor: 'rgb(199, 210, 254)',
-                                pointRadius: 4,
-                              },
-                              {
-                                label: 'Locations',
-                                data: systemLocations.data?.locations.map(
-                                  (l) => ({
-                                    x: l.x,
-                                    y: l.y,
-                                    type: 'location',
-                                  })
-                                ),
-                                backgroundColor: 'rgb(99, 102, 241)',
-                                pointRadius: 8,
-                              },
-                              {
-                                label: 'Flight plan',
-                                data: myActiveFlightPlans
-                                  .map((fp) => {
-                                    const from =
-                                      systemLocations.data?.locations.find(
-                                        (l) => l.symbol === fp.departure
-                                      )
-                                    const to =
-                                      systemLocations.data?.locations.find(
-                                        (l) => l.symbol === fp.destination
-                                      )
-                                    if (!from || !to) {
-                                      return null
-                                    }
-                                    return [
-                                      {
-                                        x: from.x,
-                                        y: from.y,
-                                      },
-                                      {
-                                        x: to.x,
-                                        y: to.y,
-                                      },
-                                    ]
-                                  })
-                                  .filter(Boolean)
-                                  .flat() as {
-                                  x: number
-                                  y: number
-                                  type: string
-                                }[],
-                                pointRadius: 10,
-                                showLine: true,
-                                borderDash: [10, 5],
-                              },
-                            ],
-                          }}
+                        <SystemMap
+                          systemSymbol={params.systemSymbol || ''}
+                          dockedShips={dockedShips}
+                          myActiveFlightPlans={myActiveFlightPlans}
                         />
                       </div>
                     </div>
