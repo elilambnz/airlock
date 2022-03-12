@@ -163,13 +163,14 @@ export default function Automation() {
                     </div>
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-yellow-800">
-                        Heads up!
+                        Heads up! This is an experimental feature, please
+                        proceed with caution.
                       </h3>
                       <div className="mt-2 text-sm text-yellow-700">
                         <p>
-                          This is an experimental feature, please proceed with
-                          caution. You can view the logs for each route below by
-                          clicking "View" in the table.
+                          You can view the logs for each route below by clicking
+                          "View" in the table. Reloading the app will restart
+                          all routes from the beginning.
                         </p>
                       </div>
                     </div>
@@ -420,9 +421,27 @@ export default function Automation() {
                 {tradeRouteMessages.get(routeToManage.id) && (
                   <div className="mt-2">
                     <Alert
-                      title="Error"
+                      title="Latest reported error"
                       message={tradeRouteMessages.get(routeToManage.id)!}
                     />
+                    <div className="mt-2 rounded-md bg-blue-50 p-4">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <InformationCircleIcon
+                            className="h-5 w-5 text-blue-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="ml-3 flex-1 md:flex md:justify-between">
+                          <p className="text-sm text-blue-700">
+                            <span className="font-medium text-blue-800">
+                              Tip:
+                            </span>{' '}
+                            Check the logs below for more details.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 {tradeRouteStatuses.get(routeToManage.id) ===

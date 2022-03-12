@@ -149,7 +149,9 @@ export default function Loans() {
                               </td>
 
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {loan.status === LoanStatus.CURRENT && (
+                                {LoanStatus[
+                                  loan.status as unknown as keyof typeof LoanStatus
+                                ] === LoanStatus.CURRENT && (
                                   <button
                                     className={
                                       'text-indigo-600 hover:text-indigo-900' +

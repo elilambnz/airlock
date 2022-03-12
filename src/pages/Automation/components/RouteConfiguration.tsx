@@ -20,7 +20,11 @@ import {
 } from '../../../types/Location'
 import { useQueries, useQuery } from 'react-query'
 import 'moment-duration-format'
-import { formatNumberCommas, getShipName } from '../../../utils/helpers'
+import {
+  formatNumberCommas,
+  getErrorMessage,
+  getShipName,
+} from '../../../utils/helpers'
 import { StructureCategory } from '../../../types/Structure'
 
 interface RouteConfigurationProps {
@@ -181,6 +185,10 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
   const goodTradeOptions =
     goodTypes.data?.goods.map((g) => {
+      const locationSelected =
+        newTradeRoute.events.filter((e) => e.type === RouteEventType.TRAVEL)
+          .length > 0
+      const error = availableGoods.error && (availableGoods.error as any)
       const availableGood = availableGoods.data?.marketplace.find((m) => {
         return m.symbol === g.symbol
       })
@@ -188,7 +196,11 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
         value: g.symbol,
         label: g.name,
         tags: [
-          !availableGoods.isLoading
+          !locationSelected
+            ? 'No location selected'
+            : error
+            ? getErrorMessage(error)
+            : !availableGoods.isLoading
             ? availableGood
               ? newTradeRouteTrade.type === RouteEventType.BUY
                 ? `Buy: ${formatNumberCommas(
@@ -697,7 +709,21 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
       <div className="p-6 w-full flex justify-end">
         <button
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className={
+            'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+            (!(
+              newTradeRoute.events.length > 0 &&
+              newTradeRoute.assignedShips.length > 0
+            )
+              ? ' opacity-50 cursor-not-allowed'
+              : '')
+          }
+          disabled={
+            !(
+              newTradeRoute.events.length > 0 &&
+              newTradeRoute.assignedShips.length > 0
+            )
+          }
           onClick={() => {
             handleSaveTradeRoute()
           }}

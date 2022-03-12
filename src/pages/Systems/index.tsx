@@ -1,5 +1,10 @@
 import { useState, useEffect, useContext, useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import {
   createNewFlightPlan,
   listMyShips,
@@ -43,10 +48,11 @@ import Modal from '../../components/Modal'
 import SystemMap from './components/SystemMap'
 
 export default function Systems() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [newFlightPlan, setNewFlightPlan] =
     useState<{ shipId?: string; destination?: string; autoRefuel?: boolean }>()
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
-  const [showMap, setShowMap] = useState(false)
   const [showAllFlightPlans, setShowAllFlightPlans] = useState(false)
   const [showAllDockedShips, setShowAllDockedShips] = useState(false)
 
@@ -54,6 +60,7 @@ export default function Systems() {
   const { push } = useContext(NotificationContext)
 
   const navigate = useNavigate()
+  const { search } = useLocation()
   const params = useParams()
   const queryClient = useQueryClient()
   const user = useQuery('user', getMyAccount)
@@ -302,6 +309,8 @@ export default function Systems() {
     )
   }, [systemFlightPlans.data, user.data])
 
+  const showMap = searchParams.get('showMap') === 'true'
+
   return (
     <>
       <Header>Systems</Header>
@@ -344,7 +353,7 @@ export default function Systems() {
               value={system.data?.system.symbol}
               disabled={system.isLoading}
               onChange={(value) => {
-                navigate(`/systems/${value}`)
+                navigate(`/systems/${value}${search}`)
               }}
             />
           </div>
@@ -403,7 +412,9 @@ export default function Systems() {
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 type="button"
                 onClick={() => {
-                  setShowMap((prev) => !prev)
+                  setSearchParams({
+                    showMap: String(!showMap),
+                  })
                 }}
               >
                 {showMap ? 'View table' : 'View map'}

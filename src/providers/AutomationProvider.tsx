@@ -252,7 +252,7 @@ export default function AutomationProvider(props: any) {
             }
           }
         } catch (error: any) {
-          log(`Error: ${getErrorMessage(error)}`)
+          console.info('Error checking existing flight plan', error)
         }
 
         async function createFlightPlan(shipId: string, location: string) {
@@ -458,11 +458,10 @@ export default function AutomationProvider(props: any) {
                   routeIdx,
                   eventIdx,
                   id,
-                  `Error: ${getErrorMessage(error.message)}`
+                  `Error: ${getErrorMessage(error)}`
                 )
                 setTradeRouteMessages(
-                  (prev) =>
-                    new Map(prev.set(id, getErrorMessage(error.message)))
+                  (prev) => new Map(prev.set(id, getErrorMessage(error)))
                 )
               }
 
@@ -488,12 +487,11 @@ export default function AutomationProvider(props: any) {
 
   const addTradeRoute = async (tradeRoute: TradeRoute) => {
     try {
-      const response = await createTradingRoute(
+      await createTradingRoute(
         tradeRoute.events,
         tradeRoute.assignedShips,
         tradeRoute.autoRefuel
       )
-      console.log('addTradeRoute', response)
       queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error creating trade route:', error)

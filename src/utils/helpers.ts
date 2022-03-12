@@ -64,6 +64,8 @@ export const getShipName = (shipId: string) => {
 }
 
 export const getErrorMessage = (error: { code: number; message: string }) => {
+  console.log('parsing', error)
+
   return getMessageForErrorCode(error.code) || error.message
 }
 
@@ -74,6 +76,8 @@ export const getMessageForErrorCode = (code: number) => {
       return 'Something unexpected went wrong!'
     case 42901:
       return 'Throttle limit reached. Please try again'
+    case 2005:
+      return 'No ships in marketplace location'
     default:
       return
   }

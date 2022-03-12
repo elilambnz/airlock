@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Chart as ChartJS,
   LinearScale,
@@ -27,7 +27,7 @@ interface SystemMapProps {
 export default function SystemMap(props: SystemMapProps) {
   const { systemSymbol, dockedShips, myActiveFlightPlans } = props
 
-  const [activeFlightPlanDataPoints, setActiveFlightPlanDataPoints] =
+  const [travellingShipsDataPoints, setTravellingShipsDataPoints] =
     useState<{ x: number; y: number }[]>()
 
   const systemLocations = useQuery(
@@ -43,7 +43,7 @@ export default function SystemMap(props: SystemMapProps) {
     let interval: NodeJS.Timer
     if (myActiveFlightPlans.length > 0) {
       interval = setInterval(() => {
-        setActiveFlightPlanDataPoints(
+        setTravellingShipsDataPoints(
           myActiveFlightPlans
             .map((fp) => {
               const from = systemLocations.data?.locations.find(
@@ -71,13 +71,46 @@ export default function SystemMap(props: SystemMapProps) {
         )
       }, 2000)
     } else {
-      setActiveFlightPlanDataPoints(undefined)
+      setTravellingShipsDataPoints(undefined)
     }
 
     return () => {
       clearInterval(interval)
     }
   }, [myActiveFlightPlans, systemLocations.data])
+
+  const flightPathDataPoints = useMemo(
+    () =>
+      [
+        ...new Map(
+          myActiveFlightPlans
+            .flatMap((fp) => {
+              const from = systemLocations.data?.locations.find(
+                (l) => l.symbol === fp.departure
+              )
+              const to = systemLocations.data?.locations.find(
+                (l) => l.symbol === fp.destination
+              )
+              if (!from || !to) {
+                return null
+              }
+              return [
+                {
+                  x: from.x,
+                  y: from.y,
+                },
+                {
+                  x: to.x,
+                  y: to.y,
+                },
+              ]
+            })
+            .filter(Boolean)
+            .map((v) => [JSON.stringify(v), v])
+        ).values(),
+      ] as { x: number; y: number }[],
+    [myActiveFlightPlans, systemLocations.data]
+  )
 
   return (
     <Scatter
@@ -136,7 +169,7 @@ export default function SystemMap(props: SystemMapProps) {
           },
           {
             label: 'Travelling ships',
-            data: activeFlightPlanDataPoints?.map((p) => ({
+            data: travellingShipsDataPoints?.map((p) => ({
               x: p!.x,
               y: p!.y,
               type: 'travellingShip',
@@ -157,39 +190,16 @@ export default function SystemMap(props: SystemMapProps) {
             pointHoverRadius: 12,
           },
           {
-            label: 'Flight plan',
-            data: myActiveFlightPlans
-              .map((fp) => {
-                const from = systemLocations.data?.locations.find(
-                  (l) => l.symbol === fp.departure
-                )
-                const to = systemLocations.data?.locations.find(
-                  (l) => l.symbol === fp.destination
-                )
-                if (!from || !to) {
-                  return null
-                }
-                return [
-                  {
-                    x: from.x,
-                    y: from.y,
-                  },
-                  {
-                    x: to.x,
-                    y: to.y,
-                  },
-                ]
-              })
-              .filter(Boolean)
-              .flat() as {
-              x: number
-              y: number
-              type: string
-            }[],
-            pointRadius: 10,
-            pointHoverRadius: 12,
+            label: 'Flight path',
+            data: flightPathDataPoints.map((p) => ({
+              x: p.x,
+              y: p.y,
+              type: 'flightPath',
+            })),
+            pointRadius: 12,
             showLine: true,
             borderDash: [10, 5],
+            animation: false,
           },
         ],
       }}
