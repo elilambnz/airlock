@@ -7,11 +7,9 @@ import {
 } from '../api/routes/auxiliary'
 import {
   createNewFlightPlan,
-  depositToMyStructure,
   getFlightPlanInfo,
   initiateWarpJump,
   listMyShips,
-  withdrawFromMyStructure,
 } from '../api/routes/my'
 import { useAuth } from '../hooks/useAuth'
 import {
@@ -21,7 +19,7 @@ import {
   TradeRoute,
   TradeRouteStatus,
 } from '../types/Automation'
-import { getShipName } from '../utils/helpers'
+import { getErrorMessage, getShipName } from '../utils/helpers'
 import { deposit, purchase, refuel, sell, withdraw } from '../utils/mechanics'
 
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
@@ -148,11 +146,14 @@ export default function AutomationProvider(props: any) {
 
   const handleLog = (
     routeIdx: number,
-    eventIdx: number,
+    eventIdx: number | null,
     id: string,
     message: string
   ) => {
-    console.info(`Automation ${routeIdx} - ${eventIdx}:`, message)
+    console.info(
+      `Automation ${routeIdx}${eventIdx !== null ? ` - ${eventIdx}` : ''}:`,
+      message
+    )
     setTradeRouteLog((prev) => ({
       ...prev,
       [id]: [...(prev?.[id] || []), message],
@@ -194,6 +195,7 @@ export default function AutomationProvider(props: any) {
     autoRefuel: boolean,
     log: (message: string) => void
   ) => {
+    log(`Traveling to ${location}`)
     let timeRemaining = [0]
     await Promise.all(
       shipIds.map(async (id) => {
@@ -202,43 +204,55 @@ export default function AutomationProvider(props: any) {
           throw new Error(`Ship ${id} not found`)
         }
 
-        // Check if the ship is already in transit
-        if (ship.flightPlanId) {
-          // Ship is already on a flight plan
-          const flightPlan = await getFlightPlanInfo(ship.flightPlanId)
-          if (flightPlan.flightPlan.destination === location) {
-            // Ship is already going to the destination
-            timeRemaining.push(flightPlan.flightPlan.timeRemainingInSeconds)
-            return
-          } else {
-            // Ship is not traveling to the correct location
-            // If there are more than one travel events, we need to check if the ship is already traveling to another location in the route
-            if (
-              allLocations.length > 1 &&
-              allLocations.includes(flightPlan.flightPlan.destination)
-            ) {
-              // The ship is already traveling to another location in the route, so we don't need to move the ship
-              log(
+        try {
+          const existingFlightPlan = ship.flightPlanId
+            ? (await getFlightPlanInfo(ship.flightPlanId)).flightPlan
+            : null
+
+          // Check if the ship is already in transit
+          if (existingFlightPlan && existingFlightPlan.terminatedAt === null) {
+            if (existingFlightPlan.destination === location) {
+              // Ship is already going to the destination
+              timeRemaining.push(existingFlightPlan.timeRemainingInSeconds)
+              return
+            } else {
+              // Ship is not traveling to the correct location
+              // If there are more than one travel events, we need to check if the ship is already traveling to another location in the route
+              if (
+                allLocations.length > 1 &&
+                allLocations.includes(existingFlightPlan.destination)
+              ) {
+                // The ship is already traveling to another location in the route, so we don't need to move the ship
+                log(
+                  `Ship ${getShipName(
+                    ship.id
+                  )} is already traveling to another location in the route, ${
+                    existingFlightPlan.destination
+                  }`
+                )
+                return
+              }
+              throw new Error(
                 `Ship ${getShipName(
                   ship.id
-                )} is already traveling to another location in the route, ${
-                  flightPlan.flightPlan.destination
-                }`
+                )} is not traveling to a destination in the route`
               )
-              timeRemaining.push(flightPlan.flightPlan.timeRemainingInSeconds)
-              return
             }
-            throw new Error(
-              `Ship ${getShipName(ship.id)} is not traveling to ${location}`
-            )
           }
+        } catch (error: any) {
+          log(`Error: ${getErrorMessage(error)}`)
         }
 
-        // If not, move the ship to location
+        async function createFlightPlan(shipId: string, location: string) {
+          const result = await createNewFlightPlan(shipId, location)
+          queryClient.invalidateQueries('myShips')
+          timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+        }
+
+        // If ship not in transit, create a new flight plan
         if (ship.location !== location) {
           try {
-            const result = await createNewFlightPlan(ship.id, location)
-            timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+            await createFlightPlan(ship.id, location)
             return
           } catch (error: any) {
             if (error.code === 3001 && autoRefuel) {
@@ -246,8 +260,7 @@ export default function AutomationProvider(props: any) {
               await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
               queryClient.invalidateQueries('user')
               // Retry create new flight plan
-              const result = await createNewFlightPlan(ship.id, location)
-              timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+              await createFlightPlan(ship.id, location)
               return
             } else {
               throw error
@@ -324,18 +337,27 @@ export default function AutomationProvider(props: any) {
   useEffect(() => {
     if (tradeRoutes.data && status === AutomationStatus.Running) {
       const run = async () => {
+        // Run all trade routes in parallel
         await Promise.all(
           tradeRoutes.data.map(async (route, routeIdx) => {
             const { id, events, assignedShips, autoRefuel } = route
 
-            await Promise.all(
-              events.map(async (event, eventIdx) => {
-                if (!routeShouldContinue(id)) {
-                  return
-                }
+            for (let eventIdx = 0; eventIdx < events.length; eventIdx++) {
+              const event = events[eventIdx]
 
-                const { type, good, location, structure } = event
+              if (!routeShouldContinue(id)) {
+                handleLog(
+                  routeIdx,
+                  null,
+                  id,
+                  `Route has been stopped by user, skipping remaining events`
+                )
+                return
+              }
 
+              const { type, good, location, structure } = event
+
+              try {
                 switch (type) {
                   case RouteEventType.BUY: {
                     if (!good) {
@@ -418,8 +440,21 @@ export default function AutomationProvider(props: any) {
                     break
                   }
                 }
-              })
-            )
+              } catch (error: any) {
+                handleLog(
+                  routeIdx,
+                  eventIdx,
+                  id,
+                  `Error: ${getErrorMessage(error.message)}`
+                )
+              }
+
+              // If we've reached the last event, restart the route
+              if (eventIdx === events.length - 1) {
+                handleLog(routeIdx, eventIdx, id, `Route completed. Restarting`)
+                eventIdx = -1
+              }
+            }
           })
         )
       }

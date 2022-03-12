@@ -35,9 +35,7 @@ export default function Login() {
 
   useEffect(() => {
     setRandomBackgroundIndex(Math.floor(Math.random() * 3) + 1)
-  }, [])
 
-  useEffect(() => {
     const attemptLogin = async (apiToken: string) => {
       if (attemptingLogin || useExistingToken) {
         return
@@ -46,9 +44,8 @@ export default function Login() {
         setAttemptingLogin(true)
         await auth.signin(apiToken, state?.from || '/')
       } catch (error: any) {
-        setRegistrationError(error.message || 'Error logging in')
-      } finally {
         setAttemptingLogin(false)
+        setRegistrationError(error.message || 'Error logging in')
       }
     }
     const storedToken = getValue(API_TOKEN_KEY, true) ?? getValue(API_TOKEN_KEY)
@@ -56,7 +53,7 @@ export default function Login() {
       attemptLogin(storedToken)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, state])
+  }, [])
 
   const handleRegister = async (username: string, rememberMe: boolean) => {
     setLoading(true)
