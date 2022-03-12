@@ -64,8 +64,6 @@ export const getShipName = (shipId: string) => {
 }
 
 export const getErrorMessage = (error: { code: number; message: string }) => {
-  console.log('parsing', error)
-
   return getMessageForErrorCode(error.code) || error.message
 }
 
