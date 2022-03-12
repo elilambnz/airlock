@@ -12,14 +12,9 @@ import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
 import {
   listMyStructures,
   createNewStructure,
-  depositToMyStructure,
-  withdrawFromMyStructure,
   listMyShips,
 } from '../../api/routes/my'
-import {
-  depositToStructure,
-  getStructureInfo,
-} from '../../api/routes/structures'
+import { getStructureInfo } from '../../api/routes/structures'
 import { getSystemLocations } from '../../api/routes/systems'
 import { listStructureTypes } from '../../api/routes/types'
 import '../../App.css'
@@ -45,6 +40,12 @@ import {
   getErrorMessage,
   getShipName,
 } from '../../utils/helpers'
+import {
+  deposit,
+  depositToAnotherStructure,
+  withdraw,
+} from '../../utils/mechanics'
+import { Ship } from '../../types/Ship'
 
 export default function Structures() {
   const [newStructure, setNewStructure] =
@@ -158,15 +159,15 @@ export default function Structures() {
   const handleDepositGoodsToOwnStructure = useMutation(
     ({
       structureId,
-      shipId,
+      ship,
       good,
       quantity,
     }: {
       structureId: string
-      shipId: string
+      ship: Ship
       good: GoodType
       quantity: number
-    }) => depositToMyStructure(structureId, shipId, good, quantity),
+    }) => deposit(structureId, ship, good, quantity),
     {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries('myStructures')
@@ -200,15 +201,15 @@ export default function Structures() {
   const handleWithdrawGoodsFromOwnStructure = useMutation(
     ({
       structureId,
-      shipId,
+      ship,
       good,
       quantity,
     }: {
       structureId: string
-      shipId: string
+      ship: Ship
       good: GoodType
       quantity: number
-    }) => withdrawFromMyStructure(structureId, shipId, good, quantity),
+    }) => withdraw(structureId, ship, good, quantity),
     {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries('myStructures')
@@ -242,15 +243,15 @@ export default function Structures() {
   const handleDepositGoodsToStructure = useMutation(
     ({
       structureId,
-      shipId,
+      ship,
       good,
       quantity,
     }: {
       structureId: string
-      shipId: string
+      ship: Ship
       good: GoodType
       quantity: number
-    }) => depositToStructure(structureId, shipId, good, quantity),
+    }) => depositToAnotherStructure(structureId, ship, good, quantity),
     {
       onSuccess: (_, variables) => {
         const { structureId, good, quantity } = variables
@@ -949,9 +950,16 @@ export default function Structures() {
                               ) {
                                 return
                               }
+                              const ship = myShips.data?.ships.find(
+                                (s) =>
+                                  s.id === ownStructureToDeposit.deposit?.shipId
+                              )
+                              if (!ship) {
+                                return
+                              }
                               handleDepositGoodsToOwnStructure.mutate({
                                 structureId: ownStructureToDeposit.id,
-                                shipId: ownStructureToDeposit.deposit?.shipId,
+                                ship,
                                 good: ownStructureToDeposit.deposit?.good,
                                 quantity:
                                   ownStructureToDeposit.deposit?.quantity,
@@ -1163,9 +1171,17 @@ export default function Structures() {
                               ) {
                                 return
                               }
+                              const ship = myShips.data?.ships.find(
+                                (s) =>
+                                  s.id ===
+                                  ownStructureToWithdraw.withdraw?.shipId
+                              )
+                              if (!ship) {
+                                return
+                              }
                               handleWithdrawGoodsFromOwnStructure.mutate({
                                 structureId: ownStructureToWithdraw.id,
-                                shipId: ownStructureToWithdraw.withdraw?.shipId,
+                                ship,
                                 good: ownStructureToWithdraw.withdraw?.good,
                                 quantity:
                                   ownStructureToWithdraw.withdraw?.quantity,
@@ -1383,9 +1399,16 @@ export default function Structures() {
                               ) {
                                 return
                               }
+                              const ship = myShips.data?.ships.find(
+                                (s) =>
+                                  s.id === structureToDeposit.deposit?.shipId
+                              )
+                              if (!ship) {
+                                return
+                              }
                               handleDepositGoodsToStructure.mutate({
                                 structureId: structureToDeposit.id,
-                                shipId: structureToDeposit.deposit?.shipId,
+                                ship,
                                 good: structureToDeposit.deposit?.good,
                                 quantity: structureToDeposit.deposit?.quantity,
                               })

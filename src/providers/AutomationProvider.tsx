@@ -7,18 +7,22 @@ import {
 } from '../api/routes/auxiliary'
 import {
   createNewFlightPlan,
+  depositToMyStructure,
   getFlightPlanInfo,
-  getShipInfo,
   initiateWarpJump,
+  listMyShips,
+  withdrawFromMyStructure,
 } from '../api/routes/my'
 import { useAuth } from '../hooks/useAuth'
 import {
+  RouteEventGood,
+  RouteEventStructure,
   RouteEventType,
   TradeRoute,
   TradeRouteStatus,
 } from '../types/Automation'
 import { getShipName } from '../utils/helpers'
-import { purchase, refuel, sell } from '../utils/mechanics'
+import { deposit, purchase, refuel, sell, withdraw } from '../utils/mechanics'
 
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
 import { NotificationContext, NotificationType } from './NotificationProvider'
@@ -34,17 +38,22 @@ export const AutomationContext = createContext({
   status: AutomationStatus.Stopped,
   runTime: 0,
   tradeRoutes: {} as UseQueryResult<TradeRoute[], unknown>,
+  tradeRouteStatuses: {} as Map<string, TradeRouteStatus>,
   tradeRouteLog: {} as { [id: string]: string[] },
-  setStatus: (status: AutomationStatus) => {},
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   updateTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   removeTradeRoute: async (id: string, version: number) => Promise.resolve(),
   pauseTradeRoute: (id: string) => {},
   resumeTradeRoute: (id: string, step?: number) => {},
+  stopAutomation: () => {},
+  startAutomation: () => {},
 })
 
 export default function AutomationProvider(props: any) {
   const [status, setStatus] = useState(AutomationStatus.Stopped)
+  const [tradeRouteStatuses, setTradeRouteStatuses] = useState<
+    Map<string, TradeRouteStatus>
+  >(new Map())
   const [runTime, setRunTime] = useState(0)
   const [tradeRouteLog, setTradeRouteLog] =
     useState<{ [id: string]: string[] }>()
@@ -60,6 +69,18 @@ export default function AutomationProvider(props: any) {
   const tradeRoutes = useQuery('tradeRoutes', getTradingRoutes, {
     enabled: !!apiToken,
   })
+  const myShips = useQuery('myShips', listMyShips)
+
+  useEffect(() => {
+    setStatus(
+      tradeRouteStatuses.size > 0 &&
+        [...tradeRouteStatuses.values()].every(
+          (status) => status === TradeRouteStatus.ACTIVE
+        )
+        ? AutomationStatus.Running
+        : AutomationStatus.Stopped
+    )
+  }, [tradeRouteStatuses])
 
   useEffect(() => {
     if (status === AutomationStatus.Running) {
@@ -67,6 +88,14 @@ export default function AutomationProvider(props: any) {
         await startTimer((value) => setRunTime(value))
       }
       init()
+
+      push({
+        title: 'Automation started',
+        message: `${tradeRoutes.data?.length} trade route${
+          (tradeRoutes.data?.length ?? 0) > 1 ? 's are' : ' is'
+        } running`,
+        type: NotificationType.INFO,
+      })
     }
 
     if (status === AutomationStatus.Stopped) {
@@ -75,308 +104,335 @@ export default function AutomationProvider(props: any) {
       }
       clear()
       setRunTime(0)
+
+      if (tradeRouteStatuses.size > 0) {
+        push({
+          title: 'Automation stopped',
+          message: 'All trade routes have been stopped',
+          type: NotificationType.INFO,
+        })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  const start = () => {
-    if (status === AutomationStatus.Running) {
-      return
-    }
-    push({
-      title: 'Automation started',
-      message: `${tradeRoutes.data?.length} trade route${
-        (tradeRoutes.data?.length ?? 0) > 1 ? 's are' : ' is'
-      } running`,
-      type: NotificationType.INFO,
+  // Start automation tasks
+  useEffect(() => {
+    tradeRoutes.data?.forEach((route) => {
+      setTradeRouteStatuses(
+        (prev) => new Map(prev.set(route.id, TradeRouteStatus.ACTIVE))
+      )
     })
-    setStatus(AutomationStatus.Running)
-  }
+  }, [tradeRoutes.data])
 
-  const stop = () => {
-    if (status === AutomationStatus.Stopped) {
-      return
-    }
-    push({
-      title: 'Automation stopped',
-      message: 'All trade routes have been stopped',
-      type: NotificationType.INFO,
-    })
-    setStatus(AutomationStatus.Stopped)
+  // Stop automation tasks
+  const stopAutomation = async () => {
+    setTradeRouteStatuses(
+      (prev) =>
+        new Map([...prev.keys()].map((key) => [key, TradeRouteStatus.PAUSED]))
+    )
   }
 
   // Start automation tasks
-  useEffect(() => {
-    if (tradeRoutes.data) {
-      if (tradeRoutes.data.length > 0) {
-        start()
-        console.info(`Automation: Trade routes: ${tradeRoutes.data.length}`)
-        tradeRoutes.data.forEach((tradeRoute, i) => {
-          addTradeRouteLog(
-            i,
-            tradeRoute.id,
-            `Automating trade route. Events: ${tradeRoute.events.length}`
-          )
-          automateTradeRoute(tradeRoute, i)
-        })
-      } else {
-        stop()
-      }
-    }
+  const startAutomation = async () => {
+    setTradeRouteStatuses(
+      (prev) =>
+        new Map([...prev.keys()].map((key) => [key, TradeRouteStatus.ACTIVE]))
+    )
+  }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tradeRoutes.data])
+  const routeShouldContinue = (id: string): boolean => {
+    const status = tradeRouteStatuses.get(id)
+    return status === TradeRouteStatus.ACTIVE
+  }
 
-  const addTradeRouteLog = (taskIndex: number, id: string, message: string) => {
-    console.info(`Automation ${taskIndex}:`, message)
+  const handleLog = (
+    routeIdx: number,
+    eventIdx: number,
+    id: string,
+    message: string
+  ) => {
+    console.info(`Automation ${routeIdx} - ${eventIdx}:`, message)
     setTradeRouteLog((prev) => ({
       ...prev,
       [id]: [...(prev?.[id] || []), message],
     }))
   }
 
-  const automateTradeRoute = async (
-    tradeRoute: TradeRoute,
-    taskIndex: number
+  const handleBuy = async (event: RouteEventGood, shipIds: string[]) => {
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const ship = myShips.data?.ships.find((ship) => ship.id === id)
+        if (!ship) {
+          throw new Error(`Ship ${id} not found`)
+        }
+        const { good, quantity } = event
+        await purchase(ship, good, quantity)
+      })
+    )
+    queryClient.invalidateQueries('user')
+  }
+
+  const handleSell = async (event: RouteEventGood, shipIds: string[]) => {
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const ship = myShips.data?.ships.find((ship) => ship.id === id)
+        if (!ship) {
+          throw new Error(`Ship ${id} not found`)
+        }
+        const { good, quantity } = event
+        await sell(ship, good, quantity)
+      })
+    )
+    queryClient.invalidateQueries('user')
+  }
+
+  const handleTravel = async (
+    location: string,
+    allLocations: string[],
+    shipIds: string[],
+    autoRefuel: boolean,
+    log: (message: string) => void
   ) => {
-    try {
-      // for (const event of tradeRoute.events) {
-      console.log('startFromStep', tradeRoute.startFromStep ?? 0)
+    let timeRemaining = [0]
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const ship = myShips.data?.ships.find((ship) => ship.id === id)
+        if (!ship) {
+          throw new Error(`Ship ${id} not found`)
+        }
 
-      if (tradeRoute.events.length === 0) {
-        throw new Error('No trade route steps defined')
-      }
-
-      for (
-        let i = tradeRoute.startFromStep ?? 0;
-        i < tradeRoute.events.length;
-        i++
-      ) {
-        console.log('*** step', i)
-
-        const event = tradeRoute.events[i]
-
-        try {
-          if (event.type === RouteEventType.TRAVEL) {
-            if (!event.location) {
-              throw new Error('Missing location')
+        // Check if the ship is already in transit
+        if (ship.flightPlanId) {
+          // Ship is already on a flight plan
+          const flightPlan = await getFlightPlanInfo(ship.flightPlanId)
+          if (flightPlan.flightPlan.destination === location) {
+            // Ship is already going to the destination
+            timeRemaining.push(flightPlan.flightPlan.timeRemainingInSeconds)
+            return
+          } else {
+            // Ship is not traveling to the correct location
+            // If there are more than one travel events, we need to check if the ship is already traveling to another location in the route
+            if (
+              allLocations.length > 1 &&
+              allLocations.includes(flightPlan.flightPlan.destination)
+            ) {
+              // The ship is already traveling to another location in the route, so we don't need to move the ship
+              log(
+                `Ship ${getShipName(
+                  ship.id
+                )} is already traveling to another location in the route, ${
+                  flightPlan.flightPlan.destination
+                }`
+              )
+              timeRemaining.push(flightPlan.flightPlan.timeRemainingInSeconds)
+              return
             }
-            addTradeRouteLog(
-              taskIndex,
-              tradeRoute.id,
-              `Travel to ${event.location}`
+            throw new Error(
+              `Ship ${getShipName(ship.id)} is not traveling to ${location}`
             )
-            // Check if the ship is at event.location
-            // If not, move the ship to event.location
-            let timeRemaining = [0]
-            for await (const shipId of tradeRoute.assignedShips) {
-              const ship = await getShipInfo(shipId)
+          }
+        }
 
-              if (ship.ship.flightPlanId) {
-                // Ship is already on a flight plan
-                const flightPlan = await getFlightPlanInfo(
-                  ship.ship.flightPlanId!
-                )
-                if (flightPlan.flightPlan.destination !== event.location) {
-                  // Ship is not traveling to the correct location
-                  // There are more than one travel events, so we need to check if the ship is already traveling to another location in the route
-                  const nextTravelEventIndex = tradeRoute.events.findIndex(
-                    (e) => e.location === flightPlan.flightPlan.destination
-                  )
-                  console.log('nextTravelEventIndex', nextTravelEventIndex)
-
-                  if (nextTravelEventIndex !== -1) {
-                    // The ship is already traveling to another location in the route
-                    // So we don't need to move the ship
-                    console.warn(
-                      'Ship is already traveling to another location in the route',
-                      nextTravelEventIndex
-                    )
-                    // setTradeRoutes((prev) => [
-                    //   ...prev.slice(0, taskIndex),
-                    //   {
-                    //     ...prev[taskIndex],
-                    //     startFromStep: nextTravelEventIndex,
-                    //   },
-                    //   ...prev.slice(taskIndex + 1),
-                    // ])
-                    break
-                  }
-                  throw new Error(
-                    `Ship ${ship.ship.id} is not traveling to ${event.location}`
-                  )
-                }
-                timeRemaining.push(flightPlan.flightPlan.timeRemainingInSeconds)
-                continue
-              }
-              if (ship.ship.location !== event.location) {
-                try {
-                  const result = await createNewFlightPlan(
-                    shipId,
-                    event.location!
-                  )
-                  timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
-                } catch (error: any) {
-                  if (error.code === 3001 && tradeRoute.autoRefuel) {
-                    // Insufficient fuel, auto refuel
-                    await refuel(
-                      ship.ship,
-                      parseInt(error.message.match(/\d+/g)[0])
-                    )
-                    queryClient.invalidateQueries('user')
-                    // Retry create new flight plan
-                    const result = await createNewFlightPlan(
-                      shipId,
-                      event.location!
-                    )
-                    timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
-                  } else {
-                    throw error
-                  }
-                }
-              }
-            }
-            // Wait for all ships to arrive at event.location
-            const maxTime = Math.max(...timeRemaining) * 1000
-            addTradeRouteLog(
-              taskIndex,
-              tradeRoute.id,
-              `Waiting for ${maxTime}ms`
-            )
-            await sleep(maxTime)
-          } else if (event.type === RouteEventType.WARP_JUMP) {
-            addTradeRouteLog(taskIndex, tradeRoute.id, `Warp jump`)
-            // Initiate warp jump for each ship
-            let timeRemaining = [0]
-            for await (const shipId of tradeRoute.assignedShips) {
-              const result = await initiateWarpJump(shipId)
+        // If not, move the ship to location
+        if (ship.location !== location) {
+          try {
+            const result = await createNewFlightPlan(ship.id, location)
+            timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+            return
+          } catch (error: any) {
+            if (error.code === 3001 && autoRefuel) {
+              // Insufficient fuel, auto refuel
+              await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
+              queryClient.invalidateQueries('user')
+              // Retry create new flight plan
+              const result = await createNewFlightPlan(ship.id, location)
               timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
-            }
-            // Wait for all ships to complete warp jump
-            const maxTime = Math.max(...timeRemaining) * 1000
-            addTradeRouteLog(
-              taskIndex,
-              tradeRoute.id,
-              `Waiting for ${maxTime}ms`
-            )
-            await sleep(maxTime)
-          } else if (event.type === RouteEventType.BUY && event.good) {
-            if (!event.good || !event.good?.good) {
-              throw new Error('Missing good')
-            }
-            addTradeRouteLog(
-              taskIndex,
-              tradeRoute.id,
-              `Buy ${event.good!.quantity} ${event.good!.good}`
-            )
-            // Check if the ship has enough cargo space
-            // If not, throw an error
-            // If so, buy event.good.good for event.good.quantity
-            for await (const shipId of tradeRoute.assignedShips) {
-              const ship = await getShipInfo(shipId)
-              if (ship.ship.spaceAvailable >= event.good!.quantity) {
-                await purchase(
-                  ship.ship,
-                  event.good!.good,
-                  event.good!.quantity
-                )
-                queryClient.invalidateQueries('user')
-              } else {
-                if (
-                  ship.ship.cargo.find(
-                    (cargo) => cargo.good === event.good!.good
-                  )?.quantity ??
-                  0 >= event.good!.quantity
-                ) {
-                  // Not throwing an error because the ship already has enough of the good
-                  console.warn('Ship already has good in cargo')
-                  continue
-                }
-                throw new Error(
-                  `Ship ${getShipName(
-                    shipId
-                  )} does not have enough space available to buy ${
-                    event.good!.quantity
-                  } ${event.good!.good}`
-                )
-              }
-            }
-          } else if (event.type === RouteEventType.SELL && event.good) {
-            if (!event.good || !event.good?.good) {
-              throw new Error('Missing good')
-            }
-            addTradeRouteLog(
-              taskIndex,
-              tradeRoute.id,
-              `Sell ${event.good?.quantity} ${event.good?.good}`
-            )
-            // Check if the ship has enough quantity of event.good.good
-            // If not, throw an error
-            // If so, sell event.good.good for event.good.quantity
-            for await (const shipId of tradeRoute.assignedShips) {
-              const ship = await getShipInfo(shipId)
-              if (
-                ship.ship.cargo.find((c) => c.good === event.good!.good)
-                  ?.quantity ??
-                0 >= event.good!.quantity
-              ) {
-                await sell(ship.ship, event.good!.good, event.good!.quantity)
-                queryClient.invalidateQueries('user')
-              } else {
-                // Not throwing an error here because it's possible that the ship has no goods to sell if it's the first event in the route
-                console.warn(
-                  `Ship ${getShipName(shipId)} does not have enough ${
-                    event.good!.good
-                  } to sell ${event.good!.quantity}`
-                )
-              }
+              return
+            } else {
+              throw error
             }
           }
-        } catch (error: any) {
-          console.error(`IN LOOP - Automation: ${taskIndex} Error:`, error)
-          throw error
         }
-      }
-      // Reset startFromStep
-      queryClient.setQueryData(
-        'tradeRoutes',
-        tradeRoutes.data?.map((r) =>
-          r.id === tradeRoute.id
-            ? {
-                ...r,
-                startFromStep: 0,
-              }
-            : r
-        )
-      )
-      // Repeat indefinitely
-      addTradeRouteLog(
-        taskIndex,
-        tradeRoute.id,
-        'Trade route completed. Starting again.'
-      )
-      automateTradeRoute(tradeRoute, taskIndex)
-    } catch (error: any) {
-      console.error(`OUT OF LOOP - Automation: ${taskIndex} Error:`, error)
-      push({
-        title: 'Automation Error',
-        message: error.message,
-        type: NotificationType.ERROR,
+
+        // Ship is already at event.location
+        log(`Ship ${getShipName(ship.id)} is already at ${location}`)
       })
-      // Set error status
-      queryClient.setQueryData(
-        'tradeRoutes',
-        tradeRoutes.data?.map((r) =>
-          r.id === tradeRoute.id
-            ? {
-                ...r,
-                status: TradeRouteStatus.ERROR,
-              }
-            : r
-        )
-      )
+    )
+
+    // Wait for all ships to arrive at location
+    const maxTime = Math.max(...timeRemaining) * 1000
+    if (maxTime > 0) {
+      log(`Waiting ${maxTime / 1000}s for all ships to arrive at ${location}`)
+      await sleep(maxTime)
+      log(`All ships have arrived at ${location}`)
     }
   }
+
+  const handleWarpJump = async (
+    shipIds: string[],
+    log: (message: string) => void
+  ) => {
+    let timeRemaining = [0]
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const result = await initiateWarpJump(id)
+        timeRemaining.push(result.flightPlan.timeRemainingInSeconds)
+      })
+    )
+    // Wait for all ships to arrive at location
+    const maxTime = Math.max(...timeRemaining) * 1000
+    if (maxTime > 0) {
+      log(`Waiting ${maxTime / 1000}s for all ships to warp jump`)
+      await sleep(maxTime)
+      log('All ships have finished warp jump')
+    }
+  }
+
+  const handleWithdraw = async (
+    event: RouteEventStructure,
+    shipIds: string[]
+  ) => {
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const ship = myShips.data?.ships.find((ship) => ship.id === id)
+        if (!ship) {
+          throw new Error(`Ship ${id} not found`)
+        }
+        const { structure, good, quantity } = event
+        await withdraw(structure, ship, good, quantity)
+      })
+    )
+  }
+
+  const handleDeposit = async (
+    event: RouteEventStructure,
+    shipIds: string[]
+  ) => {
+    await Promise.all(
+      shipIds.map(async (id) => {
+        const ship = myShips.data?.ships.find((ship) => ship.id === id)
+        if (!ship) {
+          throw new Error(`Ship ${id} not found`)
+        }
+        const { structure, good, quantity } = event
+        await deposit(structure, ship, good, quantity)
+      })
+    )
+  }
+
+  useEffect(() => {
+    if (tradeRoutes.data && status === AutomationStatus.Running) {
+      const run = async () => {
+        await Promise.all(
+          tradeRoutes.data.map(async (route, routeIdx) => {
+            const { id, events, assignedShips, autoRefuel } = route
+
+            await Promise.all(
+              events.map(async (event, eventIdx) => {
+                if (!routeShouldContinue(id)) {
+                  return
+                }
+
+                const { type, good, location, structure } = event
+
+                switch (type) {
+                  case RouteEventType.BUY: {
+                    if (!good) {
+                      throw new Error(`No good specified for event ${eventIdx}`)
+                    }
+                    await handleBuy(good, assignedShips)
+                    handleLog(
+                      routeIdx,
+                      eventIdx,
+                      id,
+                      `Bought ${good.quantity} ${good.good}`
+                    )
+                    break
+                  }
+                  case RouteEventType.SELL: {
+                    if (!good) {
+                      throw new Error(`No good specified for event ${eventIdx}`)
+                    }
+                    await handleSell(good, assignedShips)
+                    handleLog(
+                      routeIdx,
+                      eventIdx,
+                      id,
+                      `Sold ${good.quantity} ${good.good}`
+                    )
+                    break
+                  }
+                  case RouteEventType.TRAVEL: {
+                    if (!location) {
+                      throw new Error(
+                        `No location specified for event ${eventIdx}`
+                      )
+                    }
+                    await handleTravel(
+                      location,
+                      events
+                        .filter((e) => e.type === RouteEventType.TRAVEL)
+                        .map((e) => e.location)
+                        .filter(Boolean) as string[],
+                      assignedShips,
+                      autoRefuel,
+                      (message) => handleLog(routeIdx, eventIdx, id, message)
+                    )
+                    break
+                  }
+                  case RouteEventType.WARP_JUMP: {
+                    await handleWarpJump(assignedShips, (message) =>
+                      handleLog(routeIdx, eventIdx, id, message)
+                    )
+                    break
+                  }
+                  case RouteEventType.WITHDRAW: {
+                    if (!structure) {
+                      throw new Error(
+                        `No structure specified for event ${eventIdx}`
+                      )
+                    }
+                    await handleWithdraw(structure, assignedShips)
+                    handleLog(
+                      routeIdx,
+                      eventIdx,
+                      id,
+                      `Withdrew ${structure.quantity} ${structure.good}`
+                    )
+                    break
+                  }
+                  case RouteEventType.DEPOSIT: {
+                    if (!structure) {
+                      throw new Error(
+                        `No structure specified for event ${eventIdx}`
+                      )
+                    }
+                    await handleDeposit(structure, assignedShips)
+                    handleLog(
+                      routeIdx,
+                      eventIdx,
+                      id,
+                      `Deposited ${structure.quantity} ${structure.good}`
+                    )
+                    break
+                  }
+                }
+              })
+            )
+          })
+        )
+      }
+      run()
+    }
+
+    return () => {
+      if (status === AutomationStatus.Running) {
+        stopAutomation()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, tradeRoutes.data])
 
   const addTradeRoute = async (tradeRoute: TradeRoute) => {
     try {
@@ -420,18 +476,8 @@ export default function AutomationProvider(props: any) {
 
   const updateTradeRouteStatus = (id: string, status: TradeRouteStatus) => {
     console.log('updateTradeRouteStatus', id, status)
-
-    queryClient.setQueryData(
-      'tradeRoutes',
-      tradeRoutes.data?.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              status,
-            }
-          : r
-      )
-    )
+    // update map
+    setTradeRouteStatuses((prev) => new Map(prev.set(id, status)))
   }
 
   const pauseTradeRoute = async (id: string) => {
@@ -441,31 +487,22 @@ export default function AutomationProvider(props: any) {
   const resumeTradeRoute = async (id: string, step?: number) => {
     console.log('resumeTradeRoute', id, step)
 
-    queryClient.setQueryData(
-      'tradeRoutes',
-      tradeRoutes.data?.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              status: TradeRouteStatus.ACTIVE,
-              startFromStep: step ?? 0,
-            }
-          : r
-      )
-    )
+    updateTradeRouteStatus(id, TradeRouteStatus.ACTIVE)
   }
 
   const value = {
     status,
     runTime,
     tradeRoutes,
+    tradeRouteStatuses,
     tradeRouteLog,
-    setStatus,
     addTradeRoute,
     updateTradeRoute,
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
+    stopAutomation,
+    startAutomation,
   }
   return <AutomationContext.Provider value={value} {...props} />
 }

@@ -1,12 +1,10 @@
 export type TradeRoute = {
   _version: number
+  _deleted: boolean | null
   id: string
   events: TradeRouteEvent[]
   assignedShips: string[]
   autoRefuel: boolean
-  status: TradeRouteStatus
-  errorMessage?: string
-  startFromStep?: number
 }
 
 export type TradeRouteEvent = {
@@ -23,6 +21,7 @@ export enum RouteEventType {
   WARP_JUMP = 'Warp Jump',
   WITHDRAW = 'Withdraw',
   DEPOSIT = 'Deposit',
+  REPEAT = 'Repeat',
 }
 
 export type RouteEventGood = {

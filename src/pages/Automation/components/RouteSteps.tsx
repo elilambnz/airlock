@@ -4,6 +4,7 @@ import {
   CashIcon,
   ChevronDoubleRightIcon,
   PaperAirplaneIcon,
+  ReplyIcon,
 } from '@heroicons/react/solid'
 import { Dispatch, SetStateAction } from 'react'
 import { useQuery } from 'react-query'
@@ -37,6 +38,8 @@ export default function RouteSteps(props: RouteStepsProps) {
         return <ArrowUpIcon className="h-5 w-5" />
       case RouteEventType.DEPOSIT:
         return <ArrowDownIcon className="h-5 w-5" />
+      case RouteEventType.REPEAT:
+        return <ReplyIcon className="h-5 w-5" />
     }
   }
 
@@ -50,9 +53,10 @@ export default function RouteSteps(props: RouteStepsProps) {
         return 'bg-green-500'
       case RouteEventType.TRAVEL:
       case RouteEventType.WARP_JUMP:
+      case RouteEventType.REPEAT:
         return 'bg-gray-500'
       default:
-        return 'bg-black-500'
+        return 'bg-gray-500'
     }
   }
 
@@ -63,12 +67,10 @@ export default function RouteSteps(props: RouteStepsProps) {
           {tradeRoute.events.map((event, i) => (
             <li key={i}>
               <div className="relative pb-8">
-                {i !== tradeRoute.events.length - 1 && (
-                  <span
-                    className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
-                    aria-hidden="true"
-                  ></span>
-                )}
+                <span
+                  className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                  aria-hidden="true"
+                ></span>
                 <div className="relative flex space-x-3">
                   <div>
                     <span
@@ -219,6 +221,31 @@ export default function RouteSteps(props: RouteStepsProps) {
               </div>
             </li>
           ))}
+          <li>
+            <div className="relative pb-8">
+              <div className="relative flex space-x-3">
+                <div>
+                  <span
+                    className={
+                      'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
+                      ` ${getColourForEvent(RouteEventType.REPEAT)}`
+                    }
+                  >
+                    {getIconForEvent(RouteEventType.REPEAT)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      <span className="font-medium text-gray-900">
+                        Repeat Route
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
         </ul>
       ) : (
         <div className="flex justify-center">

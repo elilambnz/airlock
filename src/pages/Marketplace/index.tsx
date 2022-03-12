@@ -66,7 +66,13 @@ export default function Marketplace() {
         myShips.data?.ships
           .map((ship) => ship.location)
           .filter(Boolean)
-          ?.sort((a, b) => a!.localeCompare(b!)) as string[]
+          ?.sort((a, b) => {
+            return (
+              Object.keys(System).indexOf(a?.split('-')[0] || '') -
+                Object.keys(System).indexOf(b?.split('-')[0] || '') ||
+              a!.localeCompare(b!)
+            )
+          }) as string[]
       ),
     ],
     [myShips]

@@ -170,7 +170,17 @@ export default function Systems() {
           if (!ship) {
             throw new Error('Ship not found')
           }
-          await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
+          try {
+            await refuel(ship, parseInt(error.message.match(/\d+/g)[0]))
+          } catch (error: any) {
+            push({
+              title: 'Error refueling ship',
+              message: getErrorMessage(error),
+              type: NotificationType.ERROR,
+            })
+            handleCreateFlightPlan.reset()
+            throw error
+          }
           queryClient.invalidateQueries('user')
           // Retry create new flight plan
           handleCreateFlightPlan.mutate(variables)

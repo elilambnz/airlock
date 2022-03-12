@@ -1,5 +1,6 @@
 type RawTradeRoute = {
   _version: number
+  _deleted: boolean | null
   id: string
   events: string
   assignedShips: string[]

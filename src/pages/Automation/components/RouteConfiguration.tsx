@@ -9,7 +9,6 @@ import {
   RouteEventType,
   TradeRoute,
   TradeRouteEvent,
-  TradeRouteStatus,
 } from '../../../types/Automation'
 import RouteSteps from './RouteSteps'
 import AssignedShips from './AssignedShips'
@@ -38,11 +37,11 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
   const [newTradeRoute, setNewTradeRoute] = useState<TradeRoute>(
     routeToEdit ?? {
       _version: 0,
+      _deleted: null,
       id: '',
       events: [],
       assignedShips: [],
       autoRefuel: true,
-      status: TradeRouteStatus.ACTIVE,
     }
   )
   const [newTradeRouteLocation, setNewTradeRouteLocation] =

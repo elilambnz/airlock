@@ -32,11 +32,13 @@ export default function Automation() {
     status,
     runTime,
     tradeRoutes,
+    tradeRouteStatuses,
     tradeRouteLog,
-    setStatus,
     removeTradeRoute,
     pauseTradeRoute,
     resumeTradeRoute,
+    startAutomation,
+    stopAutomation,
   } = useAutomation()
 
   const handleRemoveTradeRoute = async (id: string, version: number) => {
@@ -73,12 +75,20 @@ export default function Automation() {
                 <dd className="mt-1 flex justify-between items-baseline md:block lg:flex">
                   <div className="flex items-baseline">
                     <button
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className={
+                        'inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                        (!tradeRoutes.data || tradeRoutes.data.length === 0
+                          ? ' opacity-50 cursor-not-allowed'
+                          : '')
+                      }
+                      disabled={
+                        !tradeRoutes.data || tradeRoutes.data.length === 0
+                      }
                       onClick={() => {
                         if (status === AutomationStatus.Stopped) {
-                          setStatus(AutomationStatus.Running)
+                          startAutomation()
                         } else {
-                          setStatus(AutomationStatus.Stopped)
+                          stopAutomation()
                         }
                       }}
                     >
@@ -277,16 +287,19 @@ export default function Automation() {
                             <span
                               className={
                                 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
-                                (route.status === TradeRouteStatus.ACTIVE
+                                (tradeRouteStatuses.get(route.id) ===
+                                TradeRouteStatus.ACTIVE
                                   ? ' bg-green-100 text-green-800'
-                                  : route.status === TradeRouteStatus.PAUSED
+                                  : tradeRouteStatuses.get(route.id) ===
+                                    TradeRouteStatus.PAUSED
                                   ? ' bg-yellow-100 text-yellow-800'
-                                  : route.status === TradeRouteStatus.ERROR
+                                  : tradeRouteStatuses.get(route.id) ===
+                                    TradeRouteStatus.ERROR
                                   ? ' bg-red-100 text-red-800'
                                   : '')
                               }
                             >
-                              {route.status}
+                              {tradeRouteStatuses.get(route.id)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
@@ -380,17 +393,18 @@ export default function Automation() {
           <>
             {routeToManage && (
               <div>
-                {tradeRoutes.data?.find((r) => r.id === routeToManage.id)
-                  ?.status === TradeRouteStatus.ERROR && (
+                {tradeRouteStatuses.get(routeToManage.id) ===
+                  TradeRouteStatus.ERROR && (
                   <div className="mt-2">
                     <Alert
                       title="Error"
-                      message={routeToManage.errorMessage || ''}
+                      message="This route has encountered an error. Please check the logs for more information."
+                      // message={routeToManage.errorMessage || ''}
                     />
                   </div>
                 )}
-                {tradeRoutes.data?.find((r) => r.id === routeToManage.id)
-                  ?.status === TradeRouteStatus.ACTIVE && (
+                {tradeRouteStatuses.get(routeToManage.id) ===
+                  TradeRouteStatus.ACTIVE && (
                   <button
                     className="mt-4 text-red-600 hover:text-red-900"
                     onClick={() => {
@@ -400,8 +414,8 @@ export default function Automation() {
                     Pause
                   </button>
                 )}
-                {tradeRoutes.data?.find((r) => r.id === routeToManage.id)
-                  ?.status !== TradeRouteStatus.ACTIVE && (
+                {tradeRouteStatuses.get(routeToManage.id) !==
+                  TradeRouteStatus.ACTIVE && (
                   <button
                     className="mt-4 text-green-600 hover:text-green-900"
                     onClick={() => {
@@ -419,8 +433,8 @@ export default function Automation() {
                 <RouteSteps
                   tradeRoute={routeToManage}
                   notActive={
-                    tradeRoutes.data?.find((r) => r.id === routeToManage.id)
-                      ?.status !== TradeRouteStatus.ACTIVE
+                    tradeRouteStatuses.get(routeToManage.id) !==
+                    TradeRouteStatus.ACTIVE
                   }
                   handleResume={(step: number) => {
                     resumeTradeRoute(routeToManage.id, step)
@@ -444,11 +458,9 @@ export default function Automation() {
                     style={{ height: '200px' }}
                   >
                     <pre className="text-xs">
-                      {tradeRouteLog[routeToManage.id]?.map(
-                        (l: string, i: number) => (
-                          <p key={i}>{l}</p>
-                        )
-                      )}
+                      {tradeRouteLog?.[routeToManage.id]?.map(
+                        (l: string, i: number) => <p key={i}>{l}</p>
+                      ) ?? 'No log'}
                     </pre>
                   </div>
                 </details>
