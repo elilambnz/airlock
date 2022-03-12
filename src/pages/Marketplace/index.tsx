@@ -12,7 +12,6 @@ import { MarketplaceGood, System } from '../../types/Location'
 import { GoodType } from '../../types/Order'
 import { Ship, ShipListing } from '../../types/Ship'
 import {
-  abbreviateNumber,
   formatNumberCommas,
   getErrorMessage,
   getShipName,
@@ -22,9 +21,7 @@ import moment from 'moment'
 import {
   CreditCardIcon,
   CubeIcon,
-  FireIcon,
   GlobeIcon,
-  HeartIcon,
   LightningBoltIcon,
   OfficeBuildingIcon,
   ShoppingBagIcon,
@@ -279,6 +276,27 @@ export default function Marketplace() {
       [marketplace, filteredGood]
     ) ?? 0
 
+  const goodToBuyShip = myShips.data?.ships.find(
+    (s) => s.id === goodToBuy?.shipId
+  )
+
+  const goodToBuyError =
+    goodToBuy &&
+    goodToBuyShip &&
+    (goodToBuy.quantity ?? 0) >
+      Math.min(goodToBuy.quantityAvailable, goodToBuyShip.spaceAvailable)
+
+  const goodToSellShip = myShips.data?.ships.find(
+    (s) => s.id === goodToSell?.shipId
+  )
+
+  const goodToSellError =
+    goodToSell &&
+    goodToSellShip &&
+    (goodToSell.quantity ?? 0) >
+      (goodToSellShip.cargo.find((c) => c.good === goodToSell.symbol)
+        ?.quantity ?? 0)
+
   return (
     <>
       <Header>Marketplace</Header>
@@ -408,12 +426,6 @@ export default function Marketplace() {
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Price/Unit
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
                           Purchase Price/Unit
                         </th>
                         <th
@@ -421,13 +433,6 @@ export default function Marketplace() {
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
                           Sell Price/Unit
-                        </th>
-
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Spread
                         </th>
                         <th
                           scope="col"
@@ -439,153 +444,158 @@ export default function Marketplace() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {myShips.isLoading && <LoadingRows cols={8} rows={3} />}
-                      {marketplace.map((m, i) => (
-                        <>
-                          <tr key={dockedLocations[i]} className="bg-gray-100">
-                            <td
-                              className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
-                              colSpan={9}
-                            >
-                              <div className="flex justify-between items-baseline">
-                                <span>{dockedLocations[i]}</span>
-                                <span className="text-xs">
-                                  Last updated:{' '}
-                                  {moment(m.dataUpdatedAt).format(
-                                    'DD/MM/YY hh:mm:ss a'
-                                  )}
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
+                      {marketplace
+                        .filter(
+                          (m) =>
+                            !m.isLoading &&
+                            (m.data?.marketplace.filter((g) =>
+                              filteredGood ? g.symbol === filteredGood : true
+                            ).length ?? 0) > 0
+                        )
+                        ?.map((m, i) => (
                           <>
-                            {!m.isLoading ? (
-                              m.data?.marketplace
-                                .filter((g) =>
-                                  filteredGood
-                                    ? g.symbol === filteredGood
-                                    : true
-                                )
-                                ?.sort((a, b) =>
-                                  a.symbol.localeCompare(b.symbol)
-                                )
-                                .map((locationMarketplace, j) => (
-                                  <tr
-                                    key={`${dockedLocations[i]}-${locationMarketplace.symbol}`}
-                                    className={
-                                      j % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                    }
-                                  >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
-                                      {
-                                        GoodType[
-                                          locationMarketplace.symbol as unknown as keyof typeof GoodType
-                                        ]
-                                      }
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {abbreviateNumber(
-                                        locationMarketplace.quantityAvailable
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {formatNumberCommas(
-                                        locationMarketplace.volumePerUnit
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {abbreviateNumber(
-                                        locationMarketplace.pricePerUnit
-                                      )}
-                                    </td>
-                                    <td
+                            <tr
+                              key={dockedLocations[i]}
+                              className="bg-gray-100"
+                            >
+                              <td
+                                className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
+                                colSpan={9}
+                              >
+                                <div className="flex justify-between items-baseline">
+                                  <span>{dockedLocations[i]}</span>
+                                  <span className="text-xs">
+                                    Last updated:{' '}
+                                    {moment(m.dataUpdatedAt).format(
+                                      'DD/MM/YY hh:mm:ss a'
+                                    )}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                            <>
+                              {!m.isLoading ? (
+                                m.data?.marketplace
+                                  .filter((g) =>
+                                    filteredGood
+                                      ? g.symbol === filteredGood
+                                      : true
+                                  )
+                                  .sort((a, b) =>
+                                    a.symbol.localeCompare(b.symbol)
+                                  )
+                                  .map((locationMarketplace, j) => (
+                                    <tr
+                                      key={`${dockedLocations[i]}-${locationMarketplace.symbol}`}
                                       className={
-                                        'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                        (marketplace
-                                          .filter((m) => !!m.data)
-                                          ?.flatMap((m) => m.data!.marketplace)
-                                          .filter(
-                                            (g) =>
-                                              g.symbol ===
-                                              locationMarketplace.symbol
-                                          )
-                                          ?.reduce((a, b) =>
-                                            a.purchasePricePerUnit <
-                                            b.purchasePricePerUnit
-                                              ? a
-                                              : b
-                                          ).purchasePricePerUnit ===
-                                        locationMarketplace.purchasePricePerUnit
-                                          ? ' text-green-500'
-                                          : '')
+                                        j % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                       }
                                     >
-                                      {abbreviateNumber(
-                                        locationMarketplace.purchasePricePerUnit
-                                      )}
-                                    </td>
-                                    <td
-                                      className={
-                                        'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
-                                        (marketplace
-                                          .filter((m) => !!m.data)
-                                          ?.flatMap((m) => m.data!.marketplace)
-                                          .filter(
-                                            (g) =>
-                                              g.symbol ===
-                                              locationMarketplace.symbol
-                                          )
-                                          ?.reduce((a, b) =>
-                                            a.sellPricePerUnit >
-                                            b.sellPricePerUnit
-                                              ? a
-                                              : b
-                                          ).sellPricePerUnit ===
-                                        locationMarketplace.sellPricePerUnit
-                                          ? ' text-green-500'
-                                          : '')
-                                      }
-                                    >
-                                      {abbreviateNumber(
-                                        locationMarketplace.sellPricePerUnit
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {formatNumberCommas(
-                                        locationMarketplace.spread
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                      <button
-                                        className="text-indigo-600 hover:text-indigo-900"
-                                        onClick={() => {
-                                          setGoodToBuy({
-                                            ...locationMarketplace,
-                                            location: dockedLocations[i],
-                                          })
-                                        }}
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                        {
+                                          GoodType[
+                                            locationMarketplace.symbol as unknown as keyof typeof GoodType
+                                          ]
+                                        }
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.quantityAvailable
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                        {formatNumberCommas(
+                                          locationMarketplace.volumePerUnit
+                                        )}
+                                      </td>
+                                      <td
+                                        className={
+                                          'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                          (marketplace
+                                            .filter((m) => !!m.data)
+                                            ?.flatMap(
+                                              (m) => m.data!.marketplace
+                                            )
+                                            .filter(
+                                              (g) =>
+                                                g.symbol ===
+                                                locationMarketplace.symbol
+                                            )
+                                            ?.reduce((a, b) =>
+                                              a.purchasePricePerUnit <
+                                              b.purchasePricePerUnit
+                                                ? a
+                                                : b
+                                            ).purchasePricePerUnit ===
+                                          locationMarketplace.purchasePricePerUnit
+                                            ? ' text-green-500'
+                                            : '')
+                                        }
                                       >
-                                        Buy
-                                      </button>
-                                      <button
-                                        className="ml-4 text-emerald-600 hover:text-emerald-900"
-                                        onClick={() => {
-                                          setGoodToSell({
-                                            ...locationMarketplace,
-                                            location: dockedLocations[i],
-                                          })
-                                        }}
+                                        {formatNumberCommas(
+                                          locationMarketplace.purchasePricePerUnit
+                                        )}
+                                      </td>
+                                      <td
+                                        className={
+                                          'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                          (marketplace
+                                            .filter((m) => !!m.data)
+                                            ?.flatMap(
+                                              (m) => m.data!.marketplace
+                                            )
+                                            .filter(
+                                              (g) =>
+                                                g.symbol ===
+                                                locationMarketplace.symbol
+                                            )
+                                            ?.reduce((a, b) =>
+                                              a.sellPricePerUnit >
+                                              b.sellPricePerUnit
+                                                ? a
+                                                : b
+                                            ).sellPricePerUnit ===
+                                          locationMarketplace.sellPricePerUnit
+                                            ? ' text-green-500'
+                                            : '')
+                                        }
                                       >
-                                        Sell
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))
-                            ) : (
-                              <LoadingRows cols={8} rows={3} />
-                            )}
+                                        {formatNumberCommas(
+                                          locationMarketplace.sellPricePerUnit
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button
+                                          className="text-indigo-600 hover:text-indigo-900"
+                                          onClick={() => {
+                                            setGoodToBuy({
+                                              ...locationMarketplace,
+                                              location: dockedLocations[i],
+                                            })
+                                          }}
+                                        >
+                                          Buy
+                                        </button>
+                                        <button
+                                          className="ml-4 text-emerald-600 hover:text-emerald-900"
+                                          onClick={() => {
+                                            setGoodToSell({
+                                              ...locationMarketplace,
+                                              location: dockedLocations[i],
+                                            })
+                                          }}
+                                        >
+                                          Sell
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                              ) : (
+                                <LoadingRows cols={8} rows={3} />
+                              )}
+                            </>
                           </>
-                        </>
-                      ))}
+                        ))}
                     </tbody>
                   </table>
                 ) : (
@@ -662,7 +672,7 @@ export default function Marketplace() {
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
-                            Price
+                            Loading Speed
                           </th>
                           <th
                             scope="col"
@@ -674,13 +684,13 @@ export default function Marketplace() {
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
-                            Loading Speed
+                            Speed
                           </th>
                           <th
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
-                            Speed / Weapons / Plating
+                            Price
                           </th>
                           <th
                             scope="col"
@@ -751,6 +761,15 @@ export default function Marketplace() {
                                         .join(', ') ?? 'None'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {formatNumberCommas(ship.loadingSpeed)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {formatNumberCommas(ship.maxCargo)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      {formatNumberCommas(ship.speed)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
                                       {!ship.purchaseLocations
                                         .map((pl) => pl.price)
                                         .every(
@@ -775,17 +794,6 @@ export default function Marketplace() {
                                         : formatNumberCommas(
                                             ship.purchaseLocations[0].price
                                           )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {formatNumberCommas(ship.maxCargo)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {formatNumberCommas(ship.loadingSpeed)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                                      {formatNumberCommas(ship.speed)} /{' '}
-                                      {formatNumberCommas(ship.weapons)} /{' '}
-                                      {formatNumberCommas(ship.plating)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                       <button
@@ -889,8 +897,13 @@ export default function Marketplace() {
                               name="quantity"
                               id="quantity"
                               min={1}
-                              max={goodToBuy.quantityAvailable}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              max={goodToBuyShip?.spaceAvailable ?? 0}
+                              className={
+                                'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md' +
+                                (goodToBuyError
+                                  ? ' border-red-500 focus:ring-red-500 focus:border-red-500'
+                                  : '')
+                              }
                               onChange={(e) => {
                                 const quantity = !isNaN(
                                   parseInt(e.target.value)
@@ -1047,8 +1060,17 @@ export default function Marketplace() {
                               name="quantity"
                               id="quantity"
                               min={1}
-                              max={goodToSell.quantityAvailable}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              max={
+                                goodToSellShip?.cargo.find(
+                                  (c) => c.good === goodToSell.symbol
+                                )?.quantity ?? 0
+                              }
+                              className={
+                                'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md' +
+                                (goodToSellError
+                                  ? ' border-red-500 focus:ring-red-500 focus:border-red-500'
+                                  : '')
+                              }
                               onChange={(e) => {
                                 const quantity = !isNaN(
                                   parseInt(e.target.value)
@@ -1166,21 +1188,6 @@ export default function Marketplace() {
                       {shipToBuy.manufacturer}
                     </span>
                     <span className="ml-4 inline-flex items-center">
-                      <span className="sr-only">Speed</span>
-                      <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                      {shipToBuy.speed}
-                    </span>
-                    <span className="ml-4 inline-flex items-center">
-                      <span className="sr-only">Weapons</span>
-                      <FireIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                      {shipToBuy.weapons}
-                    </span>
-                    <span className="ml-4 inline-flex items-center">
-                      <span className="sr-only">Plating</span>
-                      <HeartIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-                      {shipToBuy.plating}
-                    </span>
-                    <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Loading speed</span>
                       <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
                       {shipToBuy.loadingSpeed}
@@ -1189,6 +1196,11 @@ export default function Marketplace() {
                       <span className="sr-only">Max cargo</span>
                       <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
                       {shipToBuy.maxCargo}
+                    </span>
+                    <span className="ml-4 inline-flex items-center">
+                      <span className="sr-only">Speed</span>
+                      <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      {shipToBuy.speed}
                     </span>
                   </div>
                   {isFirstShip || shipOptions.length > 0 ? (

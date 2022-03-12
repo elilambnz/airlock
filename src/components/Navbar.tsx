@@ -1,17 +1,19 @@
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { CubeTransparentIcon } from '@heroicons/react/outline'
 import { CreditCardIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Link, useLocation } from 'react-router-dom'
 import { getMyAccount } from '../api/routes/my'
 import { useAuth } from '../hooks/useAuth'
 
-import { abbreviateNumber } from '../utils/helpers'
+import { abbreviateNumber, formatNumberCommas } from '../utils/helpers'
 
 const BUILD = process.env.REACT_APP_GIT_SHA
 
 export default function Navbar() {
+  const [showFullCredits, setShowFullCredits] = useState(false)
+
   const location = useLocation()
   const auth = useAuth()
   const user = useQuery('user', getMyAccount)
@@ -65,16 +67,20 @@ export default function Navbar() {
               </div>
               <div className="hidden md:block">
                 <div className="ml-4 flex items-center md:ml-6">
-                  <Link to="/account" className="flex items-center">
+                  <div
+                    className="flex items-center hover:cursor-pointer mr-2"
+                    onClick={() => setShowFullCredits((prev) => !prev)}
+                  >
                     <span className="bg-gray-800 p-1 rounded-full text-gray-400">
                       <span className="sr-only">Credits</span>
                       <CreditCardIcon className="h-6 w-6" aria-hidden="true" />
                     </span>
-                    <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                      {abbreviateNumber(user.data?.user.credits ?? 0)}
+                    <span className="block px-1 py-2 text-sm text-gray-400">
+                      {!showFullCredits
+                        ? abbreviateNumber(user.data?.user.credits ?? 0)
+                        : formatNumberCommas(user.data?.user.credits ?? 0)}
                     </span>
-                  </Link>
-
+                  </div>
                   {/* Profile dropdown */}
                   <Menu as="div" className="ml-3 relative">
                     <div>
@@ -193,15 +199,20 @@ export default function Navbar() {
                   <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
                     {user.data?.user.username}
                   </span>
-                  <Link to="/account" className="flex items-center">
+                  <div
+                    className="flex items-center hover:cursor-pointer"
+                    onClick={() => setShowFullCredits((prev) => !prev)}
+                  >
                     <span className="bg-gray-800 p-1 rounded-full text-gray-400">
                       <span className="sr-only">Credits</span>
                       <CreditCardIcon className="h-6 w-6" aria-hidden="true" />
                     </span>
-                    <span className="block pl-1 pr-4 py-2 text-sm text-gray-400">
-                      {abbreviateNumber(user.data?.user.credits ?? 0)}
+                    <span className="block px-1 py-2 text-sm text-gray-400">
+                      {!showFullCredits
+                        ? abbreviateNumber(user.data?.user.credits ?? 0)
+                        : formatNumberCommas(user.data?.user.credits ?? 0)}
                     </span>
-                  </Link>
+                  </div>
                 </div>
                 <div className="p-2 mb-2 space-y-1">
                   <span className="block px-4 py-1 text-sm text-gray-400">

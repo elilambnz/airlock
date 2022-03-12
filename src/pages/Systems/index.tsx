@@ -85,14 +85,14 @@ export default function Systems() {
     ['systemFlightPlans', params.systemSymbol],
     () => getSystemFlightPlans(params.systemSymbol ?? ''),
     {
-      enabled: !!params.systemSymbol,
+      enabled: !!params.systemSymbol && (myShips.data?.ships.length ?? 0) > 0,
     }
   )
   const systemDockedShips = useQuery(
     ['systemDockedShips', params.systemSymbol],
     () => getSystemDockedShips(params.systemSymbol ?? ''),
     {
-      enabled: !!params.systemSymbol,
+      enabled: !!params.systemSymbol && (myShips.data?.ships.length ?? 0) > 0,
     }
   )
 
@@ -126,6 +126,17 @@ export default function Systems() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.systemSymbol])
+
+  useEffect(() => {
+    const selectedShip = searchParams.get('ship')
+    if (selectedShip) {
+      setNewFlightPlan((prev) => ({
+        ...prev,
+        shipId: selectedShip || '',
+      }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const delayUpdateShips = async (delay: number, systemSymbol?: string) => {
     await sleep(delay)
@@ -353,6 +364,9 @@ export default function Systems() {
               value={system.data?.system.symbol}
               disabled={system.isLoading}
               onChange={(value) => {
+                setSearchParams({
+                  showMap: String(showMap),
+                })
                 navigate(`/systems/${value}${search}`)
               }}
             />
@@ -413,6 +427,7 @@ export default function Systems() {
                 type="button"
                 onClick={() => {
                   setSearchParams({
+                    ...searchParams,
                     showMap: String(!showMap),
                   })
                 }}
@@ -534,23 +549,41 @@ export default function Systems() {
                         options={shipOptions ?? []}
                         value={newFlightPlan?.shipId}
                         onChange={(value) => {
-                          setNewFlightPlan({
-                            ...newFlightPlan,
-                            shipId: value,
+                          const location = myShips.data?.ships.find(
+                            (s) => s.id === value
+                          )?.location
+                          setSearchParams({
+                            ...searchParams,
+                            ship: value,
                           })
+                          setNewFlightPlan((prev) => ({
+                            ...prev,
+                            destination:
+                              location === prev?.destination
+                                ? undefined
+                                : prev?.destination,
+                          }))
                         }}
                       />
                     </div>
                     <div className="sm:col-span-2">
                       <Select
                         label="Select Location"
-                        options={locationOptions}
+                        options={
+                          locationOptions.filter(
+                            (o) =>
+                              o.value !==
+                              myShips.data?.ships.find(
+                                (s) => s.id === newFlightPlan?.shipId
+                              )?.location
+                          ) ?? []
+                        }
                         value={newFlightPlan?.destination}
                         onChange={(value) => {
-                          setNewFlightPlan({
-                            ...newFlightPlan,
+                          setNewFlightPlan((prev) => ({
+                            ...prev,
                             destination: value,
-                          })
+                          }))
                         }}
                       />
                     </div>
@@ -562,10 +595,10 @@ export default function Systems() {
                           type="checkbox"
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                           onChange={(e) => {
-                            setNewFlightPlan({
-                              ...newFlightPlan,
+                            setNewFlightPlan((prev) => ({
+                              ...prev,
                               autoRefuel: e.target.checked,
-                            })
+                            }))
                           }}
                         />
                         <label

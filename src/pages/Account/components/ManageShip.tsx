@@ -1,7 +1,5 @@
 import {
   CubeIcon,
-  FireIcon,
-  HeartIcon,
   LightningBoltIcon,
   OfficeBuildingIcon,
   TruckIcon,
@@ -20,7 +18,11 @@ import {
 } from '../../../providers/NotificationProvider'
 import { GoodType } from '../../../types/Order'
 import { Ship, ShipCargo } from '../../../types/Ship'
-import { getErrorMessage, getShipName } from '../../../utils/helpers'
+import {
+  formatNumberCommas,
+  getErrorMessage,
+  getShipName,
+} from '../../../utils/helpers'
 
 interface ManageShipProps {
   ship?: Ship
@@ -156,26 +158,19 @@ export default function ManageShip(props: ManageShipProps) {
             {ship.manufacturer}
           </span>
           <span className="ml-4 inline-flex items-center">
-            <span className="sr-only">Speed</span>
-            <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-            {ship.speed}
-          </span>
-          <span className="ml-4 inline-flex items-center">
-            <span className="sr-only">Weapons</span>
-            <FireIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.weapons}
-          </span>
-          <span className="ml-4 inline-flex items-center">
-            <span className="sr-only">Plating</span>
-            <HeartIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.plating}
-          </span>
-          <span className="ml-4 inline-flex items-center">
             <span className="sr-only">Loading speed</span>
             <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
-            {ship.loadingSpeed}
+            {formatNumberCommas(ship.loadingSpeed)}
           </span>
           <span className="ml-4 inline-flex items-center">
             <span className="sr-only">Max cargo</span>
-            <CubeIcon className="mr-1 w-4 h-4 text-gray-900" /> {ship.maxCargo}
+            <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            {formatNumberCommas(ship.maxCargo)}
+          </span>
+          <span className="ml-4 inline-flex items-center">
+            <span className="sr-only">Speed</span>
+            <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            {ship.speed}
           </span>
         </div>
 
@@ -216,7 +211,7 @@ export default function ManageShip(props: ManageShipProps) {
                       {GoodType[cargo.good as unknown as keyof typeof GoodType]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {cargo.quantity}
+                      {formatNumberCommas(cargo.quantity)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button

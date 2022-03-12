@@ -5,6 +5,7 @@ import '../../App.css'
 import AlertModal from '../../components/Modal/AlertModal'
 import {
   abbreviateNumber,
+  formatNumberCommas,
   getErrorMessage,
   getShipName,
 } from '../../utils/helpers'
@@ -27,8 +28,6 @@ import Header from '../../components/Header'
 import Main from '../../components/Main'
 import Title from '../../components/Title'
 import {
-  FireIcon,
-  HeartIcon,
   LightningBoltIcon,
   OfficeBuildingIcon,
   TruckIcon,
@@ -38,6 +37,7 @@ import {
 
 export default function Account() {
   const [shipToScrap, setShipToScrap] = useState<string>()
+  const [showFullCredits, setShowFullCredits] = useState(false)
 
   const navigate = useNavigate()
   const params = useParams()
@@ -89,7 +89,14 @@ export default function Account() {
                   Credits
                 </dt>
                 <dd className="flex items-baseline mt-1 text-3xl font-semibold text-gray-900">
-                  {abbreviateNumber(user.data.user.credits)}
+                  <span
+                    className="hover:cursor-pointer"
+                    onClick={() => setShowFullCredits((prev) => !prev)}
+                  >
+                    {!showFullCredits
+                      ? abbreviateNumber(user.data.user.credits ?? 0)
+                      : formatNumberCommas(user.data.user.credits ?? 0)}
+                  </span>
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-4 sm:px-6">
@@ -189,27 +196,10 @@ export default function Account() {
                             <OfficeBuildingIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
                             {ship.manufacturer}
                           </span>
-                          <div className="mt-1 flex">
-                            <span className="inline-flex items-center">
-                              <span className="sr-only">Speed</span>
-                              <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
-                              {ship.speed}
-                            </span>
-                            <span className="ml-1 inline-flex items-center">
-                              <span className="sr-only">Weapons</span>
-                              <FireIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
-                              {ship.weapons}
-                            </span>
-                            <span className="ml-1 inline-flex items-center">
-                              <span className="sr-only">Plating</span>
-                              <HeartIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
-                              {ship.plating}
-                            </span>
-                          </div>
                           <span className="mt-1 inline-flex items-center">
                             <span className="sr-only">Loading speed</span>
                             <TruckIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
-                            {ship.loadingSpeed}
+                            {formatNumberCommas(ship.loadingSpeed)}
                           </span>
                           <span className="mt-1 inline-flex items-center">
                             <span className="sr-only">Max cargo</span>
@@ -242,10 +232,17 @@ export default function Account() {
                                     : '')
                                 }
                               >
-                                {ship.maxCargo - ship.spaceAvailable} /{' '}
-                                {ship.maxCargo}
+                                {formatNumberCommas(
+                                  ship.maxCargo - ship.spaceAvailable
+                                )}{' '}
+                                / {formatNumberCommas(ship.maxCargo)}
                               </p>
                             </Tooltip>
+                          </span>
+                          <span className="mt-1 inline-flex items-center">
+                            <span className="sr-only">Speed</span>
+                            <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-500" />{' '}
+                            {ship.speed}
                           </span>
                         </div>
                       </div>
@@ -279,7 +276,9 @@ export default function Account() {
                         </div>
                         <div className="-ml-px w-0 flex-1 flex">
                           <Link
-                            to={`/systems/${ship.location?.split('-')[0]}`}
+                            to={`/systems/${
+                              ship.location?.split('-')[0] ?? ''
+                            }?ship=${ship.id}`}
                             className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                           >
                             <GlobeIcon className="h-6 w-6" />
