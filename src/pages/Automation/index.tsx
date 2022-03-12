@@ -12,7 +12,7 @@ import { AutomationStatus } from '../../providers/AutomationProvider'
 import RouteSteps from './components/RouteSteps'
 import AssignedShips from './components/AssignedShips'
 import Alert from '../../components/Alert'
-import { ChipIcon } from '@heroicons/react/solid'
+import { ChipIcon, ExclamationIcon } from '@heroicons/react/solid'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import moment from 'moment'
 import 'moment-duration-format'
@@ -33,6 +33,8 @@ export default function Automation() {
     runTime,
     tradeRoutes,
     tradeRouteStatuses,
+    tradeRouteMessages,
+    tradeRouteProgress,
     tradeRouteLog,
     removeTradeRoute,
     pauseTradeRoute,
@@ -85,23 +87,23 @@ export default function Automation() {
                         !tradeRoutes.data || tradeRoutes.data.length === 0
                       }
                       onClick={() => {
-                        if (status === AutomationStatus.Stopped) {
+                        if (status === AutomationStatus.STOPPED) {
                           startAutomation()
                         } else {
                           stopAutomation()
                         }
                       }}
                     >
-                      {status === AutomationStatus.Stopped ? 'Start' : 'Stop'}
+                      {status === AutomationStatus.STOPPED ? 'Start' : 'Stop'}
                     </button>
                   </div>
 
                   <div
                     className={
                       'inline-flex items-baseline px-2.5 py-0.5 rounded-full text-sm font-medium md:mt-2 lg:mt-0' +
-                      (status === AutomationStatus.Running
+                      (status === AutomationStatus.RUNNING
                         ? ' bg-green-100 text-green-800'
-                        : status === AutomationStatus.Stopped
+                        : status === AutomationStatus.STOPPED
                         ? ' bg-red-100 text-red-800'
                         : '')
                     }
@@ -151,6 +153,28 @@ export default function Automation() {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+                <div className="rounded-md bg-yellow-50 p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <ExclamationIcon
+                        className="h-5 w-5 text-yellow-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800">
+                        Heads up!
+                      </h3>
+                      <div className="mt-2 text-sm text-yellow-700">
+                        <p>
+                          This is an experimental feature, please proceed with
+                          caution. You can view the logs for each route below by
+                          clicking "View" in the table.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <RouteConfiguration />
               </div>
             </div>
@@ -393,13 +417,11 @@ export default function Automation() {
           <>
             {routeToManage && (
               <div>
-                {tradeRouteStatuses.get(routeToManage.id) ===
-                  TradeRouteStatus.ERROR && (
+                {tradeRouteMessages.get(routeToManage.id) && (
                   <div className="mt-2">
                     <Alert
                       title="Error"
-                      message="This route has encountered an error. Please check the logs for more information."
-                      // message={routeToManage.errorMessage || ''}
+                      message={tradeRouteMessages.get(routeToManage.id)!}
                     />
                   </div>
                 )}
@@ -432,13 +454,14 @@ export default function Automation() {
                 </div>
                 <RouteSteps
                   tradeRoute={routeToManage}
+                  currentStep={tradeRouteProgress.get(routeToManage.id)}
                   notActive={
                     tradeRouteStatuses.get(routeToManage.id) !==
                     TradeRouteStatus.ACTIVE
                   }
-                  handleResume={(step: number) => {
-                    resumeTradeRoute(routeToManage.id, step)
-                  }}
+                  // handleResume={(step: number) => {
+                  //   resumeTradeRoute(routeToManage.id, step)
+                  // }}
                 />
                 <div className="mt-4">
                   <h4 className="text-md leading-6 font-medium text-gray-900">

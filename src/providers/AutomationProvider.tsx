@@ -28,15 +28,17 @@ import { useTimeout } from '../hooks/useTimeout'
 import { useTimer } from '../hooks/useTimer'
 
 export enum AutomationStatus {
-  Running = 'Running',
-  Stopped = 'Stopped',
+  RUNNING = 'Running',
+  STOPPED = 'Stopped',
 }
 
 export const AutomationContext = createContext({
-  status: AutomationStatus.Stopped,
+  status: AutomationStatus.STOPPED,
   runTime: 0,
   tradeRoutes: {} as UseQueryResult<TradeRoute[], unknown>,
   tradeRouteStatuses: {} as Map<string, TradeRouteStatus>,
+  tradeRouteMessages: {} as Map<string, string>,
+  tradeRouteProgress: {} as Map<string, number>,
   tradeRouteLog: {} as { [id: string]: string[] },
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   updateTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
@@ -48,13 +50,20 @@ export const AutomationContext = createContext({
 })
 
 export default function AutomationProvider(props: any) {
-  const [status, setStatus] = useState(AutomationStatus.Stopped)
+  const [status, setStatus] = useState(AutomationStatus.STOPPED)
+  const [runTime, setRunTime] = useState(0)
+
+  const [tradeRouteLog, setTradeRouteLog] =
+    useState<{ [id: string]: string[] }>()
   const [tradeRouteStatuses, setTradeRouteStatuses] = useState<
     Map<string, TradeRouteStatus>
   >(new Map())
-  const [runTime, setRunTime] = useState(0)
-  const [tradeRouteLog, setTradeRouteLog] =
-    useState<{ [id: string]: string[] }>()
+  const [tradeRouteMessages, setTradeRouteMessages] = useState<
+    Map<string, string>
+  >(new Map())
+  const [tradeRouteProgress, setTradeRouteProgress] = useState<
+    Map<string, number>
+  >(new Map())
 
   const { push } = useContext(NotificationContext)
 
@@ -75,13 +84,13 @@ export default function AutomationProvider(props: any) {
         [...tradeRouteStatuses.values()].every(
           (status) => status === TradeRouteStatus.ACTIVE
         )
-        ? AutomationStatus.Running
-        : AutomationStatus.Stopped
+        ? AutomationStatus.RUNNING
+        : AutomationStatus.STOPPED
     )
   }, [tradeRouteStatuses])
 
   useEffect(() => {
-    if (status === AutomationStatus.Running) {
+    if (status === AutomationStatus.RUNNING) {
       const init = async () => {
         await startTimer((value) => setRunTime(value))
       }
@@ -96,7 +105,7 @@ export default function AutomationProvider(props: any) {
       })
     }
 
-    if (status === AutomationStatus.Stopped) {
+    if (status === AutomationStatus.STOPPED) {
       const clear = async () => {
         await clearTimer()
       }
@@ -140,8 +149,11 @@ export default function AutomationProvider(props: any) {
   }
 
   const routeShouldContinue = (id: string): boolean => {
-    const status = tradeRouteStatuses.get(id)
-    return status === TradeRouteStatus.ACTIVE
+    const routeStatus = tradeRouteStatuses.get(id)
+    return (
+      routeStatus === TradeRouteStatus.ACTIVE &&
+      status === AutomationStatus.RUNNING
+    )
   }
 
   const handleLog = (
@@ -335,7 +347,7 @@ export default function AutomationProvider(props: any) {
   }
 
   useEffect(() => {
-    if (tradeRoutes.data && status === AutomationStatus.Running) {
+    if (tradeRoutes.data && status === AutomationStatus.RUNNING) {
       const run = async () => {
         // Run all trade routes in parallel
         await Promise.all(
@@ -343,6 +355,7 @@ export default function AutomationProvider(props: any) {
             const { id, events, assignedShips, autoRefuel } = route
 
             for (let eventIdx = 0; eventIdx < events.length; eventIdx++) {
+              setTradeRouteProgress((prev) => prev.set(id, eventIdx))
               const event = events[eventIdx]
 
               if (!routeShouldContinue(id)) {
@@ -447,6 +460,10 @@ export default function AutomationProvider(props: any) {
                   id,
                   `Error: ${getErrorMessage(error.message)}`
                 )
+                setTradeRouteMessages(
+                  (prev) =>
+                    new Map(prev.set(id, getErrorMessage(error.message)))
+                )
               }
 
               // If we've reached the last event, restart the route
@@ -462,7 +479,7 @@ export default function AutomationProvider(props: any) {
     }
 
     return () => {
-      if (status === AutomationStatus.Running) {
+      if (status === AutomationStatus.RUNNING) {
         stopAutomation()
       }
     }
@@ -485,14 +502,13 @@ export default function AutomationProvider(props: any) {
 
   const updateTradeRoute = async (tradeRoute: TradeRoute) => {
     try {
-      const response = await updateTradingRoute(
+      await updateTradingRoute(
         tradeRoute.id,
         tradeRoute._version,
         tradeRoute.events,
         tradeRoute.assignedShips,
         tradeRoute.autoRefuel
       )
-      console.log('updateTradeRoute', response)
       queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error updating trade route:', error)
@@ -501,17 +517,21 @@ export default function AutomationProvider(props: any) {
 
   const removeTradeRoute = async (id: string, version: number) => {
     try {
-      const response = await removeTradingRoute(id, version)
-      console.log('removeTradeRoute', response)
+      await removeTradingRoute(id, version)
       queryClient.invalidateQueries('tradeRoutes')
     } catch (error) {
       console.error('Error removing trade route:', error)
     }
   }
 
-  const updateTradeRouteStatus = (id: string, status: TradeRouteStatus) => {
-    console.log('updateTradeRouteStatus', id, status)
-    // update map
+  const updateTradeRouteStatus = (
+    id: string,
+    status: TradeRouteStatus,
+    message?: string
+  ) => {
+    if (message) {
+      setTradeRouteMessages((prev) => new Map(prev.set(id, message)))
+    }
     setTradeRouteStatuses((prev) => new Map(prev.set(id, status)))
   }
 
@@ -520,8 +540,9 @@ export default function AutomationProvider(props: any) {
   }
 
   const resumeTradeRoute = async (id: string, step?: number) => {
-    console.log('resumeTradeRoute', id, step)
-
+    if (step !== undefined) {
+      console.error('resumeTradeRoute: step not implemented yet')
+    }
     updateTradeRouteStatus(id, TradeRouteStatus.ACTIVE)
   }
 
@@ -530,6 +551,8 @@ export default function AutomationProvider(props: any) {
     runTime,
     tradeRoutes,
     tradeRouteStatuses,
+    tradeRouteMessages,
+    tradeRouteProgress,
     tradeRouteLog,
     addTradeRoute,
     updateTradeRoute,

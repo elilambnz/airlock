@@ -16,12 +16,14 @@ import { StructureCategory } from '../../../types/Structure'
 interface RouteStepsProps {
   tradeRoute: TradeRoute
   setTradeRoute?: Dispatch<SetStateAction<TradeRoute>>
+  currentStep?: number
   notActive?: boolean
   handleResume?: (index: number) => void
 }
 
 export default function RouteSteps(props: RouteStepsProps) {
-  const { tradeRoute, setTradeRoute, notActive, handleResume } = props
+  const { tradeRoute, setTradeRoute, currentStep, notActive, handleResume } =
+    props
 
   const allMyStructures = useQuery('myStructures', listMyStructures)
 
@@ -73,6 +75,11 @@ export default function RouteSteps(props: RouteStepsProps) {
                 ></span>
                 <div className="relative flex space-x-3">
                   <div>
+                    {currentStep === i && !notActive && (
+                      <span className="absolute flex h-8 w-8">
+                        <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-sky-400 opacity-75"></span>
+                      </span>
+                    )}
                     <span
                       className={
                         'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
