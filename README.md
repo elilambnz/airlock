@@ -1,14 +1,14 @@
-![Airlock Logo]('https://raw.githubusercontent.com/elilambnz/airlock/main/.github/logo.png')
+![Airlock Logo](/.github/logo.png?raw=true)
 
 A [SpaceTraders API](https://spacetraders.io/) web app made with React by [elilambnz](https://github.com/elilambnz)
 
 ## Screenshots
 
-![Airlock Screenshot]('https://raw.githubusercontent.com/elilambnz/airlock/main/.github/screenshot-1.png')
+![Airlock Screenshot](/.github/screenshot-1.png?raw=true)
 
-![Airlock Screenshot]('https://raw.githubusercontent.com/elilambnz/airlock/main/.github/screenshot-2.png')
+![Airlock Screenshot](/.github/screenshot-2.png?raw=true)
 
-![Airlock Screenshot]('https://raw.githubusercontent.com/elilambnz/airlock/main/.github/screenshot-3.png')
+![Airlock Screenshot](/.github/screenshot-3.png?raw=true)
 
 ## Getting Started
 
