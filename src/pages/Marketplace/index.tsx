@@ -21,6 +21,7 @@ import moment from 'moment'
 import {
   CreditCardIcon,
   CubeIcon,
+  ExclamationIcon,
   GlobeIcon,
   LightningBoltIcon,
   OfficeBuildingIcon,
@@ -276,6 +277,14 @@ export default function Marketplace() {
       [marketplace, filteredGood]
     ) ?? 0
 
+  const marketplaceResults = marketplace.filter((m) =>
+    !m.isLoading && filteredGood
+      ? (m.data?.marketplace.filter((g) =>
+          filteredGood ? g.symbol === filteredGood : true
+        ).length ?? 0) > 0
+      : true
+  )
+
   const goodToBuyShip = myShips.data?.ships.find(
     (s) => s.id === goodToBuy?.shipId
   )
@@ -443,16 +452,9 @@ export default function Marketplace() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {myShips.isLoading && <LoadingRows cols={8} rows={3} />}
-                      {marketplace
-                        .filter(
-                          (m) =>
-                            !m.isLoading &&
-                            (m.data?.marketplace.filter((g) =>
-                              filteredGood ? g.symbol === filteredGood : true
-                            ).length ?? 0) > 0
-                        )
-                        ?.map((m, i) => (
+                      {myShips.isLoading && <LoadingRows cols={6} rows={3} />}
+                      {myShips.isLoading || marketplaceResults.length > 0 ? (
+                        marketplaceResults.map((m, i) => (
                           <>
                             <tr
                               key={dockedLocations[i]}
@@ -465,9 +467,13 @@ export default function Marketplace() {
                                 <div className="flex justify-between items-baseline">
                                   <span>{dockedLocations[i]}</span>
                                   <span className="text-xs">
-                                    Last updated:{' '}
-                                    {moment(m.dataUpdatedAt).format(
-                                      'DD/MM/YY hh:mm:ss a'
+                                    {m.dataUpdatedAt > 0 && (
+                                      <>
+                                        Last updated:{' '}
+                                        {moment(m.dataUpdatedAt).format(
+                                          'DD/MM/YY hh:mm:ss a'
+                                        )}
+                                      </>
                                     )}
                                   </span>
                                 </div>
@@ -591,11 +597,28 @@ export default function Marketplace() {
                                     </tr>
                                   ))
                               ) : (
-                                <LoadingRows cols={8} rows={3} />
+                                <LoadingRows cols={6} rows={3} />
                               )}
                             </>
                           </>
-                        ))}
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="px-6 py-2" colSpan={6}>
+                            <div className="w-full py-8 px-4">
+                              <div className="flex flex-col items-center text-center mb-4">
+                                <ExclamationIcon className="w-12 h-12 text-gray-400" />
+                                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                                  No locations have this good available!
+                                </h3>
+                                <p className="mt-1 text-sm text-gray-500">
+                                  Try filtering by another good.
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 ) : (
@@ -608,7 +631,7 @@ export default function Marketplace() {
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                           You must have at least one ship docked at a location
-                          to buy or sell goods.{' '}
+                          to buy or sell goods.
                         </p>
                       </div>
                     </div>
@@ -711,9 +734,13 @@ export default function Marketplace() {
                                 <div className="flex justify-between items-baseline">
                                   <span>{knownSystems[i]}</span>
                                   <span className="text-xs">
-                                    Last updated:{' '}
-                                    {moment(listings.dataUpdatedAt).format(
-                                      'DD/MM/YY hh:mm:ss a'
+                                    {listings.dataUpdatedAt > 0 && (
+                                      <>
+                                        Last updated:{' '}
+                                        {moment(listings.dataUpdatedAt).format(
+                                          'DD/MM/YY hh:mm:ss a'
+                                        )}
+                                      </>
                                     )}
                                   </span>
                                 </div>
