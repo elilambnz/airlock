@@ -4,7 +4,7 @@ import { CreditCardIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 import { Fragment, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Link, useLocation } from 'react-router-dom'
-import { getMyAccount } from '../api/routes/my'
+import { getMyAgent } from '../api/routes/agents'
 import { useAuth } from '../hooks/useAuth'
 
 import { abbreviateNumber, formatNumberCommas } from '../utils/helpers'
@@ -16,7 +16,7 @@ export default function Navbar() {
 
   const location = useLocation()
   const auth = useAuth()
-  const user = useQuery('user', getMyAccount)
+  const agent = useQuery('agent', getMyAgent)
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
@@ -24,12 +24,7 @@ export default function Navbar() {
 
   const links = [
     { path: '', name: 'Home' },
-    { path: 'account', name: 'Account' },
-    { path: 'systems', name: 'Systems' },
-    { path: 'marketplace', name: 'Marketplace' },
-    { path: 'structures', name: 'Structures' },
-    { path: 'automation', name: 'Automation' },
-    { path: 'loans', name: 'Loans' },
+    { path: 'agent', name: 'Agent' },
   ]
 
   return (
@@ -77,8 +72,8 @@ export default function Navbar() {
                     </span>
                     <span className="block px-1 py-2 text-sm text-gray-400">
                       {!showFullCredits
-                        ? abbreviateNumber(user.data?.user.credits ?? 0)
-                        : formatNumberCommas(user.data?.user.credits ?? 0)}
+                        ? abbreviateNumber(agent.data?.data.credits ?? 0)
+                        : formatNumberCommas(agent.data?.data.credits ?? 0)}
                     </span>
                   </div>
                   {/* Profile dropdown */}
@@ -105,7 +100,7 @@ export default function Navbar() {
                           <Menu.Item>
                             {() => (
                               <span className="block px-4 py-2 text-sm text-gray-700 font-medium">
-                                {user.data?.user.username}
+                                {agent.data?.data.symbol}
                               </span>
                             )}
                           </Menu.Item>
@@ -197,7 +192,7 @@ export default function Navbar() {
                     </span>
                   </div>
                   <span className="block px-4 py-2 text-sm text-gray-400 font-medium">
-                    {user.data?.user.username}
+                    {agent.data?.data.symbol}
                   </span>
                   <div
                     className="flex items-center hover:cursor-pointer"
@@ -209,8 +204,8 @@ export default function Navbar() {
                     </span>
                     <span className="block px-1 py-2 text-sm text-gray-400">
                       {!showFullCredits
-                        ? abbreviateNumber(user.data?.user.credits ?? 0)
-                        : formatNumberCommas(user.data?.user.credits ?? 0)}
+                        ? abbreviateNumber(agent.data?.data.credits ?? 0)
+                        : formatNumberCommas(agent.data?.data.credits ?? 0)}
                     </span>
                   </div>
                 </div>

@@ -1,18 +1,18 @@
 import { useContext, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { listMyShips, scrapShip, getMyAccount } from '../../api/routes/my'
+import { listMyShips, scrapShip, getMyAccount } from '../../../api/routes/my'
 import '../../App.css'
-import AlertModal from '../../components/Modal/AlertModal'
+import AlertModal from '../../../components/Modal/AlertModal'
 import {
   abbreviateNumber,
   formatNumberCommas,
   getErrorMessage,
   getShipName,
-} from '../../utils/helpers'
+} from '../../../utils/helpers'
 import ManageShip from './components/ManageShip'
-import Modal from '../../components/Modal'
-import Tooltip from '../../components/Tooltip'
-import { GoodType } from '../../types/Order'
+import Modal from '../../../components/Modal'
+import Tooltip from '../../../components/Tooltip'
+import { GoodType } from '../../../types/Order'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import {
   ArrowSmRightIcon,
@@ -23,10 +23,10 @@ import {
 import {
   NotificationContext,
   NotificationType,
-} from '../../providers/NotificationProvider'
-import Header from '../../components/Header'
-import Main from '../../components/Main'
-import Title from '../../components/Title'
+} from '../../../providers/NotificationProvider'
+import Header from '../../../components/Header'
+import Main from '../../../components/Main'
+import Title from '../../../components/Title'
 import {
   LightningBoltIcon,
   OfficeBuildingIcon,

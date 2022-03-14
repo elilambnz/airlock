@@ -1,74 +1,90 @@
-import { GoodType } from './Order'
-import { PurchaseLocation } from './System'
-
-export type ListShipTypesResponse = {
-  ships: Ship[]
-}
+import { Cooldown, Meta } from './Meta'
 
 export type ListShipsResponse = {
-  ships: Ship[]
+  data: Ship[]
+  meta: Meta
 }
 
 export type ShipResponse = {
-  ship: Ship
-}
-
-export type ListShipListingsResponse = {
-  shipListings: ShipListing[]
+  data: Ship
 }
 
 export type Ship = {
-  cargo: ShipCargo[]
-  class: string
-  flightPlanId?: string
-  id: string
-  location?: string
-  loadingSpeed: number
-  manufacturer: string
-  maxCargo: number
-  plating: number
-  restrictedGoods?: GoodType[]
-  spaceAvailable: number
-  speed: number
-  type: string
-  weapons: number
-  x?: number
-  y?: number
+  symbol: string
+  crew?: any
+  officers?: any
+  fuel: number
+  frame: Frame
+  reactor: Reactor
+  engine: Engine
+  modules: Module[]
+  mounts: Mount[]
+  registration: Registration
+  integrity: Integrity
+  status: ShipStatus
+  location: string
+  cargo: Cargo[]
 }
 
-export type ShipCargo = {
-  good: GoodType
-  quantity: number
-  totalVolume: number
+export enum Frame {
+  'FRAME_DRONE',
 }
 
-export type ShipListing = Ship & {
-  purchaseLocations: PurchaseLocation[]
+export enum Reactor {
+  'REACTOR_SOLAR_I',
 }
 
-export type BuyShipResponse = {
-  credits: number
-  ship: Ship
+export enum Engine {
+  'ENGINE_SOLAR_PROPULSION',
 }
 
-export type ShipJettisonCargoResponse = {
-  good: GoodType
-  quantityRemaining: number
-  shipId: string
+export enum Module {
+  'MODULE_CARGO_HOLD',
 }
 
-export type ScrapShipResponse = {
-  salePrice: number
-  success: string
+export enum Mount {
+  'MOUNT_MINING_LASER_I',
 }
 
-export type TransferShipCargoResponse = {
-  fromShip: Ship
-  toShip: Ship
+export type Registration = {
+  factionSymbol: string
+  agentSymbol: string
+  fee: number
+  role: RegistrationRole
 }
 
-export type ShipExternal = {
-  shipId: string
-  shipType: string
-  username: string
+export enum RegistrationRole {
+  'EXCAVATOR',
+}
+
+export type Integrity = {
+  frame: number
+  reactor: number
+  engine: number
+}
+
+export enum ShipStatus {
+  'DOCKED',
+}
+
+export type Cargo = {
+  tradeSymbol: string
+  units: number
+}
+
+export type ScanResponse = {
+  data: {
+    cooldown: Cooldown
+    ships: Ship[]
+  }
+}
+
+export type ScanCooldownResponse = {
+  data: {
+    cooldown: Cooldown
+  }
+}
+
+export type JettisonCargoResponse = {
+  data: Cargo
 }

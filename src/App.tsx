@@ -12,24 +12,18 @@ import Navbar from './components/Navbar'
 import Notifications from './components/Notifications'
 
 import Home from './pages/Home'
-import Account from './pages/Account'
-import Systems from './pages/Systems'
-import Marketplace from './pages/Marketplace'
-import Structures from './pages/Structures'
-import Automation from './pages/Automation'
-import Loans from './pages/Loans'
+import Agent from './pages/Agent'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
 import Plausible from 'plausible-tracker'
 import AuthProvider from './providers/AuthProvider'
-import AutomationProvider from './providers/AutomationProvider'
 import NotificationProvider from './providers/NotificationProvider'
 import { useAuth } from './hooks/useAuth'
 
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
-import CommandPalette from './components/CommandPalette'
+// import CommandPalette from './components/CommandPalette'
 
 const { enableAutoPageviews, enableAutoOutboundTracking, trackEvent } =
   Plausible({
@@ -54,66 +48,10 @@ export default function App() {
       ),
     },
     {
-      path: 'account',
+      path: 'agent',
       element: (
         <RequireAuth>
-          <Account />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'account/:shipId',
-      element: (
-        <RequireAuth>
-          <Account />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'systems',
-      element: (
-        <RequireAuth>
-          <Systems />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'systems/:systemSymbol',
-      element: (
-        <RequireAuth>
-          <Systems />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'marketplace',
-      element: (
-        <RequireAuth>
-          <Marketplace />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'structures',
-      element: (
-        <RequireAuth>
-          <Structures />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'automation',
-      element: (
-        <RequireAuth>
-          <Automation />
-        </RequireAuth>
-      ),
-    },
-    {
-      path: 'loans',
-      element: (
-        <RequireAuth>
-          <Loans />
+          <Agent />
         </RequireAuth>
       ),
     },
@@ -124,19 +62,17 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider trackEvent={trackEvent}>
           <NotificationProvider>
-            <AutomationProvider>
-              <Routes>
-                <Route element={<AppLayout />}>
-                  {routes.map(({ path, element }) => (
-                    <Route key={path} path={path} element={element} />
-                  ))}
-                </Route>
-                <Route element={<AuthLayout />}>
-                  <Route path="login" element={<Login />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </AutomationProvider>
+            <Routes>
+              <Route element={<AppLayout />}>
+                {routes.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
+              </Route>
+              <Route element={<AuthLayout />}>
+                <Route path="login" element={<Login />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
           </NotificationProvider>
         </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
@@ -151,7 +87,7 @@ function AppLayout() {
       <Navbar />
       <Outlet />
       <Notifications />
-      <CommandPalette />
+      {/* <CommandPalette /> */}
     </div>
   )
 }

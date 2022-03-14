@@ -10,19 +10,19 @@ import {
   jettisonShipCargo,
   listMyShips,
   transferShipCargo,
-} from '../../../api/routes/my'
-import Select from '../../../components/Select'
+} from '../../../../api/routes/my'
+import Select from '../../../../components/Select'
 import {
   NotificationContext,
   NotificationType,
-} from '../../../providers/NotificationProvider'
-import { GoodType } from '../../../types/Order'
-import { Ship, ShipCargo } from '../../../types/Ship'
+} from '../../../../providers/NotificationProvider'
+import { GoodType } from '../../../../types/Order'
+import { Ship, ShipCargo } from '../../../../types/Ship'
 import {
   formatNumberCommas,
   getErrorMessage,
   getShipName,
-} from '../../../utils/helpers'
+} from '../../../../utils/helpers'
 
 interface ManageShipProps {
   ship?: Ship

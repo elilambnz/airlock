@@ -1,12 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
-import {
-  getMyAccount,
-  listMyLoans,
-  listMyShips,
-  listMyStructures,
-} from '../api/routes/my'
+import { getMyAgent } from '../api/routes/agents'
 import AuthContext from '../contexts/AuthContext'
 import { API_TOKEN_KEY, removeValue } from '../utils/browserStorage'
 
@@ -26,10 +21,7 @@ export default function AuthProvider(props: AuthProviderProps) {
 
   useEffect(() => {
     if (apiTokenValid) {
-      queryClient.prefetchQuery('user', getMyAccount)
-      queryClient.prefetchQuery('myShips', listMyShips)
-      queryClient.prefetchQuery('myLoans', listMyLoans)
-      queryClient.prefetchQuery('myStructures', listMyStructures)
+      // queryClient.prefetchQuery('user', getMyAccount)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiTokenValid])
@@ -43,8 +35,8 @@ export default function AuthProvider(props: AuthProviderProps) {
     try {
       setLoading(true)
       setApiToken(token)
-      const user = await queryClient.fetchQuery('user', getMyAccount)
-      if (!user.user) {
+      const agent = await queryClient.fetchQuery('agent', getMyAgent)
+      if (!agent) {
         throw new Error('User not found')
       }
       setApiTokenValid(true)
@@ -59,11 +51,9 @@ export default function AuthProvider(props: AuthProviderProps) {
       // Track the user's sign in
       trackEvent('signin', {
         props: {
-          username: user.user.username,
-          credits: String(user.user.credits),
-          joinedAt: user.user.joinedAt,
-          shipCount: String(user.user.shipCount),
-          structureCount: String(user.user.structureCount),
+          symbol: agent.data.symbol,
+          headquarters: agent.data.headquarters,
+          credits: String(agent.data.credits),
         },
       })
     } catch (error) {

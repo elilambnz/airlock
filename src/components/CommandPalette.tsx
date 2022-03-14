@@ -8,7 +8,7 @@ import {
   SupportIcon,
 } from '@heroicons/react/outline'
 import { useQueries, useQuery } from 'react-query'
-import { listMyShips } from '../api/routes/my'
+import { listMyShips } from '../api/routes/agents'
 import { System, Location } from '../types/Location'
 import { getSystemLocations } from '../api/routes/systems'
 import { getShipName } from '../utils/helpers'

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { generateToken } from '../../api/routes/users'
+import { registerNewAgent } from '../../api/routes/agents'
 import '../../App.css'
 import Alert from '../../components/Alert'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -17,7 +17,8 @@ import {
 export default function Login() {
   const [randomBackgroundIndex, setRandomBackgroundIndex] = useState(0)
   const [registerForm, setRegisterForm] = useState({
-    username: '',
+    symbol: '',
+    faction: '',
     rememberMe: false,
   })
   const [loginForm, setLoginForm] = useState({
@@ -55,16 +56,20 @@ export default function Login() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleRegister = async (username: string, rememberMe: boolean) => {
+  const handleRegister = async (
+    symbol: string,
+    faction: string,
+    rememberMe: boolean
+  ) => {
     setLoading(true)
     setRegistrationError(undefined)
     try {
-      const response = await generateToken(username)
+      const response = await registerNewAgent(symbol, faction)
       if (!response) {
         throw new Error()
       }
-      setValue(API_TOKEN_KEY, response.token, rememberMe)
-      await auth.signin(response.token, '/')
+      setValue(API_TOKEN_KEY, response.data.token, rememberMe)
+      await auth.signin(response.data.token, '/')
     } catch (error: any) {
       setRegistrationError(error.message || 'Error generating token')
       removeValue(API_TOKEN_KEY, rememberMe)
@@ -158,7 +163,7 @@ export default function Login() {
                     htmlFor="usernameRegister"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Username
+                    Symbol
                   </label>
                   <div className="mt-1">
                     <input
@@ -171,7 +176,31 @@ export default function Login() {
                       onChange={(e) =>
                         setRegisterForm((prev) => ({
                           ...prev,
-                          username: e.target.value.trim(),
+                          symbol: e.target.value.trim(),
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="factionRegister"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Faction
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="factionRegister"
+                      name="factionRegister"
+                      type="text"
+                      autoComplete="off"
+                      autoFocus
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      onChange={(e) =>
+                        setRegisterForm((prev) => ({
+                          ...prev,
+                          faction: e.target.value.trim(),
                         }))
                       }
                     />
@@ -213,11 +242,12 @@ export default function Login() {
                     disabled={registrationLoading}
                     onClick={(e) => {
                       e.preventDefault()
-                      if (!registerForm.username) {
+                      if (!registerForm.symbol || !registerForm.faction) {
                         return
                       }
                       handleRegister(
-                        registerForm.username,
+                        registerForm.symbol,
+                        registerForm.faction,
                         registerForm.rememberMe
                       )
                     }}

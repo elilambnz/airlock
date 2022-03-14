@@ -1,34 +1,27 @@
-import { FlightPlanExternal } from './FlightPlan'
-import { Location } from './Location'
-import { ShipExternal, ShipListing } from './Ship'
+import { Meta } from './Meta'
 
-export type SystemsResponse = {
-  system: System
+export type ListSystemsResponse = {
+  data: System[]
+  meta: Meta
+}
+
+export type SystemResponse = {
+  data: System
 }
 
 export type System = {
-  name: string
   symbol: string
+  sector: string
+  type: SystemType
+  x: number
+  y: number
+  waypoints: string[]
+  factions: string[]
+  charted: boolean
+  chartedBy?: string
 }
 
-export type ListSystemShipsResponse = {
-  shipListings: ShipListing[]
-}
-
-export type PurchaseLocation = {
-  location: string
-  price: number
-  system: string
-}
-
-export type ListSystemFlightPlansResponse = {
-  flightPlans: FlightPlanExternal[]
-}
-
-export type ListSystemLocationsResponse = {
-  locations: Location[]
-}
-
-export type SystemDockedShipsResponse = {
-  ships: ShipExternal[]
+export enum SystemType {
+  'RED_STAR',
+  'BLUE_STAR',
 }
