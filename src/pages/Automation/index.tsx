@@ -22,6 +22,7 @@ import { GoodType } from '../../types/Order'
 import Main from '../../components/Main'
 import Section from '../../components/Section'
 import Title from '../../components/Title'
+import LoadingRows from '../../components/Table/LoadingRows'
 
 export default function Automation() {
   const [showInfo, setShowInfo] = useState(false)
@@ -196,7 +197,8 @@ export default function Automation() {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
-                {tradeRoutes.data && tradeRoutes.data.length > 0 ? (
+                {tradeRoutes.isLoading ||
+                (tradeRoutes.data && tradeRoutes.data.length > 0) ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -239,122 +241,129 @@ export default function Automation() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {tradeRoutes.data.map((route, i) => (
-                        <tr
-                          key={i}
-                          className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                        >
-                          <td className="px-6 py-4 text-sm leading-5 font-medium text-gray-900">
-                            {route.events
-                              .filter((e) => e.type === RouteEventType.TRAVEL)
-                              ?.reduce(
-                                (acc: string[], cur) => [
-                                  ...acc,
-                                  String(cur.location),
-                                ],
-                                []
-                              )
-                              .join(' → ')}
-                          </td>
-                          <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                            {[
-                              ...new Set(
-                                route.events
-                                  .filter(
-                                    (e) =>
-                                      e.type === RouteEventType.BUY ||
-                                      e.type === RouteEventType.SELL
+                      {!tradeRoutes.isLoading ? (
+                        tradeRoutes.data.map((route, i) => (
+                          <tr
+                            key={i}
+                            className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                          >
+                            <td className="px-6 py-4 text-sm leading-5 font-medium text-gray-900">
+                              {route.events
+                                .filter((e) => e.type === RouteEventType.TRAVEL)
+                                ?.reduce(
+                                  (acc: string[], cur) => [
+                                    ...acc,
+                                    String(cur.location),
+                                  ],
+                                  []
+                                )
+                                .join(' → ')}
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {[
+                                ...new Set(
+                                  route.events
+                                    .filter(
+                                      (e) =>
+                                        e.type === RouteEventType.BUY ||
+                                        e.type === RouteEventType.SELL
+                                    )
+                                    ?.reduce(
+                                      (acc: string[], cur) => [
+                                        ...acc,
+                                        String(
+                                          GoodType[
+                                            cur.good
+                                              ?.good as keyof typeof GoodType
+                                          ]
+                                        ),
+                                      ],
+                                      []
+                                    )
+                                ),
+                                ...new Set(
+                                  route.events
+                                    .filter(
+                                      (e) =>
+                                        e.type === RouteEventType.WITHDRAW ||
+                                        e.type === RouteEventType.DEPOSIT
+                                    )
+                                    ?.reduce(
+                                      (acc: string[], cur) => [
+                                        ...acc,
+                                        String(
+                                          GoodType[
+                                            cur.structure
+                                              ?.good as keyof typeof GoodType
+                                          ]
+                                        ),
+                                      ],
+                                      []
+                                    )
+                                ),
+                              ].join(', ')}
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {route.assignedShips
+                                .map((id) => getShipName(id))
+                                .join(', ')}
+                            </td>
+                            <td className="px-6 py-4 text-sm leading-5 text-gray-500">
+                              {route.autoRefuel ? 'Yes' : 'No'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              <span
+                                className={
+                                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                  (tradeRouteStatuses.get(route.id) ===
+                                  TradeRouteStatus.ACTIVE
+                                    ? ' bg-green-100 text-green-800'
+                                    : tradeRouteStatuses.get(route.id) ===
+                                      TradeRouteStatus.PAUSED
+                                    ? ' bg-yellow-100 text-yellow-800'
+                                    : tradeRouteStatuses.get(route.id) ===
+                                      TradeRouteStatus.ERROR
+                                    ? ' bg-red-100 text-red-800'
+                                    : '')
+                                }
+                              >
+                                {tradeRouteStatuses.get(route.id)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                              <button
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => {
+                                  setRouteToManage(route)
+                                }}
+                              >
+                                View
+                              </button>
+                              <button
+                                className="ml-4 text-indigo-600 hover:text-indigo-900"
+                                onClick={() => {
+                                  setRouteToEdit(route)
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="ml-4 text-red-600 hover:text-red-900"
+                                onClick={() => {
+                                  handleRemoveTradeRoute(
+                                    route.id,
+                                    route._version
                                   )
-                                  ?.reduce(
-                                    (acc: string[], cur) => [
-                                      ...acc,
-                                      String(
-                                        GoodType[
-                                          cur.good
-                                            ?.good as keyof typeof GoodType
-                                        ]
-                                      ),
-                                    ],
-                                    []
-                                  )
-                              ),
-                              ...new Set(
-                                route.events
-                                  .filter(
-                                    (e) =>
-                                      e.type === RouteEventType.WITHDRAW ||
-                                      e.type === RouteEventType.DEPOSIT
-                                  )
-                                  ?.reduce(
-                                    (acc: string[], cur) => [
-                                      ...acc,
-                                      String(
-                                        GoodType[
-                                          cur.structure
-                                            ?.good as keyof typeof GoodType
-                                        ]
-                                      ),
-                                    ],
-                                    []
-                                  )
-                              ),
-                            ].join(', ')}
-                          </td>
-                          <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                            {route.assignedShips
-                              .map((id) => getShipName(id))
-                              .join(', ')}
-                          </td>
-                          <td className="px-6 py-4 text-sm leading-5 text-gray-500">
-                            {route.autoRefuel ? 'Yes' : 'No'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                            <span
-                              className={
-                                'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
-                                (tradeRouteStatuses.get(route.id) ===
-                                TradeRouteStatus.ACTIVE
-                                  ? ' bg-green-100 text-green-800'
-                                  : tradeRouteStatuses.get(route.id) ===
-                                    TradeRouteStatus.PAUSED
-                                  ? ' bg-yellow-100 text-yellow-800'
-                                  : tradeRouteStatuses.get(route.id) ===
-                                    TradeRouteStatus.ERROR
-                                  ? ' bg-red-100 text-red-800'
-                                  : '')
-                              }
-                            >
-                              {tradeRouteStatuses.get(route.id)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
-                            <button
-                              className="text-indigo-600 hover:text-indigo-900"
-                              onClick={() => {
-                                setRouteToManage(route)
-                              }}
-                            >
-                              View
-                            </button>
-                            <button
-                              className="ml-4 text-indigo-600 hover:text-indigo-900"
-                              onClick={() => {
-                                setRouteToEdit(route)
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="ml-4 text-red-600 hover:text-red-900"
-                              onClick={() => {
-                                handleRemoveTradeRoute(route.id, route._version)
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <LoadingRows cols={6} rows={3} />
+                      )}
                     </tbody>
                   </table>
                 ) : (
@@ -473,7 +482,7 @@ export default function Automation() {
                 </div>
                 <RouteSteps
                   tradeRoute={routeToManage}
-                  currentStep={tradeRouteProgress.get(routeToManage.id)}
+                  currentProgress={tradeRouteProgress.get(routeToManage.id)}
                   notActive={
                     tradeRouteStatuses.get(routeToManage.id) !==
                     TradeRouteStatus.ACTIVE

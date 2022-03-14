@@ -26,6 +26,9 @@ import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
 import { NotificationContext, NotificationType } from './NotificationProvider'
 import { useTimeout } from '../hooks/useTimeout'
 import { useTimer } from '../hooks/useTimer'
+import moment, { Moment } from 'moment'
+
+const TIMER_PADDING = 2000 // 2 s
 
 export enum AutomationStatus {
   RUNNING = 'Running',
@@ -38,7 +41,13 @@ export const AutomationContext = createContext({
   tradeRoutes: {} as UseQueryResult<TradeRoute[], unknown>,
   tradeRouteStatuses: {} as Map<string, TradeRouteStatus>,
   tradeRouteMessages: {} as Map<string, string>,
-  tradeRouteProgress: {} as Map<string, number>,
+  tradeRouteProgress: {} as Map<
+    string,
+    {
+      eventIdx: number
+      finishesAt?: Moment
+    }
+  >,
   tradeRouteLog: {} as { [id: string]: string[] },
   addTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
   updateTradeRoute: async (tradeRoute: TradeRoute) => Promise.resolve(),
@@ -62,7 +71,13 @@ export default function AutomationProvider(props: any) {
     Map<string, string>
   >(new Map())
   const [tradeRouteProgress, setTradeRouteProgress] = useState<
-    Map<string, number>
+    Map<
+      string,
+      {
+        eventIdx: number
+        finishesAt?: Moment
+      }
+    >
   >(new Map())
 
   const { push } = useContext(NotificationContext)
@@ -201,6 +216,10 @@ export default function AutomationProvider(props: any) {
   }
 
   const handleTravel = async (
+    event: {
+      eventId: string
+      eventIdx: number
+    },
     location: string,
     allLocations: string[],
     shipIds: string[],
@@ -288,8 +307,13 @@ export default function AutomationProvider(props: any) {
     // Wait for all ships to arrive at location
     const maxTime = Math.max(...timeRemaining) * 1000
     if (maxTime > 0) {
+      const { eventId, eventIdx } = event
+      setTradeRouteProgress((prev) =>
+        prev.set(eventId, { eventIdx, finishesAt: moment().add(maxTime, 'ms') })
+      )
+
       log(`Waiting ${maxTime / 1000}s for all ships to arrive at ${location}`)
-      await sleep(maxTime)
+      await sleep(maxTime + TIMER_PADDING)
       log(`All ships have arrived at ${location}`)
     }
   }
@@ -309,7 +333,7 @@ export default function AutomationProvider(props: any) {
     const maxTime = Math.max(...timeRemaining) * 1000
     if (maxTime > 0) {
       log(`Waiting ${maxTime / 1000}s for all ships to warp jump`)
-      await sleep(maxTime)
+      await sleep(maxTime + TIMER_PADDING)
       log('All ships have finished warp jump')
     }
   }
@@ -355,7 +379,7 @@ export default function AutomationProvider(props: any) {
             const { id, events, assignedShips, autoRefuel } = route
 
             for (let eventIdx = 0; eventIdx < events.length; eventIdx++) {
-              setTradeRouteProgress((prev) => prev.set(id, eventIdx))
+              setTradeRouteProgress((prev) => prev.set(id, { eventIdx }))
               const event = events[eventIdx]
 
               if (!routeShouldContinue(id)) {
@@ -405,6 +429,10 @@ export default function AutomationProvider(props: any) {
                       )
                     }
                     await handleTravel(
+                      {
+                        eventId: id,
+                        eventIdx,
+                      },
                       location,
                       events
                         .filter((e) => e.type === RouteEventType.TRAVEL)

@@ -314,9 +314,11 @@ export default function Systems() {
 
   const myActiveFlightPlans = useMemo(() => {
     return (
-      systemFlightPlans.data?.flightPlans.filter(
-        (flightPlan) => flightPlan.username === user.data?.user.username
-      ) ?? []
+      systemFlightPlans.data?.flightPlans
+        .filter(
+          (flightPlan) => flightPlan.username === user.data?.user.username
+        )
+        ?.sort((a, b) => moment(a.arrivesAt).diff(moment(b.arrivesAt))) ?? []
     )
   }, [systemFlightPlans.data, user.data])
 

@@ -6,24 +6,35 @@ import {
   PaperAirplaneIcon,
   ReplyIcon,
 } from '@heroicons/react/solid'
+import moment, { Moment } from 'moment'
 import { Dispatch, SetStateAction } from 'react'
 import { useQuery } from 'react-query'
 import { listMyStructures } from '../../../api/routes/my'
+import ActiveProgress from '../../../components/Progress/ActiveProgress'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
 import { GoodType } from '../../../types/Order'
 import { StructureCategory } from '../../../types/Structure'
+import { getProgress } from '../../../utils/helpers'
 
 interface RouteStepsProps {
   tradeRoute: TradeRoute
   setTradeRoute?: Dispatch<SetStateAction<TradeRoute>>
-  currentStep?: number
+  currentProgress?: {
+    eventIdx: number
+    finishesAt?: Moment
+  }
   notActive?: boolean
   handleResume?: (index: number) => void
 }
 
 export default function RouteSteps(props: RouteStepsProps) {
-  const { tradeRoute, setTradeRoute, currentStep, notActive, handleResume } =
-    props
+  const {
+    tradeRoute,
+    setTradeRoute,
+    currentProgress,
+    notActive,
+    handleResume,
+  } = props
 
   const allMyStructures = useQuery('myStructures', listMyStructures)
 
@@ -75,7 +86,7 @@ export default function RouteSteps(props: RouteStepsProps) {
                 ></span>
                 <div className="relative flex space-x-3">
                   <div>
-                    {currentStep === i && !notActive && (
+                    {currentProgress?.eventIdx === i && !notActive && (
                       <span className="absolute flex h-8 w-8">
                         <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-sky-400 opacity-75"></span>
                       </span>
@@ -131,6 +142,21 @@ export default function RouteSteps(props: RouteStepsProps) {
                           <span className="font-medium text-gray-900">
                             {event.location}
                           </span>
+                          {currentProgress?.eventIdx === i &&
+                            currentProgress.finishesAt &&
+                            !notActive && (
+                              <span className="text-sm text-gray-500">
+                                {' '}
+                                will arrive in{' '}
+                                <span className="font-medium text-gray-900">
+                                  {moment(currentProgress.finishesAt).diff(
+                                    moment(),
+                                    's'
+                                  )}
+                                  s
+                                </span>
+                              </span>
+                            )}
                         </p>
                       ) : event.type === RouteEventType.WARP_JUMP ? (
                         <p className="text-sm text-gray-500">
