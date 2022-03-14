@@ -144,6 +144,7 @@ export default function RouteSteps(props: RouteStepsProps) {
                           </span>
                           {currentProgress?.eventIdx === i &&
                             currentProgress.finishesAt &&
+                            currentProgress.finishesAt.isBefore(moment()) &&
                             !notActive && (
                               <span className="text-sm text-gray-500">
                                 {' '}
