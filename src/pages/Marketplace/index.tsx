@@ -277,13 +277,21 @@ export default function Marketplace() {
       [marketplace, filteredGood]
     ) ?? 0
 
-  const marketplaceResults = marketplace.filter((m) =>
-    !m.isLoading && filteredGood
-      ? (m.data?.marketplace.filter((g) =>
-          filteredGood ? g.symbol === filteredGood : true
-        ).length ?? 0) > 0
-      : true
-  )
+  const marketplaceResults = marketplace
+    .map((m, i) => {
+      const location = dockedLocations[i]
+      return {
+        ...m,
+        location,
+      }
+    })
+    .filter((m) =>
+      !m.isLoading && filteredGood
+        ? (m.data?.marketplace.filter((g) =>
+            filteredGood ? g.symbol === filteredGood : true
+          ).length ?? 0) > 0
+        : true
+    )
 
   const goodToBuyShip = myShips.data?.ships.find(
     (s) => s.id === goodToBuy?.shipId
@@ -456,16 +464,13 @@ export default function Marketplace() {
                       {myShips.isLoading || marketplaceResults.length > 0 ? (
                         marketplaceResults.map((m, i) => (
                           <>
-                            <tr
-                              key={dockedLocations[i]}
-                              className="bg-gray-100"
-                            >
+                            <tr key={m.location} className="bg-gray-100">
                               <td
                                 className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
                                 colSpan={9}
                               >
                                 <div className="flex justify-between items-baseline">
-                                  <span>{dockedLocations[i]}</span>
+                                  <span>{m.location}</span>
                                   <span className="text-xs">
                                     {m.dataUpdatedAt > 0 && (
                                       <>
@@ -492,7 +497,7 @@ export default function Marketplace() {
                                   )
                                   .map((locationMarketplace, j) => (
                                     <tr
-                                      key={`${dockedLocations[i]}-${locationMarketplace.symbol}`}
+                                      key={`${m.location}-${locationMarketplace.symbol}`}
                                       className={
                                         j % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                       }
@@ -576,7 +581,7 @@ export default function Marketplace() {
                                           onClick={() => {
                                             setGoodToBuy({
                                               ...locationMarketplace,
-                                              location: dockedLocations[i],
+                                              location: m.location,
                                             })
                                           }}
                                         >
@@ -587,7 +592,7 @@ export default function Marketplace() {
                                           onClick={() => {
                                             setGoodToSell({
                                               ...locationMarketplace,
-                                              location: dockedLocations[i],
+                                              location: m.location,
                                             })
                                           }}
                                         >
