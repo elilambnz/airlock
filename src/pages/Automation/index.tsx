@@ -11,7 +11,7 @@ import {
 import { AutomationStatus } from '../../providers/AutomationProvider'
 import RouteSteps from './components/RouteSteps'
 import AssignedShips from './components/AssignedShips'
-import Alert from '../../components/Alert'
+import Alert, { AlertType } from '../../components/Alert'
 import { ChipIcon, ExclamationIcon } from '@heroicons/react/solid'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import moment from 'moment'
@@ -428,29 +428,23 @@ export default function Automation() {
             {routeToManage && (
               <div>
                 {tradeRouteMessages.get(routeToManage.id) && (
-                  <div className="mt-2">
+                  <div className="mt-2 space-y-2">
                     <Alert
                       title="Latest reported error"
                       message={tradeRouteMessages.get(routeToManage.id)!}
+                      type={AlertType.WARNING}
                     />
-                    <div className="mt-2 rounded-md bg-blue-50 p-4">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <InformationCircleIcon
-                            className="h-5 w-5 text-blue-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <div className="ml-3 flex-1 md:flex md:justify-between">
-                          <p className="text-sm text-blue-700">
-                            <span className="font-medium text-blue-800">
-                              Tip:
-                            </span>{' '}
-                            Check the logs below for more details.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <Alert
+                      title={
+                        <span className="font-normal">
+                          <span className="font-medium text-blue-800">
+                            Tip:
+                          </span>{' '}
+                          Check the logs below for more details.
+                        </span>
+                      }
+                      type={AlertType.INFO}
+                    />
                   </div>
                 )}
                 {tradeRouteStatuses.get(routeToManage.id) ===
@@ -461,7 +455,7 @@ export default function Automation() {
                       pauseTradeRoute(routeToManage.id)
                     }}
                   >
-                    Pause
+                    Pause route
                   </button>
                 )}
                 {tradeRouteStatuses.get(routeToManage.id) !==
@@ -472,7 +466,7 @@ export default function Automation() {
                       resumeTradeRoute(routeToManage.id)
                     }}
                   >
-                    Resume from start
+                    Start route
                   </button>
                 )}
                 <div className="mt-4">

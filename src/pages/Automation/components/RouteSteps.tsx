@@ -10,11 +10,9 @@ import moment, { Moment } from 'moment'
 import { Dispatch, SetStateAction } from 'react'
 import { useQuery } from 'react-query'
 import { listMyStructures } from '../../../api/routes/my'
-import ActiveProgress from '../../../components/Progress/ActiveProgress'
 import { RouteEventType, TradeRoute } from '../../../types/Automation'
 import { GoodType } from '../../../types/Order'
 import { StructureCategory } from '../../../types/Structure'
-import { getProgress } from '../../../utils/helpers'
 
 interface RouteStepsProps {
   tradeRoute: TradeRoute
@@ -72,6 +70,11 @@ export default function RouteSteps(props: RouteStepsProps) {
         return 'bg-gray-500'
     }
   }
+
+  const remainingSeconds =
+    currentProgress &&
+    currentProgress.finishesAt &&
+    moment(currentProgress.finishesAt).diff(moment(), 's')
 
   return (
     <div className="flow-root p-6">
@@ -143,18 +146,14 @@ export default function RouteSteps(props: RouteStepsProps) {
                             {event.location}
                           </span>
                           {currentProgress?.eventIdx === i &&
-                            currentProgress.finishesAt &&
-                            currentProgress.finishesAt.isBefore(moment()) &&
-                            !notActive && (
+                            !notActive &&
+                            remainingSeconds &&
+                            remainingSeconds > 0 && (
                               <span className="text-sm text-gray-500">
                                 {' '}
                                 will arrive in{' '}
                                 <span className="font-medium text-gray-900">
-                                  {moment(currentProgress.finishesAt).diff(
-                                    moment(),
-                                    's'
-                                  )}
-                                  s
+                                  {remainingSeconds}s
                                 </span>
                               </span>
                             )}

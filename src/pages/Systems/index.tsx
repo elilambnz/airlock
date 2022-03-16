@@ -120,6 +120,9 @@ export default function Systems() {
     ),
   }))
 
+  const selectedShip = searchParams.get('ship')
+  const showMap = searchParams.get('showMap') === 'true'
+
   useEffect(() => {
     if (!params.systemSymbol) {
       navigate(`/systems/${System[0]}`, { replace: true })
@@ -128,7 +131,6 @@ export default function Systems() {
   }, [params.systemSymbol])
 
   useEffect(() => {
-    const selectedShip = searchParams.get('ship')
     if (selectedShip) {
       setNewFlightPlan((prev) => ({
         ...prev,
@@ -136,7 +138,7 @@ export default function Systems() {
       }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [selectedShip])
 
   const delayUpdateShips = async (delay: number, systemSymbol?: string) => {
     await sleep(delay)
@@ -322,8 +324,6 @@ export default function Systems() {
     )
   }, [systemFlightPlans.data, user.data])
 
-  const showMap = searchParams.get('showMap') === 'true'
-
   return (
     <>
       <Header>Systems</Header>
@@ -367,6 +367,7 @@ export default function Systems() {
               disabled={system.isLoading}
               onChange={(value) => {
                 setSearchParams({
+                  ship: selectedShip || '',
                   showMap: String(showMap),
                 })
                 navigate(`/systems/${value}${search}`)
@@ -429,7 +430,7 @@ export default function Systems() {
                 type="button"
                 onClick={() => {
                   setSearchParams({
-                    ...searchParams,
+                    ship: selectedShip || '',
                     showMap: String(!showMap),
                   })
                 }}
@@ -555,8 +556,8 @@ export default function Systems() {
                             (s) => s.id === value
                           )?.location
                           setSearchParams({
-                            ...searchParams,
                             ship: value,
+                            showMap: String(showMap),
                           })
                           setNewFlightPlan((prev) => ({
                             ...prev,

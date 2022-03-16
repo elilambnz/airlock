@@ -138,29 +138,40 @@ export default function AutomationProvider(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  // Start automation tasks
+  // Automatically start automation tasks
+  // useEffect(() => {
+  //   tradeRoutes.data?.forEach((route) => {
+  //     setTradeRouteStatuses(
+  //       (prev) => new Map(prev.set(route.id, TradeRouteStatus.ACTIVE))
+  //     )
+  //   })
+  // }, [tradeRoutes.data])
+
+  // Set initial status
   useEffect(() => {
     tradeRoutes.data?.forEach((route) => {
       setTradeRouteStatuses(
-        (prev) => new Map(prev.set(route.id, TradeRouteStatus.ACTIVE))
+        (prev) => new Map(prev.set(route.id, TradeRouteStatus.PAUSED))
       )
     })
   }, [tradeRoutes.data])
 
   // Stop automation tasks
   const stopAutomation = async () => {
-    setTradeRouteStatuses(
-      (prev) =>
-        new Map([...prev.keys()].map((key) => [key, TradeRouteStatus.PAUSED]))
-    )
+    tradeRoutes.data?.forEach((route) => {
+      setTradeRouteStatuses(
+        (prev) => new Map(prev.set(route.id, TradeRouteStatus.PAUSED))
+      )
+    })
   }
 
   // Start automation tasks
   const startAutomation = async () => {
-    setTradeRouteStatuses(
-      (prev) =>
-        new Map([...prev.keys()].map((key) => [key, TradeRouteStatus.ACTIVE]))
-    )
+    tradeRoutes.data?.forEach((route) => {
+      setTradeRouteStatuses(
+        (prev) => new Map(prev.set(route.id, TradeRouteStatus.ACTIVE))
+      )
+    })
   }
 
   const routeShouldContinue = (id: string): boolean => {
