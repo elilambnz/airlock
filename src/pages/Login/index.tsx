@@ -103,8 +103,11 @@ export default function Login() {
     return (
       <div className="min-h-screen bg-white flex">
         <div className="w-full flex-1 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-          <h1 className="inline-block text-center text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 via-purple-500 animate-gradient-x">
-            Airlock
+          <h1 className="inline-flex text-center items-baseline text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 via-purple-500 animate-gradient-x">
+            Airlock{' '}
+            <span className="ml-4 inline-flex items-center px-2.5 text-sm font-medium">
+              v2 Alpha
+            </span>
           </h1>
         </div>
       </div>
