@@ -4,7 +4,7 @@ export default function Section(props: { children: ReactNode }) {
   const { children } = props
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div className="mb-6 overflow-hidden bg-white shadow sm:rounded-lg">
       {children}
     </div>
   )

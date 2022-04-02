@@ -128,7 +128,7 @@ export default function ManageShip(props: ManageShipProps) {
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
         icon: (
-          <div className="flex items-center justify-center w-5 h-5">
+          <div className="flex h-5 w-5 items-center justify-center">
             <span className="text-xs">🚀</span>
           </div>
         ),
@@ -151,51 +151,51 @@ export default function ManageShip(props: ManageShipProps) {
   return (
     <div className="mt-4 px-4 py-2">
       <div className="overflow-x-auto">
-        <div className="flex items-center mb-4 py-1 text-sm leading-5 text-gray-500">
+        <div className="mb-4 flex items-center py-1 text-sm leading-5 text-gray-500">
           <span className="inline-flex items-center">
             <span className="sr-only">Manufacturer</span>
-            <OfficeBuildingIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            <OfficeBuildingIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
             {ship.manufacturer}
           </span>
           <span className="ml-4 inline-flex items-center">
             <span className="sr-only">Loading speed</span>
-            <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            <TruckIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
             {formatNumberCommas(ship.loadingSpeed)}
           </span>
           <span className="ml-4 inline-flex items-center">
             <span className="sr-only">Max cargo</span>
-            <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            <CubeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
             {formatNumberCommas(ship.maxCargo)}
           </span>
           <span className="ml-4 inline-flex items-center">
             <span className="sr-only">Speed</span>
-            <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+            <LightningBoltIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
             {ship.speed}
           </span>
         </div>
 
-        <h2 className="mb-2 text-md font-medium text-gray-900">Cargo hold</h2>
+        <h2 className="text-md mb-2 font-medium text-gray-900">Cargo hold</h2>
 
-        <div className="mb-4 py-2 px-1 align-middle inline-block min-w-full">
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <div className="mb-4 inline-block min-w-full py-2 px-1 align-middle">
+          <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                   >
                     Good
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                   >
                     Quantity
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                   >
                     Actions
                   </th>
@@ -207,13 +207,13 @@ export default function ManageShip(props: ManageShipProps) {
                     key={cargo.good}
                     className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                       {GoodType[cargo.good as unknown as keyof typeof GoodType]}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       {formatNumberCommas(cargo.quantity)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       <button
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() => {
@@ -293,7 +293,7 @@ export default function ManageShip(props: ManageShipProps) {
                         id="quantity"
                         min={1}
                         max={maxCargoToTransfer}
-                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         onChange={(e) => {
                           const quantity = !isNaN(parseInt(e.target.value))
                             ? parseInt(e.target.value)
@@ -313,11 +313,11 @@ export default function ManageShip(props: ManageShipProps) {
                     <button
                       type="submit"
                       className={
-                        'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                        'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                         (cargoToTransfer.quantity === 0 ||
                         cargoToTransfer.quantity > maxCargoToTransfer ||
                         !cargoToTransfer.toShipId
-                          ? ' opacity-50 cursor-not-allowed'
+                          ? ' cursor-not-allowed opacity-50'
                           : '')
                       }
                       disabled={
@@ -347,7 +347,7 @@ export default function ManageShip(props: ManageShipProps) {
               ) : (
                 <div className="flex justify-center">
                   <div className="w-full py-4">
-                    <div className="flex flex-col items-center text-center mb-4">
+                    <div className="mb-4 flex flex-col items-center text-center">
                       <h3 className="mt-2 text-sm font-medium text-gray-900">
                         No ships available to transfer cargo to.
                       </h3>
@@ -390,7 +390,7 @@ export default function ManageShip(props: ManageShipProps) {
                       id="quantity"
                       min={1}
                       max={cargoToJettison.maxQuantity}
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       onChange={(e) => {
                         const quantity = !isNaN(parseInt(e.target.value))
                           ? parseInt(e.target.value)
@@ -410,9 +410,9 @@ export default function ManageShip(props: ManageShipProps) {
                   <button
                     type="submit"
                     className={
-                      'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                      'inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                       (cargoToJettison.quantity === 0
-                        ? ' opacity-50 cursor-not-allowed'
+                        ? ' cursor-not-allowed opacity-50'
                         : '')
                     }
                     disabled={cargoToJettison.quantity === 0}

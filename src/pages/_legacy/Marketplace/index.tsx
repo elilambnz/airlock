@@ -148,7 +148,7 @@ export default function Marketplace() {
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
         icon: (
-          <div className="flex items-center justify-center w-5 h-5">
+          <div className="flex h-5 w-5 items-center justify-center">
             <span className="text-xs">🚀</span>
           </div>
         ),
@@ -314,14 +314,14 @@ export default function Marketplace() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Trade Goods
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
               Generate profit by trading goods or buying resources for your
               structures.
             </p>
-            <div className="py-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 py-4 sm:grid-cols-6">
               <div className="sm:col-span-2">
                 <Select
                   label="Filter by Good"
@@ -353,10 +353,10 @@ export default function Marketplace() {
                   <h3 className="text-sm font-medium text-gray-700">
                     Best Profit Margin
                   </h3>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Trade</span>
-                      <TrendingUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <TrendingUpIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {formatNumberCommas(lowestBuyPriceOfFilteredGood)}
                       {' → '}
                       {formatNumberCommas(highestSellPriceOfFilteredGood)}
@@ -372,7 +372,7 @@ export default function Marketplace() {
                         type="number"
                         name="volume"
                         id="volume"
-                        className="block w-12 h-6 mx-1 px-1 text-sm border-0 border-b border-transparent bg-gray-50 focus:border-indigo-600 focus:ring-0"
+                        className="mx-1 block h-6 w-12 border-0 border-b border-transparent bg-gray-50 px-1 text-sm focus:border-indigo-600 focus:ring-0"
                         style={
                           volume > 99 && volume < 999
                             ? { width: '4rem' }
@@ -396,7 +396,7 @@ export default function Marketplace() {
                       )
                     )}
                     <span className="sr-only">Volume</span>
-                    <CubeIcon className="ml-4 mr-1 w-4 h-4 text-gray-900" />{' '}
+                    <CubeIcon className="ml-4 mr-1 h-4 w-4 text-gray-900" />{' '}
                     {formatNumberCommas(
                       Math.floor(volume * filteredGoodDetails.volumePerUnit)
                     )}
@@ -407,51 +407,51 @@ export default function Marketplace() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 {myShips.isLoading || marketplace.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Symbol
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Quantity Available
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Volume/Unit
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Purchase Price/Unit
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Sell Price/Unit
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {myShips.isLoading && <LoadingRows cols={6} rows={3} />}
                       {myShips.isLoading || marketplaceResults.length > 0 ? (
                         marketplaceResults.map((m, i) => (
@@ -461,10 +461,10 @@ export default function Marketplace() {
                               className="bg-gray-100"
                             >
                               <td
-                                className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
+                                className="whitespace-nowrap px-6 py-2 text-sm leading-5 text-gray-500"
                                 colSpan={9}
                               >
-                                <div className="flex justify-between items-baseline">
+                                <div className="flex items-baseline justify-between">
                                   <span>{dockedLocations[i]}</span>
                                   <span className="text-xs">
                                     {m.dataUpdatedAt > 0 && (
@@ -497,26 +497,26 @@ export default function Marketplace() {
                                         j % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                       }
                                     >
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                                         {
                                           GoodType[
                                             locationMarketplace.symbol as unknown as keyof typeof GoodType
                                           ]
                                         }
                                       </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                         {formatNumberCommas(
                                           locationMarketplace.quantityAvailable
                                         )}
                                       </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                      <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                         {formatNumberCommas(
                                           locationMarketplace.volumePerUnit
                                         )}
                                       </td>
                                       <td
                                         className={
-                                          'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                          'whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500' +
                                           (marketplace
                                             .filter((m) => !!m.data)
                                             ?.flatMap(
@@ -544,7 +544,7 @@ export default function Marketplace() {
                                       </td>
                                       <td
                                         className={
-                                          'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                          'whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500' +
                                           (marketplace
                                             .filter((m) => !!m.data)
                                             ?.flatMap(
@@ -570,7 +570,7 @@ export default function Marketplace() {
                                           locationMarketplace.sellPricePerUnit
                                         )}
                                       </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                                         <button
                                           className="text-indigo-600 hover:text-indigo-900"
                                           onClick={() => {
@@ -606,8 +606,8 @@ export default function Marketplace() {
                         <tr>
                           <td className="px-6 py-2" colSpan={6}>
                             <div className="w-full py-8 px-4">
-                              <div className="flex flex-col items-center text-center mb-4">
-                                <ExclamationIcon className="w-12 h-12 text-gray-400" />
+                              <div className="mb-4 flex flex-col items-center text-center">
+                                <ExclamationIcon className="h-12 w-12 text-gray-400" />
                                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                                   No locations have this good available!
                                 </h3>
@@ -624,8 +624,8 @@ export default function Marketplace() {
                 ) : (
                   <div className="flex justify-center">
                     <div className="w-full py-8 px-4">
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <ShoppingBagIcon className="w-12 h-12 text-gray-400" />
+                      <div className="mb-4 flex flex-col items-center text-center">
+                        <ShoppingBagIcon className="h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
                           No markets available!
                         </h3>
@@ -646,7 +646,7 @@ export default function Marketplace() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Buy Ships
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -655,83 +655,83 @@ export default function Marketplace() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                   {availableShips.length > 0 ? (
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Type
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Class
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Manufacturer
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Purchase Location
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Restricted Goods
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Loading Speed
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Max Cargo
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Speed
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Price
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                           >
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 bg-white">
                         {availableShips.map((listings, i) => (
                           <>
                             <tr key={knownSystems[i]} className="bg-gray-100">
                               <td
-                                className="px-6 py-2 whitespace-nowrap text-sm leading-5 text-gray-500"
+                                className="whitespace-nowrap px-6 py-2 text-sm leading-5 text-gray-500"
                                 colSpan={10}
                               >
-                                <div className="flex justify-between items-baseline">
+                                <div className="flex items-baseline justify-between">
                                   <span>{knownSystems[i]}</span>
                                   <span className="text-xs">
                                     {listings.dataUpdatedAt > 0 && (
@@ -756,13 +756,13 @@ export default function Marketplace() {
                                       j % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                     }
                                   >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                                       {ship.type}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {ship.class}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {ship.manufacturer}
                                     </td>
                                     <td className="px-6 py-4 text-sm leading-5 text-gray-500">
@@ -772,7 +772,7 @@ export default function Marketplace() {
                                     </td>
                                     <td
                                       className={
-                                        'px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500' +
+                                        'whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500' +
                                         (ship.restrictedGoods
                                           ? ' text-red-500'
                                           : '')
@@ -787,16 +787,16 @@ export default function Marketplace() {
                                         )
                                         .join(', ') ?? 'None'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {formatNumberCommas(ship.loadingSpeed)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {formatNumberCommas(ship.maxCargo)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {formatNumberCommas(ship.speed)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                       {!ship.purchaseLocations
                                         .map((pl) => pl.price)
                                         .every(
@@ -822,7 +822,7 @@ export default function Marketplace() {
                                             ship.purchaseLocations[0].price
                                           )}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                                       <button
                                         className="text-indigo-600 hover:text-indigo-900"
                                         onClick={() => {
@@ -844,8 +844,8 @@ export default function Marketplace() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full">
-                        <div className="bg-white py-8 px-4 shadow rounded-lg">
-                          <div className="text-center mb-4">
+                        <div className="rounded-lg bg-white py-8 px-4 shadow">
+                          <div className="mb-4 text-center">
                             <h1 className="text-2xl font-bold">
                               No ships available!
                             </h1>
@@ -878,20 +878,20 @@ export default function Marketplace() {
                       }
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Location</span>
-                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <GlobeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {goodToBuy.location}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Purchase price per unit</span>
-                      <CreditCardIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <CreditCardIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {formatNumberCommas(goodToBuy.purchasePricePerUnit)}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Volume per unit</span>
-                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <CubeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {formatNumberCommas(goodToBuy.volumePerUnit)}
                     </span>
                   </div>
@@ -926,9 +926,9 @@ export default function Marketplace() {
                               min={1}
                               max={goodToBuyShip?.spaceAvailable ?? 0}
                               className={
-                                'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md' +
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm' +
                                 (goodToBuyError
-                                  ? ' border-red-500 focus:ring-red-500 focus:border-red-500'
+                                  ? ' border-red-500 focus:border-red-500 focus:ring-red-500'
                                   : '')
                               }
                               onChange={(e) => {
@@ -951,11 +951,11 @@ export default function Marketplace() {
                           <button
                             type="submit"
                             className={
-                              'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex items-center justify-center truncate rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                               (goodToBuy.quantity === 0 ||
                               !goodToBuy.shipId ||
                               handleBuyGood.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                             disabled={
@@ -1009,7 +1009,7 @@ export default function Marketplace() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships available to buy goods.
                           </h3>
@@ -1046,15 +1046,15 @@ export default function Marketplace() {
                       }
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Sell price per unit</span>
-                      <CreditCardIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <CreditCardIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {formatNumberCommas(goodToSell.sellPricePerUnit)}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Volume per unit</span>
-                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <CubeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {formatNumberCommas(goodToSell.volumePerUnit)}
                     </span>
                   </div>
@@ -1093,9 +1093,9 @@ export default function Marketplace() {
                                 )?.quantity ?? 0
                               }
                               className={
-                                'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md' +
+                                'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm' +
                                 (goodToSellError
-                                  ? ' border-red-500 focus:ring-red-500 focus:border-red-500'
+                                  ? ' border-red-500 focus:border-red-500 focus:ring-red-500'
                                   : '')
                               }
                               onChange={(e) => {
@@ -1118,11 +1118,11 @@ export default function Marketplace() {
                           <button
                             type="submit"
                             className={
-                              'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex items-center justify-center truncate rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                               (goodToSell.quantity === 0 ||
                               !goodToSell.shipId ||
                               handleSellGood.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                             disabled={
@@ -1176,7 +1176,7 @@ export default function Marketplace() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships available to sell goods.
                           </h3>
@@ -1208,25 +1208,25 @@ export default function Marketplace() {
                       Buy {shipToBuy.type}
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Manufacturer</span>
-                      <OfficeBuildingIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <OfficeBuildingIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {shipToBuy.manufacturer}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Loading speed</span>
-                      <TruckIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <TruckIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {shipToBuy.loadingSpeed}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Max cargo</span>
-                      <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <CubeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {shipToBuy.maxCargo}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Speed</span>
-                      <LightningBoltIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <LightningBoltIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {shipToBuy.speed}
                     </span>
                   </div>
@@ -1263,9 +1263,9 @@ export default function Marketplace() {
                               <button
                                 type="submit"
                                 className={
-                                  'truncate inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                                  'inline-flex items-center justify-center truncate rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                                   (handleBuyShip.isLoading
-                                    ? ' opacity-50 cursor-not-allowed'
+                                    ? ' cursor-not-allowed opacity-50'
                                     : '')
                                 }
                                 disabled={handleBuyShip.isLoading}
@@ -1298,7 +1298,7 @@ export default function Marketplace() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships docked in a purchase location.
                           </h3>

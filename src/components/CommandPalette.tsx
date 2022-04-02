@@ -192,10 +192,10 @@ export default function CommandPalette() {
                                 {getShipName(ship.id)}
                               </span>
                               <div className="inline-flex text-xs text-gray-500">
-                                <span className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100">
+                                <span className="ml-1 inline-flex rounded-full bg-gray-100 px-2 text-xs leading-5">
                                   {ship.type}
                                 </span>
-                                <span className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100">
+                                <span className="ml-1 inline-flex rounded-full bg-gray-100 px-2 text-xs leading-5">
                                   {ship.flightPlanId
                                     ? 'In transit'
                                     : ship.location}

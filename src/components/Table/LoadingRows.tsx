@@ -17,9 +17,9 @@ export default function LoadingRows(props: LoadingRowsProps) {
               .map((_, j) => (
                 <td
                   key={j}
-                  className="px-6 py-4 whitespace-nowrap animate-pulse"
+                  className="animate-pulse whitespace-nowrap px-6 py-4"
                 >
-                  <div className="w-full bg-gray-300 h-5 rounded-md"></div>
+                  <div className="h-5 w-full rounded-md bg-gray-300"></div>
                 </td>
               ))}
           </tr>

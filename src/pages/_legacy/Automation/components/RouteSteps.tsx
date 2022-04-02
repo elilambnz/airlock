@@ -77,19 +77,19 @@ export default function RouteSteps(props: RouteStepsProps) {
                   <div>
                     {currentStep === i && !notActive && (
                       <span className="absolute flex h-8 w-8">
-                        <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-sky-400 opacity-75"></span>
+                        <span className="absolute inline-flex h-8 w-8 animate-ping rounded-full bg-sky-400 opacity-75"></span>
                       </span>
                     )}
                     <span
                       className={
-                        'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
+                        'flex h-8 w-8 items-center justify-center rounded-full text-white ring-8 ring-white' +
                         ` ${getColourForEvent(event.type)}`
                       }
                     >
                       {getIconForEvent(event.type)}
                     </span>
                   </div>
-                  <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                     <div>
                       {event.type === RouteEventType.BUY ? (
                         <p className="text-sm text-gray-500">
@@ -195,7 +195,7 @@ export default function RouteSteps(props: RouteStepsProps) {
                       )}
                     </div>
                     {setTradeRoute && (
-                      <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                      <div className="whitespace-nowrap text-right text-sm text-gray-500">
                         <button
                           className="text-red-600 hover:text-red-900"
                           onClick={(e) => {
@@ -211,7 +211,7 @@ export default function RouteSteps(props: RouteStepsProps) {
                       </div>
                     )}
                     {notActive && handleResume && (
-                      <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                      <div className="whitespace-nowrap text-right text-sm text-gray-500">
                         <button
                           className="text-green-600 hover:text-green-900"
                           onClick={(e) => {
@@ -234,14 +234,14 @@ export default function RouteSteps(props: RouteStepsProps) {
                 <div>
                   <span
                     className={
-                      'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
+                      'flex h-8 w-8 items-center justify-center rounded-full text-white ring-8 ring-white' +
                       ` ${getColourForEvent(RouteEventType.REPEAT)}`
                     }
                   >
                     {getIconForEvent(RouteEventType.REPEAT)}
                   </span>
                 </div>
-                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                   <div>
                     <p className="text-sm text-gray-500">
                       <span className="font-medium text-gray-900">
@@ -257,7 +257,7 @@ export default function RouteSteps(props: RouteStepsProps) {
       ) : (
         <div className="flex justify-center">
           <div className="w-full py-4">
-            <div className="flex flex-col items-center text-center mb-4">
+            <div className="mb-4 flex flex-col items-center text-center">
               <h3 className="mt-2 text-sm font-medium text-gray-900">
                 No steps have been added to this route.
               </h3>

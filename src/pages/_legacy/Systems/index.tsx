@@ -50,8 +50,11 @@ import SystemMap from './components/SystemMap'
 export default function Systems() {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [newFlightPlan, setNewFlightPlan] =
-    useState<{ shipId?: string; destination?: string; autoRefuel?: boolean }>()
+  const [newFlightPlan, setNewFlightPlan] = useState<{
+    shipId?: string
+    destination?: string
+    autoRefuel?: boolean
+  }>()
   const [newWarpJump, setNewWarpJump] = useState<{ shipId?: string }>()
   const [showAllFlightPlans, setShowAllFlightPlans] = useState(false)
   const [showAllDockedShips, setShowAllDockedShips] = useState(false)
@@ -114,7 +117,7 @@ export default function Systems() {
     value: s!,
     label: s!,
     icon: (
-      <div className="flex items-center justify-center w-5 h-5">
+      <div className="flex h-5 w-5 items-center justify-center">
         <span className="text-xs">🌌</span>
       </div>
     ),
@@ -285,7 +288,7 @@ export default function Systems() {
         `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
       ],
       icon: (
-        <div className="flex items-center justify-center w-5 h-5">
+        <div className="flex h-5 w-5 items-center justify-center">
           <span className="text-xs">🚀</span>
         </div>
       ),
@@ -298,7 +301,7 @@ export default function Systems() {
         label: location.name,
         tags: [location.symbol, `(${location.x}, ${location.y})`],
         icon: (
-          <div className="flex items-center justify-center w-5 h-5">
+          <div className="flex h-5 w-5 items-center justify-center">
             <span className="text-xs">
               {getIconForLocationType(
                 LocationType[
@@ -330,11 +333,11 @@ export default function Systems() {
           <div className="flex items-start space-x-5">
             <div className="flex-shrink-0">
               <div className="relative">
-                <span className="inline-block h-16 w-16 rounded-full overflow-hidden bg-white">
+                <span className="inline-block h-16 w-16 overflow-hidden rounded-full bg-white">
                   <GlobeIcon className="h-full w-full text-gray-300" />
                 </span>
                 <span
-                  className="absolute inset-0 shadow-inner rounded-full"
+                  className="absolute inset-0 rounded-full shadow-inner"
                   aria-hidden="true"
                 ></span>
               </div>
@@ -350,9 +353,9 @@ export default function Systems() {
                   </p>
                 </>
               ) : (
-                <div className="flex flex-col justify-center animate-pulse">
-                  <div className="mt-2 w-48 bg-gray-300 h-5 rounded-md"></div>
-                  <div className="mt-2 w-12 bg-gray-300 h-3 rounded-md"></div>
+                <div className="flex animate-pulse flex-col justify-center">
+                  <div className="mt-2 h-5 w-48 rounded-md bg-gray-300"></div>
+                  <div className="mt-2 h-3 w-12 rounded-md bg-gray-300"></div>
                 </div>
               )}
             </div>
@@ -375,9 +378,9 @@ export default function Systems() {
 
         <div className="mb-5">
           <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Locations
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
@@ -385,9 +388,9 @@ export default function Systems() {
                 </dd>
               </div>
             </div>
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Flight plans
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
@@ -395,9 +398,9 @@ export default function Systems() {
                 </dd>
               </div>
             </div>
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Docked ships
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
@@ -409,9 +412,9 @@ export default function Systems() {
         </div>
 
         <Section>
-          <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
+          <div className="inline-flex w-full justify-between px-4 py-5 sm:px-6">
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
                 Locations
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -423,7 +426,7 @@ export default function Systems() {
             </div>
             <div className="mt-1">
               <button
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 type="button"
                 onClick={() => {
                   setSearchParams({
@@ -438,11 +441,11 @@ export default function Systems() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                   {showMap ? (
-                    <div className="p-4 flex-auto">
-                      <div className="relative h-350-px">
+                    <div className="flex-auto p-4">
+                      <div className="h-350-px relative">
                         <SystemMap
                           systemSymbol={params.systemSymbol || ''}
                           dockedShips={dockedShips}
@@ -454,27 +457,27 @@ export default function Systems() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Name
                           </th>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Symbol
                           </th>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Type
                           </th>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Traits
                           </th>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Allows Construction
                           </th>
-                          <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                             Coordinates
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 bg-white">
                         {!systemLocations.isLoading ? (
                           systemLocations.data?.locations
                             .sort((a, b) => a.x - b.x || a.y - b.y)
@@ -485,13 +488,13 @@ export default function Systems() {
                                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                                 }
                               >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                                   {location.name}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                   {location.symbol}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                   {LocationType[
                                     location.type as unknown as keyof typeof LocationType
                                   ] ?? location.type}
@@ -506,10 +509,10 @@ export default function Systems() {
                                     )
                                     .join(', ')}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                   {location.allowsConstruction ? 'Yes' : 'No'}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                                <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                                   ({location.x}, {location.y})
                                 </td>
                               </tr>
@@ -530,7 +533,7 @@ export default function Systems() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Create New Flight Plan
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -539,10 +542,10 @@ export default function Systems() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 <form className="min-w-full divide-y divide-gray-200">
-                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
                     <div className="sm:col-span-2">
                       <Select
                         label="Select Ship"
@@ -593,7 +596,7 @@ export default function Systems() {
                           id="autoRefuel"
                           name="autoRefuel"
                           type="checkbox"
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           onChange={(e) => {
                             setNewFlightPlan((prev) => ({
                               ...prev,
@@ -613,11 +616,11 @@ export default function Systems() {
                       <button
                         type="submit"
                         className={
-                          'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                          'inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                           (!newFlightPlan?.shipId ||
                           !newFlightPlan.destination ||
                           handleCreateFlightPlan.isLoading
-                            ? ' opacity-50 cursor-not-allowed'
+                            ? ' cursor-not-allowed opacity-50'
                             : '')
                         }
                         disabled={
@@ -663,9 +666,9 @@ export default function Systems() {
         </Section>
 
         <Section>
-          <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
+          <div className="inline-flex w-full justify-between px-4 py-5 sm:px-6">
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
                 Active Flight Plans
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -677,7 +680,7 @@ export default function Systems() {
             </div>
             <div className="mt-1">
               <button
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 type="button"
                 onClick={() => setShowAllFlightPlans(true)}
               >
@@ -687,8 +690,8 @@ export default function Systems() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 {systemFlightPlans.isLoading ||
                 myActiveFlightPlans.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
@@ -696,82 +699,82 @@ export default function Systems() {
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Name
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Type
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Departure
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Destination
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Created At
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Arrives At
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Progress
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {!systemFlightPlans.isLoading ? (
                         myActiveFlightPlans.map((flightPlan, i) => (
                           <tr
                             key={flightPlan.id}
                             className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                               {getShipName(flightPlan.shipId)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {
                                 myShips.data?.ships.find(
                                   (s) => s.id === flightPlan.shipId
                                 )?.type
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {flightPlan.departure}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {flightPlan.destination}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {moment(flightPlan.createdAt).format(
                                 'DD/MM/YY hh:mm:ss a'
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {moment(flightPlan.arrivesAt).format(
                                 'DD/MM/YY hh:mm:ss a'
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               <ActiveProgress
                                 start={moment(flightPlan.createdAt)}
                                 end={moment(flightPlan.arrivesAt)}
@@ -787,8 +790,8 @@ export default function Systems() {
                 ) : (
                   <div className="flex justify-center">
                     <div className="w-full py-8 px-4">
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <PaperAirplaneIcon className="w-12 h-12 text-gray-400" />
+                      <div className="mb-4 flex flex-col items-center text-center">
+                        <PaperAirplaneIcon className="h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
                           No active flight plans!
                         </h3>
@@ -806,9 +809,9 @@ export default function Systems() {
         </Section>
 
         <Section>
-          <div className="px-4 py-5 sm:px-6 inline-flex justify-between w-full">
+          <div className="inline-flex w-full justify-between px-4 py-5 sm:px-6">
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
                 Docked Ships
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -818,7 +821,7 @@ export default function Systems() {
             </div>
             <div className="mt-1">
               <button
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 type="button"
                 onClick={() => setShowAllDockedShips(true)}
               >
@@ -828,46 +831,46 @@ export default function Systems() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 {myShips.isLoading || dockedShips.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Name
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Type
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Location
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {!myShips.isLoading ? (
                         dockedShips.map((ship, i) => (
                           <tr
                             key={ship.id}
                             className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                               {getShipName(ship.id)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {ship.type}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {ship.flightPlanId ? 'In transit' : ship.location}
                             </td>
                           </tr>
@@ -880,8 +883,8 @@ export default function Systems() {
                 ) : (
                   <div className="flex justify-center">
                     <div className="w-full py-8 px-4">
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <PaperAirplaneIcon className="w-12 h-12 text-gray-400" />
+                      <div className="mb-4 flex flex-col items-center text-center">
+                        <PaperAirplaneIcon className="h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
                           No docked ships!
                         </h3>
@@ -899,7 +902,7 @@ export default function Systems() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Warp Jumps
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -909,10 +912,10 @@ export default function Systems() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 <form className="min-w-full divide-y divide-gray-200">
-                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
                     <div className="sm:col-span-2">
                       <Select
                         label="Select Ship"
@@ -932,13 +935,13 @@ export default function Systems() {
                         }}
                       />
                     </div>
-                    <div className="sm:col-span-2 pt-6">
+                    <div className="pt-6 sm:col-span-2">
                       <button
                         type="submit"
                         className={
-                          'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500' +
+                          'inline-flex items-center justify-center rounded-md border border-transparent bg-orange-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2' +
                           (!newWarpJump?.shipId
-                            ? ' opacity-50 cursor-not-allowed'
+                            ? ' cursor-not-allowed opacity-50'
                             : '')
                         }
                         disabled={!newWarpJump?.shipId}
@@ -975,8 +978,8 @@ export default function Systems() {
         open={showAllFlightPlans}
         title={`${params.systemSymbol} Flight Plans`}
         content={
-          <div className="py-2 px-1 align-middle inline-block min-w-full">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg max-h-96 overflow-y-auto">
+          <div className="inline-block min-w-full py-2 px-1 align-middle">
+            <div className="max-h-96 overflow-hidden overflow-y-auto border-b border-gray-200 shadow sm:rounded-lg">
               <table
                 className="min-w-full border-separate"
                 style={{ borderSpacing: 0 }}
@@ -985,13 +988,13 @@ export default function Systems() {
                   <tr>
                     <th
                       scope="col"
-                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider backdrop-blur backdrop-filter"
+                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium uppercase tracking-wider text-gray-500 backdrop-blur backdrop-filter"
                     >
                       Type
                     </th>
                     <th
                       scope="col"
-                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider backdrop-blur backdrop-filter"
+                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium uppercase tracking-wider text-gray-500 backdrop-blur backdrop-filter"
                     >
                       Username
                     </th>
@@ -1004,10 +1007,10 @@ export default function Systems() {
                         key={flightPlan.id}
                         className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                           {flightPlan.shipType}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                           {flightPlan.username}
                         </td>
                       </tr>
@@ -1026,8 +1029,8 @@ export default function Systems() {
         open={showAllDockedShips}
         title={`${params.systemSymbol} Docked Ships`}
         content={
-          <div className="py-2 px-1 align-middle inline-block min-w-full">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg max-h-96 overflow-y-auto">
+          <div className="inline-block min-w-full py-2 px-1 align-middle">
+            <div className="max-h-96 overflow-hidden overflow-y-auto border-b border-gray-200 shadow sm:rounded-lg">
               <table
                 className="min-w-full border-separate"
                 style={{ borderSpacing: 0 }}
@@ -1036,13 +1039,13 @@ export default function Systems() {
                   <tr>
                     <th
                       scope="col"
-                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider backdrop-blur backdrop-filter"
+                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium uppercase tracking-wider text-gray-500 backdrop-blur backdrop-filter"
                     >
                       Type
                     </th>
                     <th
                       scope="col"
-                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider backdrop-blur backdrop-filter"
+                      className="sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 py-3.5 px-6 text-left text-xs font-medium uppercase tracking-wider text-gray-500 backdrop-blur backdrop-filter"
                     >
                       Username
                     </th>
@@ -1055,10 +1058,10 @@ export default function Systems() {
                         key={ship.shipId}
                         className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                           {ship.shipType}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                           {ship.username}
                         </td>
                       </tr>

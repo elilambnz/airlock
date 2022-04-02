@@ -48,10 +48,13 @@ import {
 import { Ship } from '../../types/Ship'
 
 export default function Structures() {
-  const [newStructure, setNewStructure] =
-    useState<{ type?: string; location?: string }>()
-  const [structureToQuery, setStructureToQuery] =
-    useState<{ structureId?: string }>()
+  const [newStructure, setNewStructure] = useState<{
+    type?: string
+    location?: string
+  }>()
+  const [structureToQuery, setStructureToQuery] = useState<{
+    structureId?: string
+  }>()
   const [ownStructureToDeposit, setOwnStructureToDeposit] = useState<
     | (Structure & {
         deposit?: {
@@ -341,7 +344,7 @@ export default function Structures() {
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
         icon: (
-          <div className="flex items-center justify-center w-5 h-5">
+          <div className="flex h-5 w-5 items-center justify-center">
             <span className="text-xs">🚀</span>
           </div>
         ),
@@ -355,7 +358,7 @@ export default function Structures() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Create New Structure
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -364,10 +367,10 @@ export default function Structures() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 <form className="min-w-full divide-y divide-gray-200">
-                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
                     <div className="sm:col-span-2">
                       <Select
                         label="Select Structure Type"
@@ -398,11 +401,11 @@ export default function Structures() {
                       <button
                         type="submit"
                         className={
-                          'inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                          'inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                           (!newStructure?.location ||
                           !newStructure.type ||
                           handleCreateStructure.isLoading
-                            ? ' opacity-50 cursor-not-allowed'
+                            ? ' cursor-not-allowed opacity-50'
                             : '')
                         }
                         disabled={
@@ -451,7 +454,7 @@ export default function Structures() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Structures
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -463,61 +466,61 @@ export default function Structures() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 {allMyStructures.isLoading ||
                 (allMyStructures.data &&
                   allMyStructures.data.structures.length > 0) ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Type
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Location
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Active
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Status
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Consumes
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">
                           Produces
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {!allMyStructures.isLoading ? (
                         allMyStructures.data.structures.map((structure, i) => (
                           <tr
                             key={structure.id}
                             className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 font-medium text-gray-900">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                               {
                                 StructureCategory[
                                   structure.type as unknown as keyof typeof StructureCategory
                                 ]
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               {structure.location}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                               <span
                                 className={
-                                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                  'inline-flex rounded-full px-2 text-xs font-semibold leading-5' +
                                   (structure.active
                                     ? ' bg-green-100 text-green-800'
                                     : ' bg-yellow-100 text-yellow-800')
@@ -561,7 +564,7 @@ export default function Structures() {
                                 )
                                 .join(', ')}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                               <button
                                 className="text-indigo-600 hover:text-indigo-900"
                                 onClick={() => {
@@ -605,8 +608,8 @@ export default function Structures() {
                 ) : (
                   <div className="flex justify-center">
                     <div className="w-full py-8 px-4">
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <OfficeBuildingIcon className="w-12 h-12 text-gray-400" />
+                      <div className="mb-4 flex flex-col items-center text-center">
+                        <OfficeBuildingIcon className="h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
                           No structures have been created yet.
                         </h3>
@@ -626,7 +629,7 @@ export default function Structures() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Find Structure
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -635,10 +638,10 @@ export default function Structures() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 <form className="min-w-full divide-y divide-gray-200">
-                  <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
                     <div className="sm:col-span-3">
                       <label
                         htmlFor="structureId"
@@ -651,7 +654,7 @@ export default function Structures() {
                           type="text"
                           name="structureId"
                           id="structureId"
-                          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                           onChange={(e) => {
                             setStructureToQuery({
                               ...structureToQuery,
@@ -667,11 +670,11 @@ export default function Structures() {
                 {!structure.isLoading && structure.data && (
                   <>
                     <div className="px-4 sm:px-6">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      <h3 className="text-lg font-medium leading-6 text-gray-900">
                         Structure Details
                       </h3>
                     </div>
-                    <div className="px-6 py-4 bg-white">
+                    <div className="bg-white px-6 py-4">
                       <div className="inline-flex items-center">
                         <h3 className="text-md font-medium text-gray-900">
                           {
@@ -683,7 +686,7 @@ export default function Structures() {
                         </h3>
                         <span
                           className={
-                            'ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                            'ml-2 inline-flex rounded-full px-2 text-xs font-semibold leading-5' +
                             (structure.data.structure.active
                               ? ' bg-green-100 text-green-800'
                               : ' bg-yellow-100 text-yellow-800')
@@ -697,20 +700,20 @@ export default function Structures() {
                       <p className="mt-1 max-w-2xl text-sm text-gray-500">
                         {structure.data.structure.status}
                       </p>
-                      <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                      <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                         <span className="inline-flex items-center">
                           <span className="sr-only">Username</span>
-                          <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          <UserIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                           {structure.data.structure.ownedBy.username}
                         </span>
                         <span className="ml-4 inline-flex items-center">
                           <span className="sr-only">Location</span>
-                          <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          <GlobeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                           {structure.data.structure.location}
                         </span>
                         <span className="ml-4 inline-flex items-center">
                           <span className="sr-only">Consumes</span>
-                          <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          <ArrowUpIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                           {structure.data.structure.consumes
                             .map(
                               (c) =>
@@ -720,7 +723,7 @@ export default function Structures() {
                         </span>
                         <span className="ml-4 inline-flex items-center">
                           <span className="sr-only">Produces</span>
-                          <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          <ArrowDownIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                           {structure.data.structure.produces
                             .map(
                               (c) =>
@@ -730,7 +733,7 @@ export default function Structures() {
                         </span>
                         <span className="ml-4 inline-flex items-center">
                           <span className="sr-only">Inventory</span>
-                          <CubeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                          <CubeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                           {structure.data.structure.inventory
                             .sort((a) =>
                               structure.data.structure.consumes.includes(a.good)
@@ -761,24 +764,24 @@ export default function Structures() {
                   </>
                 )}
                 {structure.isLoading && (
-                  <div className="shadow rounded-md p-6 w-full mx-auto">
-                    <div className="animate-pulse flex space-x-4">
-                      <div className="rounded-full bg-gray-300 h-10 w-10"></div>
+                  <div className="mx-auto w-full rounded-md p-6 shadow">
+                    <div className="flex animate-pulse space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-gray-300"></div>
                       <div className="flex-1 space-y-6 py-1">
-                        <div className="h-2 bg-gray-300 rounded"></div>
+                        <div className="h-2 rounded bg-gray-300"></div>
                         <div className="space-y-3">
                           <div className="grid grid-cols-3 gap-4">
-                            <div className="h-2 bg-gray-300 rounded col-span-2"></div>
-                            <div className="h-2 bg-gray-300 rounded col-span-1"></div>
+                            <div className="col-span-2 h-2 rounded bg-gray-300"></div>
+                            <div className="col-span-1 h-2 rounded bg-gray-300"></div>
                           </div>
-                          <div className="h-2 bg-gray-300 rounded"></div>
+                          <div className="h-2 rounded bg-gray-300"></div>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
                 {structure.isError && (
-                  <div className="p-6 w-full mx-auto">
+                  <div className="mx-auto w-full p-6">
                     <Alert
                       title="Error fetching structure"
                       message={getErrorMessage(structure.error as any)}
@@ -808,15 +811,15 @@ export default function Structures() {
                       }
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Location</span>
-                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <GlobeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToDeposit.location}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Consumes</span>
-                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowUpIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToDeposit.consumes
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -825,7 +828,7 @@ export default function Structures() {
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Produces</span>
-                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowDownIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToDeposit.produces
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -901,7 +904,7 @@ export default function Structures() {
                               name="quantity"
                               id="quantity"
                               min={1}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                               onChange={(e) => {
                                 const quantity = !isNaN(
                                   parseInt(e.target.value)
@@ -928,11 +931,11 @@ export default function Structures() {
                           <button
                             type="submit"
                             className={
-                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex justify-center truncate rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                               (ownStructureToDeposit.deposit?.quantity === 0 ||
                               !ownStructureToDeposit.deposit?.shipId ||
                               handleDepositGoodsToOwnStructure.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                             disabled={
@@ -990,7 +993,7 @@ export default function Structures() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships available to deposit goods.
                           </h3>
@@ -1028,15 +1031,15 @@ export default function Structures() {
                       }
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Location</span>
-                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <GlobeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToWithdraw.location}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Consumes</span>
-                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowUpIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToWithdraw.consumes
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -1045,7 +1048,7 @@ export default function Structures() {
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Produces</span>
-                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowDownIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {ownStructureToWithdraw.produces
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -1121,7 +1124,7 @@ export default function Structures() {
                               name="quantity"
                               id="quantity"
                               min={1}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                               onChange={(e) => {
                                 const quantity = !isNaN(
                                   parseInt(e.target.value)
@@ -1148,12 +1151,12 @@ export default function Structures() {
                           <button
                             type="submit"
                             className={
-                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex justify-center truncate rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                               (ownStructureToWithdraw.withdraw?.quantity ===
                                 0 ||
                               !ownStructureToWithdraw.withdraw?.shipId ||
                               handleWithdrawGoodsFromOwnStructure.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                             disabled={
@@ -1212,7 +1215,7 @@ export default function Structures() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships available to withdraw goods.
                           </h3>
@@ -1252,20 +1255,20 @@ export default function Structures() {
                       }
                     </h3>
                   </div>
-                  <div className="flex items-center mt-2 py-1 text-sm leading-5 text-gray-500">
+                  <div className="mt-2 flex items-center py-1 text-sm leading-5 text-gray-500">
                     <span className="inline-flex items-center">
                       <span className="sr-only">Username</span>
-                      <UserIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <UserIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {structureToDeposit.ownedBy.username}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Location</span>
-                      <GlobeIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <GlobeIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {structureToDeposit.location}
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Consumes</span>
-                      <ArrowUpIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowUpIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {structureToDeposit.consumes
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -1274,7 +1277,7 @@ export default function Structures() {
                     </span>
                     <span className="ml-4 inline-flex items-center">
                       <span className="sr-only">Produces</span>
-                      <ArrowDownIcon className="mr-1 w-4 h-4 text-gray-900" />{' '}
+                      <ArrowDownIcon className="mr-1 h-4 w-4 text-gray-900" />{' '}
                       {structureToDeposit.produces
                         .map(
                           (c) => GoodType[c as unknown as keyof typeof GoodType]
@@ -1350,7 +1353,7 @@ export default function Structures() {
                               name="quantity"
                               id="quantity"
                               min={1}
-                              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                               onChange={(e) => {
                                 const quantity = !isNaN(
                                   parseInt(e.target.value)
@@ -1377,11 +1380,11 @@ export default function Structures() {
                           <button
                             type="submit"
                             className={
-                              'truncate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                              'inline-flex justify-center truncate rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                               (structureToDeposit.deposit?.quantity === 0 ||
                               !structureToDeposit.deposit?.shipId ||
                               handleDepositGoodsToStructure.isLoading
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                             disabled={
@@ -1438,7 +1441,7 @@ export default function Structures() {
                   ) : (
                     <div className="flex justify-center">
                       <div className="w-full py-4">
-                        <div className="flex flex-col items-center text-center mb-4">
+                        <div className="mb-4 flex flex-col items-center text-center">
                           <h3 className="mt-2 text-sm font-medium text-gray-900">
                             No ships available to deposit goods.
                           </h3>

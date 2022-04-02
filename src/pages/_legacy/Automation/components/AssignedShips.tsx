@@ -20,7 +20,7 @@ export default function AssignedShips(props: AssignedShipsProps) {
               <div className="flex items-center">
                 <span
                   className={
-                    'h-8 w-8 rounded-full flex items-center justify-center text-white ring-8 ring-white' +
+                    'flex h-8 w-8 items-center justify-center rounded-full text-white ring-8 ring-white' +
                     ` bg-gray-500`
                   }
                 >
@@ -31,7 +31,7 @@ export default function AssignedShips(props: AssignedShipsProps) {
                 </div>
               </div>
               {setTradeRoute && (
-                <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                <div className="whitespace-nowrap text-right text-sm text-gray-500">
                   <button
                     className="text-red-600 hover:text-red-900"
                     onClick={(e) => {
@@ -54,7 +54,7 @@ export default function AssignedShips(props: AssignedShipsProps) {
       ) : (
         <div className="flex justify-center">
           <div className="w-full py-4">
-            <div className="flex flex-col items-center text-center mb-4">
+            <div className="mb-4 flex flex-col items-center text-center">
               <h3 className="mt-2 text-sm font-medium text-gray-900">
                 No ships assigned.
               </h3>

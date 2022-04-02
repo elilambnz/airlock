@@ -11,16 +11,16 @@ export default function Tooltip(props: ToolTipProps) {
   return (
     <div
       className={
-        'relative flex flex-col items-center group' +
+        'group relative flex flex-col items-center' +
         (className ? `${className}` : '')
       }
     >
       {children}
-      <div className="w-max absolute bottom-0 flex-col items-center hidden mb-6 group-hover:flex">
-        <span className="relative z-10 p-2 text-xs leading-none text-white bg-gray-900 shadow-lg rounded-md">
+      <div className="absolute bottom-0 mb-6 hidden w-max flex-col items-center group-hover:flex">
+        <span className="relative z-10 rounded-md bg-gray-900 p-2 text-xs leading-none text-white shadow-lg">
           {title}
         </span>
-        <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-900"></div>
+        <div className="-mt-2 h-3 w-3 rotate-45 bg-gray-900"></div>
       </div>
     </div>
   )

@@ -68,12 +68,12 @@ export default function Select(props: SelectProps) {
           <Listbox.Label className="block text-sm font-medium text-gray-700">
             {label}
           </Listbox.Label>
-          <div className="mt-1 relative">
+          <div className="relative mt-1">
             <Listbox.Button
               ref={setTargetElement as any}
               className={
-                'bg-white relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm' +
-                (selectDisabled ? ' opacity-50 cursor-not-allowed' : '') +
+                'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm' +
+                (selectDisabled ? ' cursor-not-allowed opacity-50' : '') +
                 (onClear && selected ? ' pr-12' : '')
               }
             >
@@ -81,11 +81,11 @@ export default function Select(props: SelectProps) {
                 {selected?.icon && (
                   <div className="flex-shrink-0">
                     <div className="relative">
-                      <span className="flex-shrink-0 h-5 w-5 rounded-full bg-white text-gray-400">
+                      <span className="h-5 w-5 flex-shrink-0 rounded-full bg-white text-gray-400">
                         {selected.icon}
                       </span>
                       <span
-                        className="absolute inset-0 shadow-inner rounded-full"
+                        className="absolute inset-0 rounded-full shadow-inner"
                         aria-hidden="true"
                       ></span>
                     </div>
@@ -100,7 +100,7 @@ export default function Select(props: SelectProps) {
                       {selected.tags.slice(0, 2).map((tag, i) => (
                         <span
                           key={i}
-                          className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100"
+                          className="ml-1 inline-flex rounded-full bg-gray-100 px-2 text-xs font-semibold leading-5"
                         >
                           {tag}
                         </span>
@@ -127,7 +127,7 @@ export default function Select(props: SelectProps) {
                   </button>{' '}
                 </>
               )}
-              <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <SelectorIcon
                   className="h-5 w-5 text-gray-400"
                   aria-hidden="true"
@@ -157,7 +157,7 @@ export default function Select(props: SelectProps) {
                 >
                   <Listbox.Options
                     static
-                    className="bg-white shadow-lg max-h-60 max-w-full rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                    className="max-h-60 max-w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
                   >
                     {options.map((option) => (
                       <Listbox.Option
@@ -165,9 +165,9 @@ export default function Select(props: SelectProps) {
                         className={({ active }) =>
                           classNames(
                             active
-                              ? 'text-white bg-indigo-600'
+                              ? 'bg-indigo-600 text-white'
                               : 'text-gray-900',
-                            'cursor-default select-none relative py-2 pl-3 pr-9'
+                            'relative cursor-default select-none py-2 pl-3 pr-9'
                           )
                         }
                         value={option}
@@ -178,18 +178,18 @@ export default function Select(props: SelectProps) {
                             className={
                               'flex items-center' +
                               (option.disabled
-                                ? ' opacity-50 cursor-not-allowed'
+                                ? ' cursor-not-allowed opacity-50'
                                 : '')
                             }
                           >
                             {option.icon && (
                               <div className="flex-shrink-0">
                                 <div className="relative">
-                                  <span className="flex-shrink-0 h-5 w-5 rounded-full bg-white text-gray-400">
+                                  <span className="h-5 w-5 flex-shrink-0 rounded-full bg-white text-gray-400">
                                     {option.icon}
                                   </span>
                                   <span
-                                    className="absolute inset-0 shadow-inner rounded-full"
+                                    className="absolute inset-0 rounded-full shadow-inner"
                                     aria-hidden="true"
                                   ></span>
                                 </div>
@@ -210,7 +210,7 @@ export default function Select(props: SelectProps) {
                                   {option.tags.map((tag, i) => (
                                     <span
                                       key={i}
-                                      className="ml-1 px-2 inline-flex text-xs leading-5 rounded-full bg-gray-100"
+                                      className="ml-1 inline-flex rounded-full bg-gray-100 px-2 text-xs leading-5"
                                     >
                                       {tag}
                                     </span>

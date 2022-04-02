@@ -54,11 +54,11 @@ export default function Automation() {
   return (
     <>
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
             <h1 className="text-3xl font-bold text-gray-900">Automation</h1>
             <button
-              className="text-gray-900 hover:text-gray-600 focus:outline-none focus:text-gray-600 ml-4"
+              className="ml-4 text-gray-900 hover:text-gray-600 focus:text-gray-600 focus:outline-none"
               onClick={() => setShowInfo(true)}
             >
               <InformationCircleIcon className="h-6 w-6" />
@@ -69,18 +69,18 @@ export default function Automation() {
       <Main>
         <div>
           <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Status
                 </dt>
-                <dd className="mt-1 flex justify-between items-baseline md:block lg:flex">
+                <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
                   <div className="flex items-baseline">
                     <button
                       className={
-                        'inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                        'inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                         (!tradeRoutes.data || tradeRoutes.data.length === 0
-                          ? ' opacity-50 cursor-not-allowed'
+                          ? ' cursor-not-allowed opacity-50'
                           : '')
                       }
                       disabled={
@@ -100,7 +100,7 @@ export default function Automation() {
 
                   <div
                     className={
-                      'inline-flex items-baseline px-2.5 py-0.5 rounded-full text-sm font-medium md:mt-2 lg:mt-0' +
+                      'inline-flex items-baseline rounded-full px-2.5 py-0.5 text-sm font-medium md:mt-2 lg:mt-0' +
                       (status === AutomationStatus.RUNNING
                         ? ' bg-green-100 text-green-800'
                         : status === AutomationStatus.STOPPED
@@ -114,9 +114,9 @@ export default function Automation() {
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Run Time
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
@@ -125,9 +125,9 @@ export default function Automation() {
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-sm font-medium text-gray-500 truncate">
+                <dt className="truncate text-sm font-medium text-gray-500">
                   Routes
                 </dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
@@ -142,7 +142,7 @@ export default function Automation() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Create New Route
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -151,8 +151,8 @@ export default function Automation() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 <div className="rounded-md bg-yellow-50 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
@@ -184,7 +184,7 @@ export default function Automation() {
 
         <Section>
           <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Trading Routes
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -194,57 +194,57 @@ export default function Automation() {
           </div>
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"></div>
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg"></div>
                 {tradeRoutes.data && tradeRoutes.data.length > 0 ? (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Locations
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Goods
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Assigned Ships
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Auto Refuel
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Status
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {tradeRoutes.data.map((route, i) => (
                         <tr
                           key={i}
                           className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                         >
-                          <td className="px-6 py-4 text-sm leading-5 font-medium text-gray-900">
+                          <td className="px-6 py-4 text-sm font-medium leading-5 text-gray-900">
                             {route.events
                               .filter((e) => e.type === RouteEventType.TRAVEL)
                               ?.reduce(
@@ -308,10 +308,10 @@ export default function Automation() {
                           <td className="px-6 py-4 text-sm leading-5 text-gray-500">
                             {route.autoRefuel ? 'Yes' : 'No'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                          <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                             <span
                               className={
-                                'px-2 inline-flex text-xs leading-5 font-semibold rounded-full' +
+                                'inline-flex rounded-full px-2 text-xs font-semibold leading-5' +
                                 (tradeRouteStatuses.get(route.id) ===
                                 TradeRouteStatus.ACTIVE
                                   ? ' bg-green-100 text-green-800'
@@ -327,7 +327,7 @@ export default function Automation() {
                               {tradeRouteStatuses.get(route.id)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm leading-5 text-gray-500">
+                          <td className="whitespace-nowrap px-6 py-4 text-sm leading-5 text-gray-500">
                             <button
                               className="text-indigo-600 hover:text-indigo-900"
                               onClick={() => {
@@ -360,8 +360,8 @@ export default function Automation() {
                 ) : (
                   <div className="flex justify-center">
                     <div className="w-full py-8 px-4">
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <ChipIcon className="w-12 h-12 text-gray-400" />
+                      <div className="mb-4 flex flex-col items-center text-center">
+                        <ChipIcon className="h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
                           No routes have been created yet.
                         </h3>
@@ -379,7 +379,7 @@ export default function Automation() {
       </Main>
       <AlertModal
         icon={
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+          <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
             <InformationCircleIcon
               className="h-6 w-6 text-indigo-600"
               aria-hidden="true"
@@ -467,7 +467,7 @@ export default function Automation() {
                   </button>
                 )}
                 <div className="mt-4">
-                  <h4 className="text-md leading-6 font-medium text-gray-900">
+                  <h4 className="text-md font-medium leading-6 text-gray-900">
                     Steps
                   </h4>
                 </div>
@@ -483,7 +483,7 @@ export default function Automation() {
                   // }}
                 />
                 <div className="mt-4">
-                  <h4 className="text-md leading-6 font-medium text-gray-900">
+                  <h4 className="text-md font-medium leading-6 text-gray-900">
                     Assigned Ships
                   </h4>
                 </div>
@@ -492,11 +492,11 @@ export default function Automation() {
                 </div>
                 <AssignedShips tradeRoute={routeToManage} />
                 <details>
-                  <summary className="text-md leading-6 font-medium text-gray-900 hover:cursor-pointer">
+                  <summary className="text-md font-medium leading-6 text-gray-900 hover:cursor-pointer">
                     Show log
                   </summary>
                   <div
-                    className="bg-gray-900 p-4 rounded-md text-white overflow-auto"
+                    className="overflow-auto rounded-md bg-gray-900 p-4 text-white"
                     style={{ height: '200px' }}
                   >
                     <pre className="text-xs">

@@ -125,7 +125,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
     value: s!,
     label: s!,
     icon: (
-      <div className="flex items-center justify-center w-5 h-5">
+      <div className="flex h-5 w-5 items-center justify-center">
         <span className="text-xs">🌌</span>
       </div>
     ),
@@ -149,7 +149,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
       label: l!.name,
       tags: [l!.symbol, `(${l!.x}, ${l!.y})`],
       icon: (
-        <div className="flex items-center justify-center w-5 h-5">
+        <div className="flex h-5 w-5 items-center justify-center">
           <span className="text-xs">
             {getIconForLocationType(
               LocationType[l!.type as unknown as keyof typeof LocationType]
@@ -174,7 +174,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
             ],
           tags: [s.location, `(${location?.x}, ${location?.y})`],
           icon: (
-            <div className="flex items-center justify-center w-5 h-5">
+            <div className="flex h-5 w-5 items-center justify-center">
               <span className="text-xs">
                 {getIconForLocationType(LocationType.STRUCTURE)}
               </span>
@@ -281,7 +281,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
           `📦 ${ship.maxCargo - ship.spaceAvailable}/${ship.maxCargo}`,
         ],
         icon: (
-          <div className="flex items-center justify-center w-5 h-5">
+          <div className="flex h-5 w-5 items-center justify-center">
             <span className="text-xs">🚀</span>
           </div>
         ),
@@ -332,15 +332,15 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 sm:divide-x sm:divide-gray-200 border-b">
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 border-b sm:grid-cols-6 sm:divide-x sm:divide-gray-200">
         <div className="col-span-4">
           <div className="mt-4 px-6">
-            <h4 className="text-md leading-6 font-medium text-gray-900">
+            <h4 className="text-md font-medium leading-6 text-gray-900">
               Add Step
             </h4>
           </div>
           <form className="min-w-full divide-y divide-gray-200">
-            <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
               <div className="sm:col-span-2">
                 <Select
                   label="Select Destination System"
@@ -368,13 +368,13 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                   }}
                 />
               </div>
-              <div className="sm:col-span-1 pt-6">
+              <div className="pt-6 sm:col-span-1">
                 <button
                   type="submit"
                   className={
-                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                    'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                     (!newTradeRoute || !newTradeRouteLocation.location
-                      ? ' opacity-50 cursor-not-allowed'
+                      ? ' cursor-not-allowed opacity-50'
                       : '')
                   }
                   disabled={!newTradeRoute || !newTradeRouteLocation.location}
@@ -407,7 +407,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
           </form>
 
           <form className="min-w-full divide-y divide-gray-200">
-            <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
               <div className="sm:col-span-2">
                 <Select
                   label="Select Good"
@@ -433,7 +433,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                 </label>
                 <input
                   id="quantity"
-                  className="mt-1 block w-full py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="mt-1 block w-full rounded-md border-gray-300 py-2 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   type="number"
                   min={1}
                   onChange={(e) => {
@@ -475,13 +475,13 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                   }}
                 />
               </div>
-              <div className="sm:col-span-1 pt-6">
+              <div className="pt-6 sm:col-span-1">
                 <button
                   type="submit"
                   className={
-                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                    'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                     (addGoodToTradeRouteDisabled
-                      ? ' opacity-50 cursor-not-allowed'
+                      ? ' cursor-not-allowed opacity-50'
                       : '')
                   }
                   disabled={addGoodToTradeRouteDisabled}
@@ -507,14 +507,14 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
+              <span className="bg-white px-2 text-gray-500">
                 Or automate transfers to and from structures
               </span>
             </div>
           </div>
 
           <form className="min-w-full divide-y divide-gray-200">
-            <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
               <div className="sm:col-span-2">
                 <Select
                   label="Select Structure"
@@ -578,7 +578,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                 </label>
                 <input
                   id="quantity"
-                  className="mt-1 block w-full py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="mt-1 block w-full rounded-md border-gray-300 py-2 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   type="number"
                   min={1}
                   onChange={(e) => {
@@ -598,13 +598,13 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                   }}
                 />
               </div>
-              <div className="sm:col-span-1 pt-6">
+              <div className="pt-6 sm:col-span-1">
                 <button
                   type="submit"
                   className={
-                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+                    'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
                     (addStructureToTradeRouteDisabled
-                      ? ' opacity-50 cursor-not-allowed'
+                      ? ' cursor-not-allowed opacity-50'
                       : '')
                   }
                   disabled={addStructureToTradeRouteDisabled}
@@ -633,18 +633,18 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
 
         <div className="col-span-2">
           <div className="mt-4 px-6">
-            <h4 className="text-md leading-6 font-medium text-gray-700">
+            <h4 className="text-md font-medium leading-6 text-gray-700">
               Assign Ships
             </h4>
           </div>
-          <div className="mt-4 px-6 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between px-6">
             <div className="flex items-center">
               <input
                 id="autoRefuel"
                 name="autoRefuel"
                 type="checkbox"
                 checked={newTradeRoute?.autoRefuel}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 onChange={(e) => {
                   setNewTradeRoute((prev) => ({
                     ...prev,
@@ -661,7 +661,7 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
             </div>
           </div>
           <form className="min-w-full divide-y divide-gray-200">
-            <div className="p-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 p-6 sm:grid-cols-6">
               <div className="sm:col-span-4">
                 <Select
                   label="Select Ship"
@@ -674,12 +674,12 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
                   }}
                 />
               </div>
-              <div className="sm:col-span-2 pt-6">
+              <div className="pt-6 sm:col-span-2">
                 <button
                   type="submit"
                   className={
-                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
-                    (!newTradeRouteShip ? ' opacity-50 cursor-not-allowed' : '')
+                    'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
+                    (!newTradeRouteShip ? ' cursor-not-allowed opacity-50' : '')
                   }
                   disabled={!newTradeRouteShip}
                   onClick={(e) => {
@@ -707,15 +707,15 @@ export default function RouteConfiguration(props: RouteConfigurationProps) {
         </div>
       </div>
 
-      <div className="p-6 w-full flex justify-end">
+      <div className="flex w-full justify-end p-6">
         <button
           className={
-            'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500' +
+            'inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' +
             (!(
               newTradeRoute.events.length > 0 &&
               newTradeRoute.assignedShips.length > 0
             )
-              ? ' opacity-50 cursor-not-allowed'
+              ? ' cursor-not-allowed opacity-50'
               : '')
           }
           disabled={
