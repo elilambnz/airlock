@@ -25,3 +25,9 @@ export enum SystemType {
   'RED_STAR',
   'BLUE_STAR',
 }
+
+export type ChartWaypointResponse = {}
+
+export type ListWaypointsResponse = {}
+
+export type WaypointResponse = {}

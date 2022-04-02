@@ -1,7 +1,6 @@
 import { default as axios } from '../../utils/axiosInstance'
 
 import {
-  ChartWaypointResponse,
   DockShipResponse,
   JumpCooldownResponse,
   JumpShipResponse,
@@ -12,18 +11,6 @@ import {
 } from '../../types/Navigation'
 
 const BASE_ROUTE = 'my/ships'
-
-const chartWaypoint = async (shipSymbol: string) => {
-  try {
-    const response: { data: ChartWaypointResponse } = await axios.post(
-      `${BASE_ROUTE}/${shipSymbol}/chart`
-    )
-    return response.data
-  } catch (error: any) {
-    console.error(error)
-    throw error.response?.data?.error
-  }
-}
 
 const dockShip = async (shipSymbol: string) => {
   try {
@@ -113,7 +100,6 @@ const getShipNavigationStatus = async (shipSymbol: string) => {
 }
 
 export {
-  chartWaypoint,
   dockShip,
   orbitShip,
   jumpShip,

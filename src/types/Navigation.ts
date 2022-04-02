@@ -1,5 +1,3 @@
-export type ChartWaypointResponse = {}
-
 export type DockShipResponse = {}
 
 export type OrbitShipResponse = {}
