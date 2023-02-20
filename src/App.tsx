@@ -101,14 +101,14 @@ export default function App() {
         </RequireAuth>
       ),
     },
-    {
-      path: 'automation',
-      element: (
-        <RequireAuth>
-          <Automation />
-        </RequireAuth>
-      ),
-    },
+    // {
+    //   path: 'automation',
+    //   element: (
+    //     <RequireAuth>
+    //       <Automation />
+    //     </RequireAuth>
+    //   ),
+    // },
     {
       path: 'loans',
       element: (
