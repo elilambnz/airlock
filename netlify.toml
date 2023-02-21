@@ -1,14 +1,4 @@
 [[redirects]]
-  from = "/js/script.js"
-  to = "https://plausible.pixellab.nz/js/script.js"
-  status = 200
-
-[[redirects]]
-  from = "/api/event"
-  to = "https://plausible.pixellab.nz/api/event"
-  status = 200
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
